@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -639,7 +640,13 @@ async function push(ns){
   render();
 }
 
+// Fallback: if Firebase doesn't respond in 3.5s, show app with local data
+const fbTimeout=setTimeout(()=>{
+  if(!INIT){INIT=true;SYNC='err';render();}
+},3500);
+
 onValue(dbRef,snap=>{
+  clearTimeout(fbTimeout);
   const d=snap.val();
   if(d&&d.players&&d.courses){
     let tournaments=d.tournaments||[];
@@ -661,7 +668,7 @@ onValue(dbRef,snap=>{
     if(needsSave)push(S);
   }else if(!INIT)push(S);
   INIT=true;render();
-},()=>{SYNC='err';INIT=true;render();});
+},()=>{clearTimeout(fbTimeout);SYNC='err';INIT=true;render();});
 
 function upd(ns){S=ns;push(ns);}
 function ranked(){
