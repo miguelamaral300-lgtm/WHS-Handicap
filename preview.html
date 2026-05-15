@@ -339,6 +339,8 @@ body{
 .over{color:var(--danger)}
 .even{color:var(--text3)}
 .counting-diff{color:var(--gold)!important;font-weight:700}
+/* 9-hole pair counting — slightly different amber tone so it reads as "linked pair" */
+.counting-diff-9h{color:#C9985A!important;font-weight:700}
 
 /* PILLS */
 .pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:.4px}
@@ -948,18 +950,34 @@ function calcHI(scores,courses){
     const d=calcDiff(s.score,c.rating,c.slope);
     c.rating<40?n9.push({i,d}):eff.push({i,d});
   });
+  // Pair up 9-hole rounds. Each pair becomes one combined "virtual 18H"
+  // entry, but we keep BOTH original indices on it so both halves can
+  // be highlighted as counting when the pair counts.
   for(let k=0;k<n9.length-1;k+=2)
-    eff.push({i:Math.max(n9[k].i,n9[k+1].i),d:rd(n9[k].d+n9[k+1].d)});
+    eff.push({
+      i:Math.max(n9[k].i,n9[k+1].i),
+      d:rd(n9[k].d+n9[k+1].d),
+      pair:[n9[k].i,n9[k+1].i]
+    });
   eff.sort((a,b)=>a.i-b.i);
   const r=eff.slice(-20),cnt=r.length;
-  if(cnt<3)return{hi:null,count:cnt,n:0,p9:n9.length%2===1,countingIdx:new Set()};
+  if(cnt<3)return{hi:null,count:cnt,n:0,p9:n9.length%2===1,countingIdx:new Set(),countingPair:new Set()};
   const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
-  // Find which original score indices are counting
+  // Find which differentials are counting
   const sorted=[...r].sort((a,b)=>a.d-b.d);
   const counting=sorted.slice(0,n);
-  const countingIdx=new Set(counting.map(x=>x.i));
+  const countingIdx=new Set();   // every original score index that counts
+  const countingPair=new Set();  // subset that are part of a counting 9H pair
+  counting.forEach(x=>{
+    if(x.pair){
+      // 9H pair — mark BOTH halves as counting, and tag them as "pair"
+      x.pair.forEach(i=>{countingIdx.add(i); countingPair.add(i);});
+    }else{
+      countingIdx.add(x.i);
+    }
+  });
   const avg=counting.reduce((a,x)=>a+x.d,0)/n;
-  return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),p9:n9.length%2===1,countingIdx};
+  return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),p9:n9.length%2===1,countingIdx,countingPair};
 }
 
 // ── LIFETIME STATS ────────────────────────────────────────────────────────────
@@ -1606,7 +1624,7 @@ function renderPlayerDetail(p){
     <span class="sec-title">Round History</span>
     <button class="btn-p" onclick="OM('score')">+ Add Round</button>
   </div>
-  <p style="font-size:11px;color:var(--text3);margin-bottom:12px">🟡 Gold = counting toward your handicap &nbsp;·&nbsp; Tap row to expand &middot; Edit from there</p>`;
+  <p style="font-size:11px;color:var(--text3);margin-bottom:12px">🟡 Gold = 18-hole counting &nbsp;·&nbsp; 🟠 Amber = 9-hole pair counting &nbsp;·&nbsp; Tap row to expand &middot; Edit from there</p>`;
   if(!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
   h+=`<div class="ccard"><div class="sthead"><span>Course</span><span style="text-align:center">Date</span><span style="text-align:center">Score</span><span style="text-align:center">Diff</span><span></span></div>`;
   [...p.scores].reverse().forEach((s2,ri)=>{
@@ -1614,14 +1632,22 @@ function renderPlayerDetail(p){
     const d=c?calcDiff(s2.score,c.rating,c.slope):null;
     const is9=c&&c.rating<40,isO=OPEN_SCORE&&OPEN_SCORE.pid===p.id&&OPEN_SCORE.idx===oi;
     const isCounting=s.countingIdx&&s.countingIdx.has(oi);
-    const rowStyle=isCounting
-      ?'background:rgba(201,168,76,.07);border-left:2.5px solid var(--gold);margin:0 -18px;padding:10px 18px 10px 14px;'
-      :'';
+    const isPair=s.countingPair&&s.countingPair.has(oi);
+    // 9H pair counting gets an amber/champagne tone; 18H counting stays pure gold.
+    const rowStyle = isCounting
+      ? (isPair
+          ? 'background:rgba(201,152,90,.08);border-left:2.5px solid #C9985A;margin:0 -18px;padding:10px 18px 10px 14px;'
+          : 'background:rgba(201,168,76,.07);border-left:2.5px solid var(--gold);margin:0 -18px;padding:10px 18px 10px 14px;')
+      : '';
+    const textColor = isCounting ? (isPair ? '#D9B886' : 'var(--gold-lt)') : 'var(--text)';
+    const pillStyle = isPair
+      ? 'font-size:9px;padding:1px 5px;background:rgba(201,152,90,.2);color:#D9B886;border:0.5px solid rgba(201,152,90,.4)'
+      : 'font-size:9px;padding:1px 5px';
     h+=`<div class="srow" onclick="TSC('${p.id}',${oi})" style="${rowStyle}">
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${isCounting?600:500};color:${isCounting?'var(--gold-lt)':'var(--text)'}">${s2.course}${is9?' <span class="pill p9" style="font-size:9px;padding:1px 5px">9H</span>':''}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${isCounting?600:500};color:${textColor}">${s2.course}${is9?` <span class="pill p9" style="${pillStyle}">9H${isPair?' ✦':''}</span>`:''}</span>
       <span style="text-align:center;font-size:11px;color:var(--text3)">${s2.date?fmtDate(s2.date):'—'}</span>
-      <span style="text-align:center;font-weight:600;color:${isCounting?'var(--gold-lt)':'var(--text)'}">${s2.score}</span>
-      <span style="text-align:center" class="${d!==null&&d<0?'under':d!==null&&isCounting?'':''}${d!==null&&isCounting?' counting-diff':''}">${d!==null?d.toFixed(1):'—'}</span>
+      <span style="text-align:center;font-weight:600;color:${textColor}">${s2.score}</span>
+      <span style="text-align:center" class="${d!==null&&d<0?'under':''}${d!==null&&isCounting?(isPair?' counting-diff-9h':' counting-diff'):''}">${d!==null?d.toFixed(1):'—'}</span>
       <button class="btn-ic" onclick="event.stopPropagation();DS('${p.id}',${oi})">&times;</button>
     </div>`;
     if(isO)h+=`<div class="icard">
@@ -1630,7 +1656,10 @@ function renderPlayerDetail(p){
       <div><div class="ie-lbl">Slope</div><div class="ie-val">${c?c.slope:'—'}</div></div>
       <div><div class="ie-lbl">Holes</div><div class="ie-val">${is9?'9-hole':'18-hole'}</div></div>
       ${s2.date?`<div style="grid-column:span 3"><div class="ie-lbl">Date played</div><div class="ie-val" style="font-size:13px">${fmtDate(s2.date)}</div></div>`:''}
-      ${isCounting?`<div style="grid-column:span 3;padding:8px 10px;background:rgba(201,168,76,.1);border-radius:6px;border:0.5px solid rgba(201,168,76,.25)"><div style="font-size:11px;color:var(--gold);font-weight:600">✦ Counting toward Handicap Index</div></div>`:''}
+      ${isCounting?(isPair
+        ?`<div style="grid-column:span 3;padding:8px 10px;background:rgba(201,152,90,.12);border-radius:6px;border:0.5px solid rgba(201,152,90,.3)"><div style="font-size:11px;color:#C9985A;font-weight:600">✦ Counting as part of a 9-hole pair</div></div>`
+        :`<div style="grid-column:span 3;padding:8px 10px;background:rgba(201,168,76,.1);border-radius:6px;border:0.5px solid rgba(201,168,76,.25)"><div style="font-size:11px;color:var(--gold);font-weight:600">✦ Counting toward Handicap Index</div></div>`
+      ):''}
       <div class="icard-actions">
         <button class="btn-edit" onclick="event.stopPropagation();ES('${p.id}',${oi})">
           <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11.5L3 8.5L9 2.5L11.5 5L5.5 11L2 11.5Z"/><path d="M8 3.5L10.5 6"/></svg>
