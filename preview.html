@@ -638,6 +638,124 @@ textarea{resize:vertical;min-height:70px}
 }
 @keyframes gateFade{from{opacity:0}to{opacity:1}}
 @keyframes gateRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── LIFETIME STATS GRID (per-player detail) ──────────────────────────── */
+.lifestats{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+@media(min-width:480px){.lifestats{grid-template-columns:repeat(4,1fr)}}
+.ls-card{
+  background:var(--deep);
+  border:0.5px solid var(--border);
+  border-radius:var(--r2);
+  padding:14px 14px 12px;
+  position:relative;
+  overflow:hidden;
+}
+.ls-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,.35),transparent);
+}
+.ls-icon{
+  font-size:14px;
+  color:var(--gold-dim);
+  margin-bottom:4px;
+  letter-spacing:1px;
+}
+.ls-lbl{
+  font-size:9px;font-weight:700;
+  color:var(--text3);
+  text-transform:uppercase;letter-spacing:1.6px;
+  margin-bottom:6px;
+}
+.ls-val{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:24px;font-weight:600;
+  color:var(--gold-lt);
+  line-height:1;
+  margin-bottom:4px;
+}
+.ls-sub{
+  font-size:10px;color:var(--text3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-family:'Barlow',sans-serif;
+}
+.ls-empty .ls-val{color:var(--text3);font-size:18px}
+
+/* Section subhead (smaller than .sec-title, used as a label between blocks) */
+.subsec{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:16px;color:var(--text2);
+  letter-spacing:.3px;
+  margin:20px 0 10px;
+}
+
+/* ── HANDICAP TREND CHART ─────────────────────────────────────────────── */
+.trend-card{
+  background:var(--deep);
+  border:0.5px solid var(--border);
+  border-radius:var(--r2);
+  padding:14px 14px 8px;
+  margin-top:14px;
+  position:relative;
+  overflow:hidden;
+}
+.trend-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,.35),transparent);
+}
+.trend-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:8px;
+}
+.trend-title{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:16px;color:var(--gold-lt);
+  letter-spacing:.3px;
+}
+.trend-sub{
+  font-size:10px;color:var(--text3);
+  letter-spacing:.5px;font-family:'Barlow',sans-serif;
+}
+
+/* ── INLINE EDIT BUTTON (inside the expanded score card) ──────────────── */
+.icard-actions{
+  grid-column:span 3;
+  display:flex;gap:8px;justify-content:flex-end;
+  margin-top:6px;padding-top:10px;
+  border-top:0.5px solid rgba(201,168,76,.1);
+}
+.btn-edit{
+  background:rgba(201,168,76,.08);
+  border:0.5px solid rgba(201,168,76,.28);
+  color:var(--gold);
+  font-family:'Barlow',inherit;
+  font-size:10px;font-weight:700;
+  letter-spacing:1.4px;text-transform:uppercase;
+  padding:7px 14px;
+  border-radius:6px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all .15s ease;
+}
+.btn-edit:hover{
+  background:rgba(201,168,76,.18);
+  border-color:rgba(201,168,76,.5);
+  color:var(--gold-lt);
+}
+.btn-edit svg{width:11px;height:11px}
+.btn-edit.danger{
+  background:rgba(155,48,48,.1);
+  border-color:rgba(155,48,48,.3);
+  color:#cc7777;
+}
+.btn-edit.danger:hover{
+  background:rgba(155,48,48,.2);
+  border-color:rgba(155,48,48,.5);
+  color:#e88888;
+}
 </style>
 </head>
 <body>
@@ -844,6 +962,120 @@ function calcHI(scores,courses){
   return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),p9:n9.length%2===1,countingIdx};
 }
 
+// ── LIFETIME STATS ────────────────────────────────────────────────────────────
+// Compute fun all-time stats from a player's scores + the course catalogue.
+function calcPlayerStats(p,courses){
+  const lk={};courses.forEach(c=>{lk[c.name+c.tee]=c;});
+  if(!p.scores||!p.scores.length)return null;
+
+  let bestGross=null, bestDiff=null;
+  const counts={};
+  p.scores.forEach(s=>{
+    const c=lk[s.course+s.tee];if(!c)return;
+    const is18=c.rating>=40;
+    counts[s.course]=(counts[s.course]||0)+1;
+    if(is18){
+      if(!bestGross||s.score<bestGross.score) bestGross={score:s.score,course:s.course,date:s.date||null};
+      const d=calcDiff(s.score,c.rating,c.slope);
+      if(bestDiff===null||d<bestDiff.d) bestDiff={d,course:s.course,date:s.date||null};
+    }
+  });
+
+  // Lowest HI ever — replay history round-by-round.
+  let lowestHI=null, lowestHIAt=null;
+  for(let i=3;i<=p.scores.length;i++){
+    const r=calcHI(p.scores.slice(0,i),courses);
+    if(r.hi!==null&&(lowestHI===null||r.hi<lowestHI)){
+      lowestHI=r.hi; lowestHIAt=i;
+    }
+  }
+
+  // Most-played course
+  let favCourse=null, favCount=0;
+  Object.entries(counts).forEach(([k,v])=>{if(v>favCount){favCount=v; favCourse=k;}});
+
+  // Recent form — avg differential over last 5 valid 18-hole rounds
+  const valid=[];
+  p.scores.forEach(s=>{
+    const c=lk[s.course+s.tee];if(!c||c.rating<40)return;
+    valid.push(calcDiff(s.score,c.rating,c.slope));
+  });
+  const recentForm = valid.length>=3
+    ? rd(valid.slice(-5).reduce((a,b)=>a+b,0)/Math.min(5,valid.length),1)
+    : null;
+
+  return {bestGross,bestDiff,lowestHI,lowestHIAt,favCourse,favCount,recentForm};
+}
+
+// ── HANDICAP TREND CHART (hand-drawn SVG, matches the gold/forest palette) ──
+function renderHITrendChart(p,courses){
+  const pts=[];
+  for(let i=3;i<=p.scores.length;i++){
+    const r=calcHI(p.scores.slice(0,i),courses);
+    if(r.hi!==null) pts.push({n:i,hi:r.hi});
+  }
+  if(pts.length<2) return ''; // need at least two points to draw a line
+
+  const W=700, H=200, padL=42, padR=18, padT=22, padB=28;
+  const iw=W-padL-padR, ih=H-padT-padB;
+  const minV=Math.min(...pts.map(p=>p.hi));
+  const maxV=Math.max(...pts.map(p=>p.hi));
+  const span=Math.max(1, maxV-minV);
+  // Add 10% breathing room top/bottom
+  const yMin=minV - span*0.1, yMax=maxV + span*0.1, yRange=yMax-yMin;
+  const xAt=i=>padL + (pts.length===1?iw/2 : (i/(pts.length-1))*iw);
+  const yAt=v=>padT + ((yMax-v)/yRange)*ih;
+
+  // Y-axis ticks (5)
+  const ticks=[];
+  for(let k=0;k<=4;k++){
+    const v=yMax-(yRange*k/4);
+    const yy=padT+(ih*k/4);
+    ticks.push(
+      `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="rgba(201,168,76,0.08)"/>`+
+      `<text x="${padL-7}" y="${yy+3}" text-anchor="end" fill="#605848" font-size="9" font-family="Barlow,sans-serif">${v.toFixed(1)}</text>`
+    );
+  }
+
+  // Line + gradient fill underneath
+  const linePts=pts.map((p,i)=>`${xAt(i).toFixed(1)},${yAt(p.hi).toFixed(1)}`).join(' ');
+  const fillPts=`${padL},${padT+ih} ${linePts} ${(padL+iw).toFixed(1)},${padT+ih}`;
+
+  const dots=pts.map((p,i)=>{
+    const cx=xAt(i).toFixed(1), cy=yAt(p.hi).toFixed(1);
+    const isLast=i===pts.length-1;
+    return isLast
+      ? `<circle cx="${cx}" cy="${cy}" r="5" fill="rgba(201,168,76,0.18)"/><circle cx="${cx}" cy="${cy}" r="3" fill="#E0C870"/>`
+      : `<circle cx="${cx}" cy="${cy}" r="2.2" fill="#C9A84C"/>`;
+  }).join('');
+
+  const last=pts[pts.length-1];
+  const lastLabel=`<text x="${(xAt(pts.length-1)-8).toFixed(1)}" y="${(yAt(last.hi)-10).toFixed(1)}" text-anchor="end" fill="#E0C870" font-size="11" font-family="'Cormorant Garamond',serif" font-style="italic" font-weight="600">${last.hi.toFixed(1)}</text>`;
+
+  return `
+  <div class="trend-card">
+    <div class="trend-head">
+      <span class="trend-title">Handicap Trend</span>
+      <span class="trend-sub">${pts.length} data points · current ${last.hi.toFixed(1)}</span>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:auto;display:block">
+      <defs>
+        <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${ticks.join('')}
+      <polygon points="${fillPts}" fill="url(#trendFill)"/>
+      <polyline points="${linePts}" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+      ${lastLabel}
+      <text x="${padL}" y="${H-9}" fill="#605848" font-size="9" font-family="Barlow,sans-serif" letter-spacing="1">RD ${pts[0].n}</text>
+      <text x="${W-padR}" y="${H-9}" text-anchor="end" fill="#605848" font-size="9" font-family="Barlow,sans-serif" letter-spacing="1">RD ${last.n}</text>
+    </svg>
+  </div>`;
+}
+
 function daysUntil(dateStr){
   if(!dateStr)return null;
   const d=new Date(dateStr),now=new Date();
@@ -855,6 +1087,7 @@ function daysUntil(dateStr){
 let S={players:IP,courses:IC,tournaments:[],upcoming:[],contests:[],purse:[]};
 let V='rankings',PID=null,TID=null,MOD=null,SYNC='wait',INIT=false;
 let OPEN_COURSE=null,OPEN_SCORE=null,CTAB='drive',PURSE_TID=null,PRED_ID=null,TRN_ROUNDS=1,PURSE_OPEN=null;
+let EDIT_IDX=null; // when set (score index), the score modal is in edit mode
 
 async function push(ns){
   try{
@@ -1288,6 +1521,12 @@ function render(){
   }
 
   root.innerHTML=h;
+
+  // If the score modal is open with a pre-selected course (edit mode or
+  // course already known), kick off UM() so tee / rating / differential populate.
+  if(MOD==='score' && document.getElementById('mc')?.value){
+    setTimeout(()=>{ try{ UM(); }catch(e){} }, 0);
+  }
 }
 
 // ── RANKINGS ──────────────────────────────────────────────────────────────────
@@ -1319,6 +1558,7 @@ function renderRanking(R){
 // ── PLAYER DETAIL ─────────────────────────────────────────────────────────────
 function renderPlayerDetail(p){
   const s=calcHI(p.scores,S.courses),L=lk();
+  const ls=calcPlayerStats(p,S.courses);
   let h=`<div class="back-nav">
     <button class="back-btn" onclick="CP()">&#8592; Rankings</button>
     <span style="color:rgba(11,30,18,.2);font-size:12px">/</span>
@@ -1333,12 +1573,40 @@ function renderPlayerDetail(p){
     <div class="scard normal"><div class="s-lbl">Avg Diff</div><div class="s-val" style="font-size:18px">${s.avg!=null?s.avg.toFixed(2):'—'}</div></div>
   </div>`;
   if(s.p9)h+=`<div class="pending-warn">⚠&ensp;Unpaired 9-hole round — awaiting a partner round</div>`;
+
+  // ── LIFETIME STATS ──
+  if(ls){
+    const bestG = ls.bestGross
+      ? `<div class="ls-val">${ls.bestGross.score}</div><div class="ls-sub">${ls.bestGross.course}</div>`
+      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">No 18-hole rounds yet</div>`;
+    const bestD = ls.bestDiff!==null && ls.bestDiff
+      ? `<div class="ls-val">${ls.bestDiff.d>=0?'+':''}${ls.bestDiff.d.toFixed(1)}</div><div class="ls-sub">${ls.bestDiff.course}</div>`
+      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">No data yet</div>`;
+    const lowHI = ls.lowestHI!==null
+      ? `<div class="ls-val">${ls.lowestHI.toFixed(1)}</div><div class="ls-sub">Round ${ls.lowestHIAt}</div>`
+      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">Need 3+ rounds</div>`;
+    const fav = ls.favCourse
+      ? `<div class="ls-val" style="font-size:14px;font-family:'Cormorant Garamond',serif;font-style:italic;line-height:1.15;display:flex;align-items:center;min-height:24px">${ls.favCourse}</div><div class="ls-sub">${ls.favCount} round${ls.favCount!==1?'s':''} played</div>`
+      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">—</div>`;
+
+    h+=`<div class="subsec">Lifetime</div>
+    <div class="lifestats">
+      <div class="ls-card"><div class="ls-lbl">Best Round</div>${bestG}</div>
+      <div class="ls-card"><div class="ls-lbl">Best Differential</div>${bestD}</div>
+      <div class="ls-card"><div class="ls-lbl">Lowest HI Ever</div>${lowHI}</div>
+      <div class="ls-card"><div class="ls-lbl">Most Played</div>${fav}</div>
+    </div>`;
+
+    // Handicap trend chart
+    h+=renderHITrendChart(p,S.courses);
+  }
+
   h+=`<div class="divider"></div>
   <div class="sec-head">
     <span class="sec-title">Round History</span>
     <button class="btn-p" onclick="OM('score')">+ Add Round</button>
   </div>
-  <p style="font-size:11px;color:var(--text3);margin-bottom:12px">🟡 Gold = counting toward your handicap &nbsp;·&nbsp; Tap row for details</p>`;
+  <p style="font-size:11px;color:var(--text3);margin-bottom:12px">🟡 Gold = counting toward your handicap &nbsp;·&nbsp; Tap row to expand &middot; Edit from there</p>`;
   if(!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
   h+=`<div class="ccard"><div class="sthead"><span>Course</span><span style="text-align:center">Date</span><span style="text-align:center">Score</span><span style="text-align:center">Diff</span><span></span></div>`;
   [...p.scores].reverse().forEach((s2,ri)=>{
@@ -1363,6 +1631,16 @@ function renderPlayerDetail(p){
       <div><div class="ie-lbl">Holes</div><div class="ie-val">${is9?'9-hole':'18-hole'}</div></div>
       ${s2.date?`<div style="grid-column:span 3"><div class="ie-lbl">Date played</div><div class="ie-val" style="font-size:13px">${fmtDate(s2.date)}</div></div>`:''}
       ${isCounting?`<div style="grid-column:span 3;padding:8px 10px;background:rgba(201,168,76,.1);border-radius:6px;border:0.5px solid rgba(201,168,76,.25)"><div style="font-size:11px;color:var(--gold);font-weight:600">✦ Counting toward Handicap Index</div></div>`:''}
+      <div class="icard-actions">
+        <button class="btn-edit" onclick="event.stopPropagation();ES('${p.id}',${oi})">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11.5L3 8.5L9 2.5L11.5 5L5.5 11L2 11.5Z"/><path d="M8 3.5L10.5 6"/></svg>
+          Edit
+        </button>
+        <button class="btn-edit danger" onclick="event.stopPropagation();DS('${p.id}',${oi})">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h8M5.5 4V2.5h3V4M4.5 4l.5 7h4l.5-7"/></svg>
+          Delete
+        </button>
+      </div>
     </div>`;
   });
   return h+`</div>`;
@@ -1715,27 +1993,29 @@ function renderCourses(){
 // ── MODALS ────────────────────────────────────────────────────────────────────
 function renderScoreModal(p){
   const un=[...new Set(S.courses.map(c=>c.name))].sort();
+  const isEdit = EDIT_IDX!==null && p.scores[EDIT_IDX];
+  const existing = isEdit ? p.scores[EDIT_IDX] : null;
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
-    <div class="mo-title">Add Round — ${p.name}</div>
+    <div class="mo-title">${isEdit?'Edit Round':'Add Round'} — ${p.name}</div>
     <div class="fr"><label class="fl">Course</label>
-      <select id="mc" onchange="UM()"><option value="">Select a course…</option>${un.map(n=>`<option>${n}</option>`).join('')}</select>
+      <select id="mc" onchange="UM()"><option value="">Select a course…</option>${un.map(n=>`<option${existing&&existing.course===n?' selected':''}>${n}</option>`).join('')}</select>
     </div>
     <div class="fr" id="mtr" style="display:none"><label class="fl">Tee</label><div id="mtc"></div></div>
     <div id="mci" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div><label class="fl">Gross Score</label>
-        <input type="number" id="msc" min="1" max="250" placeholder="e.g. 87" oninput="UM()">
+        <input type="number" id="msc" min="1" max="250" placeholder="e.g. 87" oninput="UM()" value="${existing?existing.score:''}">
       </div>
       <div><label class="fl">Date Played</label>
-        <input type="date" id="msdate">
+        <input type="date" id="msdate" value="${existing&&existing.date?existing.date:''}">
       </div>
     </div>
     <div id="mdp" style="display:none;padding:11px 14px;background:var(--parchment);border-radius:var(--r);margin-bottom:14px;font-size:13px"></div>
     <div id="mer" style="color:var(--danger);font-size:13px;margin-bottom:12px;display:none"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn-s" onclick="CM()">Cancel</button>
-      <button class="btn-p" onclick="SS('${p.id}')">Save Round</button>
+      <button class="btn-p" onclick="SS('${p.id}')">${isEdit?'Save Changes':'Save Round'}</button>
     </div>
   </div></div>`;
 }
@@ -2016,8 +2296,8 @@ window.OP=id=>{PID=id;render();};
 window.CP=()=>{PID=null;MOD=null;OPEN_SCORE=null;render();};
 window.OT=id=>{TID=id;render();};
 window.CT=()=>{TID=null;render();};
-window.OM=m=>{MOD=m;render();};
-window.CM=()=>{MOD=null;TRN_ROUNDS=1;render();};
+window.OM=m=>{if(m==='score')EDIT_IDX=null; MOD=m;render();};
+window.CM=()=>{MOD=null;TRN_ROUNDS=1;EDIT_IDX=null;render();};
 window.TC=i=>{OPEN_COURSE=OPEN_COURSE===i?null:i;render();};
 window.TSC=(pid,idx)=>{OPEN_SCORE=(OPEN_SCORE&&OPEN_SCORE.pid===pid&&OPEN_SCORE.idx===idx)?null:{pid,idx};render();};
 
@@ -2189,8 +2469,13 @@ window.UM=()=>{
   const tees=S.courses.filter(c=>c.name===cn).map(c=>c.tee);
   let tee=tees[0];
   tr.style.display='block';
+  // If editing, prefer the tee from the existing round when populating
+  const editP = (EDIT_IDX!==null && PID) ? S.players.find(p=>p.id===PID) : null;
+  const editTee = (editP && editP.scores[EDIT_IDX] && editP.scores[EDIT_IDX].course===cn) ? editP.scores[EDIT_IDX].tee : null;
   if(tees.length>1){
-    if(!document.getElementById('mts'))tc.innerHTML=`<select id="mts" onchange="UM()">${tees.map(t=>`<option>${t}</option>`).join('')}</select>`;
+    if(!document.getElementById('mts')){
+      tc.innerHTML=`<select id="mts" onchange="UM()">${tees.map(t=>`<option${t===editTee?' selected':''}>${t}</option>`).join('')}</select>`;
+    }
     tee=document.getElementById('mts')?.value||tees[0];
   }else tc.innerHTML=`<div style="padding:10px 13px;background:var(--parchment);border-radius:var(--r);font-size:14px;color:var(--text2)">${tee}</div>`;
   const c=S.courses.find(x=>x.name===cn&&x.tee===tee);
@@ -2222,8 +2507,20 @@ window.SS=pid=>{
   if(!s||s<1||s>250){er.textContent='Enter a valid score (1–250).';er.style.display='block';return;}
   const entry={course:cn,tee,score:s};
   if(dateVal)entry.date=dateVal;
-  upd({...S,players:S.players.map(p=>p.id===pid?{...p,scores:[...p.scores,entry]}:p)});
+  if(EDIT_IDX!==null){
+    // EDIT mode: replace the round at EDIT_IDX
+    upd({...S,players:S.players.map(p=>p.id===pid?{...p,scores:p.scores.map((sc,i)=>i===EDIT_IDX?entry:sc)}:p)});
+    EDIT_IDX=null;
+  }else{
+    // ADD mode: append
+    upd({...S,players:S.players.map(p=>p.id===pid?{...p,scores:[...p.scores,entry]}:p)});
+  }
   MOD=null;
+};
+
+window.ES=(pid,idx)=>{
+  // Open the score modal in edit mode for a specific round
+  PID=pid; EDIT_IDX=idx; MOD='score'; render();
 };
 
 window.DS=(pid,idx)=>{
