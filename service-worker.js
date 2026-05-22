@@ -1,6 +1,6 @@
 // The Club — Service Worker
 // Bump CACHE_VERSION when you ship app updates and want users to get them.
-const CACHE_VERSION = 'whs-club-v1';
+const CACHE_VERSION = 'whs-club-v2';
 
 const APP_SHELL = [
   './',
@@ -8,7 +8,8 @@ const APP_SHELL = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './icon-180.png'
+  './icon-180.png',
+  './trophy.png'
 ];
 
 // Install — pre-cache the shell.
