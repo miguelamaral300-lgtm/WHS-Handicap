@@ -992,16 +992,13 @@ function calcHI(scores,courses){
     if(s.date){const sd=new Date(s.date);if(sd<twoYearsAgo)return;}
     const d=calcDiff(s.score,c.rating,c.slope);
     const is9=c.rating<40;
-    records.push({i,d,is9,dateMs:s.date?new Date(s.date).getTime():null});
+    records.push({i,d,is9});
   });
 
-  // Chronological order — dated rounds first by date, undated keep insertion order at the end.
-  records.sort((a,b)=>{
-    if(a.dateMs!==null&&b.dateMs!==null)return a.dateMs-b.dateMs;
-    if(a.dateMs!==null)return -1;
-    if(b.dateMs!==null)return 1;
-    return a.i-b.i;
-  });
+  // Chronological order = insertion order. The original index `i` IS the chronology:
+  // users add scores roughly in the order they're played. Dates are stored when known
+  // (for display + 2-year filtering), but we don't reorder by them — doing so would
+  // misplace recently-dated rounds in front of an older un-dated history.
 
   // ─── Process chronologically, converting 9-hole rounds via the WHS 2024 expected-score formula ───
   // Verified against the DGV Handicap-Regeln 2024 (official German Federation publication) and
