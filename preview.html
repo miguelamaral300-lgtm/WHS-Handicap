@@ -1000,28 +1000,70 @@ function calcHI(scores,courses){
   // (for display + 2-year filtering), but we don't reorder by them — doing so would
   // misplace recently-dated rounds in front of an older un-dated history.
 
-  // ─── Process chronologically, converting 9-hole rounds via the WHS 2024 expected-score formula ───
-  // Verified against the DGV Handicap-Regeln 2024 (official German Federation publication) and
-  // both published USGA worked examples:
-  //   Expected 9-hole Score Differential = 0.52 × HI_at_time + 1.2
-  //   18-hole Differential for a 9-hole round = 9-hole differential played + expected differential
-  // HI_at_time = the player's current HI computed from PRIOR effective differentials.
-  // For a brand-new player with no prior HI, use 54.0 (the WHS maximum starting HI).
+  // ─── Process records in insertion order, with hybrid warm-up logic ───
+  //
+  // OFFICIAL R&A GB&I GUIDANCE (verbatim):
+  //   "For the purpose of the initial award of a Handicap Index two 9-hole scores are combined."
+  //
+  // So:
+  //   • Warm-up phase (first 54 holes posted): use the legacy pairing method for 9-hole rounds.
+  //     18-hole rounds become differentials directly. This produces the initial Handicap Index
+  //     once 54 holes have been posted (= 3 effective differentials).
+  //   • Post warm-up: switch to the 2024 expected-score formula (0.52 × HI + 1.2).
+  //   • Orphan 9-hole left over at warm-up end: convert via expected-score using the just-
+  //     established HI, so no posted scores are wasted.
   const eff=[];
-  const meta={};   // map: original score index → display metadata for the info card
+  const meta={};
+  let cumulativeHoles=0;
+  let pendingNine=[];   // unpaired 9-hole rounds during warm-up, awaiting partner
   for(const r of records){
-    let dToInsert,m;
-    if(r.is9){
-      const hi=priorHI(eff);
-      const expected9=rd(0.52*hi+1.2);
-      dToInsert=rd(r.d+expected9);
-      m={is9:true,ninehDiff:r.d,expected:expected9,hiAtTime:rd(hi),eighteenhDiff:dToInsert};
+    const holes=r.is9?9:18;
+
+    if(cumulativeHoles<54){
+      // WARM-UP PHASE — legacy pairing
+      if(r.is9){
+        pendingNine.push(r);
+        if(pendingNine.length>=2){
+          const a=pendingNine.shift(), b=pendingNine.shift();
+          const combined=rd(a.d+b.d);
+          eff.push({i:Math.max(a.i,b.i), d:combined});
+          meta[a.i]={is9:true, ninehDiff:a.d, paired:true, pairedWithIdx:b.i, eighteenhDiff:combined, warmup:true};
+          meta[b.i]={is9:true, ninehDiff:b.d, paired:true, pairedWithIdx:a.i, eighteenhDiff:combined, warmup:true};
+        }else{
+          meta[r.i]={is9:true, ninehDiff:r.d, pendingPair:true, warmup:true};
+        }
+      }else{
+        eff.push({i:r.i, d:r.d});
+        meta[r.i]={is9:false, eighteenhDiff:r.d, warmup:true};
+      }
     }else{
-      dToInsert=r.d;
-      m={is9:false,eighteenhDiff:dToInsert};
+      // POST WARM-UP — 2024 expected-score formula
+      if(r.is9){
+        const hi=priorHI(eff);
+        const expected9=rd(0.52*hi+1.2);
+        const dToInsert=rd(r.d+expected9);
+        eff.push({i:r.i, d:dToInsert});
+        meta[r.i]={is9:true, ninehDiff:r.d, expected:expected9, hiAtTime:rd(hi), eighteenhDiff:dToInsert, warmup:false};
+      }else{
+        eff.push({i:r.i, d:r.d});
+        meta[r.i]={is9:false, eighteenhDiff:r.d, warmup:false};
+      }
     }
-    eff.push({i:r.i,d:dToInsert});
-    meta[r.i]=m;
+
+    cumulativeHoles+=holes;
+
+    // The moment we cross 54 holes, the warm-up ends. Convert any leftover orphan
+    // 9-hole rounds via expected-score using the now-established HI.
+    if(cumulativeHoles>=54 && pendingNine.length>0){
+      for(const orphan of pendingNine){
+        const hi=priorHI(eff);
+        const expected9=rd(0.52*hi+1.2);
+        const dToInsert=rd(orphan.d+expected9);
+        eff.push({i:orphan.i, d:dToInsert});
+        meta[orphan.i]={is9:true, ninehDiff:orphan.d, expected:expected9, hiAtTime:rd(hi), eighteenhDiff:dToInsert, warmup:true, convertedAtWarmupEnd:true};
+      }
+      pendingNine=[];
+    }
   }
 
   // ─── Take the most recent 20 effective differentials ───
@@ -1030,7 +1072,14 @@ function calcHI(scores,courses){
   const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
   const sorted=[...r20].sort((a,b)=>a.d-b.d);
   const counting=sorted.slice(0,n);
-  const countingIdx=new Set(counting.map(x=>x.i));
+  const countingIdx=new Set();
+  counting.forEach(x=>{
+    countingIdx.add(x.i);
+    // If this effective entry came from a warm-up pair, mark BOTH original
+    // 9-hole rounds as counting so both rows light up gold.
+    const m=meta[x.i];
+    if(m && m.paired && m.pairedWithIdx!==undefined) countingIdx.add(m.pairedWithIdx);
+  });
   const avg=counting.reduce((s,x)=>s+x.d,0)/n;
 
   return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),countingIdx,meta};
@@ -1474,16 +1523,41 @@ function renderPlayerDetail(p){
       <button class="btn-ic" onclick="event.stopPropagation();DS('${p.id}',${oi})">&times;</button>
     </div>`;
     if(isO){
-      // Build the math-breakdown panel: for 9-hole rounds, show the expected-score conversion
-      // (WHS 2024). For 18-hole rounds, just confirm counting status if relevant.
+      // Build the math-breakdown panel for 9-hole rounds. Three distinct states under WHS:
+      //   1. Warm-up paired   — two 9-hole rounds combined into one 18-hole differential (legacy)
+      //   2. Warm-up pending  — 9-hole round during initial 54 holes, awaiting partner
+      //   3. Post-warmup OR converted-at-warmup-end — uses 2024 expected-score formula
       let breakdown='';
       if(is9 && m && m.is9){
-        breakdown=`<div style="grid-column:span 3;padding:10px 12px;background:rgba(201,168,76,.08);border-radius:6px;border:0.5px solid rgba(201,168,76,.22);font-size:11px;line-height:1.6">
-          <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);font-size:13px;margin-bottom:6px;letter-spacing:.3px">WHS 9-hole → 18-hole conversion</div>
-          <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>9-hole differential (this round)</span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.ninehDiff.toFixed(1)}</span></div>
-          <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>Expected differential for missing 9<br><span style="font-size:10px;color:var(--text3)">(HI ${m.hiAtTime.toFixed(1)} at the time &times; 0.52 + 1.2)</span></span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.expected.toFixed(1)}</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:0.5px solid rgba(201,168,76,.25);color:${isCounting?'var(--gold)':'var(--text)'};font-weight:700"><span>18-hole Score Differential${isCounting?' ✦ counting':''}</span><span style="font-variant-numeric:tabular-nums">${m.eighteenhDiff.toFixed(1)}</span></div>
-        </div>`;
+        if(m.paired){
+          // State 1: warm-up pair
+          const partner = p.scores[m.pairedWithIdx];
+          breakdown=`<div style="grid-column:span 3;padding:10px 12px;background:rgba(201,168,76,.08);border-radius:6px;border:0.5px solid rgba(201,168,76,.22);font-size:11px;line-height:1.6">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);font-size:13px;margin-bottom:6px;letter-spacing:.3px">Initial Handicap Index — paired 9-hole rounds</div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px">Per R&amp;A guidance: during your first 54 holes, two 9-hole scores are combined to form a Score Differential.</div>
+            <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>This 9-hole differential</span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.ninehDiff.toFixed(1)}</span></div>
+            <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>Paired with: ${partner?partner.course:'(round '+(m.pairedWithIdx+1)+')'}</span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${rd(m.eighteenhDiff-m.ninehDiff,1).toFixed(1)}</span></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:0.5px solid rgba(201,168,76,.25);color:${isCounting?'var(--gold)':'var(--text)'};font-weight:700"><span>Combined 18-hole Differential${isCounting?' ✦ counting':''}</span><span style="font-variant-numeric:tabular-nums">${m.eighteenhDiff.toFixed(1)}</span></div>
+          </div>`;
+        } else if(m.pendingPair){
+          // State 2: warm-up unpaired
+          breakdown=`<div style="grid-column:span 3;padding:10px 12px;background:rgba(160,160,160,.05);border-radius:6px;border:0.5px solid rgba(160,160,160,.22);font-size:11px;line-height:1.6">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text2);font-size:13px;margin-bottom:6px;letter-spacing:.3px">Awaiting partner — Initial Handicap Index period</div>
+            <div style="font-size:10px;color:var(--text3)">This 9-hole round is part of your first 54 holes (Initial Handicap Index period). Per R&amp;A guidance, it will be combined with another 9-hole round to form one Score Differential.</div>
+            <div style="margin-top:8px;display:flex;justify-content:space-between;color:var(--text2)"><span>9-hole differential</span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.ninehDiff.toFixed(1)}</span></div>
+          </div>`;
+        } else {
+          // State 3: post-warmup OR converted-at-warmup-end — show expected-score math
+          const headerLabel = m.convertedAtWarmupEnd
+            ? 'Initial Handicap Index established — converted via WHS expected-score'
+            : 'WHS 9-hole → 18-hole conversion';
+          breakdown=`<div style="grid-column:span 3;padding:10px 12px;background:rgba(201,168,76,.08);border-radius:6px;border:0.5px solid rgba(201,168,76,.22);font-size:11px;line-height:1.6">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);font-size:13px;margin-bottom:6px;letter-spacing:.3px">${headerLabel}</div>
+            <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>9-hole differential (this round)</span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.ninehDiff.toFixed(1)}</span></div>
+            <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>Expected differential for missing 9<br><span style="font-size:10px;color:var(--text3)">(HI ${m.hiAtTime.toFixed(1)} at the time &times; 0.52 + 1.2)</span></span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.expected.toFixed(1)}</span></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:0.5px solid rgba(201,168,76,.25);color:${isCounting?'var(--gold)':'var(--text)'};font-weight:700"><span>18-hole Score Differential${isCounting?' ✦ counting':''}</span><span style="font-variant-numeric:tabular-nums">${m.eighteenhDiff.toFixed(1)}</span></div>
+          </div>`;
+        }
       }else if(isCounting){
         breakdown=`<div style="grid-column:span 3;padding:8px 10px;background:rgba(201,168,76,.1);border-radius:6px;border:0.5px solid rgba(201,168,76,.25)"><div style="font-size:11px;color:var(--gold);font-weight:600">✦ Counting toward Handicap Index</div></div>`;
       }
