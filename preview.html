@@ -982,6 +982,7 @@ function priorHI(eff){
 }
 
 function calcHI(scores,courses){
+  scores=scores||[];
   const lk={};courses.forEach(c=>{lk[c.name+c.tee]=c;});
   const twoYearsAgo=new Date();twoYearsAgo.setFullYear(twoYearsAgo.getFullYear()-2);
 
@@ -1135,6 +1136,7 @@ function calcPlayerStats(p,courses){
 // ── HANDICAP TREND CHART (hand-drawn SVG, matches the gold/forest palette) ──
 function renderHITrendChart(p,courses){
   const pts=[];
+  if(!p.scores) return '';
   for(let i=3;i<=p.scores.length;i++){
     const r=calcHI(p.scores.slice(0,i),courses);
     if(r.hi!==null) pts.push({n:i,hi:r.hi});
@@ -1247,7 +1249,8 @@ onValue(dbRef,snap=>{
       return t;
     });
     S={
-      players:d.players,courses:d.courses,
+      players:(d.players||[]).map(p=>({...p,scores:p.scores||[]})),
+      courses:d.courses,
       tournaments,upcoming:d.upcoming||[],
       contests:d.contests||[],purse:d.purse||[]
     };
@@ -1505,7 +1508,7 @@ function renderPlayerDetail(p){
     <button class="btn-p" onclick="OM('score')">+ Add Round</button>
   </div>
   <p style="font-size:11px;color:var(--text3);margin-bottom:12px">🟡 Gold = counting toward Handicap Index &nbsp;·&nbsp; Tap row to expand &middot; Edit from there</p>`;
-  if(!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
+  if(!p.scores||!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
   h+=`<div class="ccard"><div class="sthead"><span>Course</span><span style="text-align:center">Date</span><span style="text-align:center">Score</span><span style="text-align:center">Diff</span><span></span></div>`;
   [...p.scores].reverse().forEach((s2,ri)=>{
     const oi=p.scores.length-1-ri,c=L[s2.course+s2.tee];
