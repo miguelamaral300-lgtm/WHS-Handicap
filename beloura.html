@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0A1A0E">
+<title>Beloura Match · 21 June</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A1A0E; --bg2:#0F2218; --bg3:#060E08;
+  --panel:rgba(255,255,255,.035); --panel2:rgba(255,255,255,.055);
+  --line:rgba(201,168,76,.16);
+  --gold:#C9A84C; --gold-lt:#E0C870; --gold-dim:rgba(201,168,76,.55);
+  --teamA:#C9A84C; --teamA-glow:rgba(201,168,76,.22);
+  --teamB:#6FA8C7; --teamB-glow:rgba(111,168,199,.22);
+  --text:#EAE6D8; --text2:#9DA89D; --text3:#65715F;
+  --win:#7FB069; --tie:#9DA89D;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',system-ui,sans-serif;overscroll-behavior-y:none}
+body{min-height:100vh;background:
+  radial-gradient(120% 60% at 50% -10%, #12271A 0%, var(--bg) 55%, var(--bg3) 100%);
+  padding:0 0 60px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:540px;margin:0 auto;padding:0 16px}
+
+/* ── Header ── */
+.hd{text-align:center;padding:26px 0 14px}
+.hd .eyebrow{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--text3);font-weight:600}
+.hd h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-style:italic;font-size:38px;line-height:1.02;color:var(--gold);letter-spacing:.5px;margin:7px 0 4px;text-shadow:0 0 34px rgba(201,168,76,.25)}
+.hd .sub{font-size:11.5px;letter-spacing:1.5px;color:var(--text2);text-transform:uppercase}
+.hd .gear{position:absolute;top:24px;right:18px;width:34px;height:34px;border:0.5px solid var(--line);border-radius:50%;background:var(--panel);color:var(--gold);font-size:15px;display:grid;place-items:center;cursor:pointer}
+.hd-rel{position:relative}
+
+/* ── Scoreboard ── */
+.board{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;margin:10px 0 6px}
+.team{border-radius:16px;padding:15px 12px 14px;position:relative;overflow:hidden;border:0.5px solid var(--line);background:var(--panel)}
+.team.A{box-shadow:inset 0 0 0 1px rgba(201,168,76,.10), 0 0 40px -28px var(--teamA-glow)}
+.team.B{box-shadow:inset 0 0 0 1px rgba(111,168,199,.10), 0 0 40px -28px var(--teamB-glow)}
+.team.lead.A{background:linear-gradient(165deg, rgba(201,168,76,.14), rgba(201,168,76,.03));border-color:rgba(201,168,76,.4)}
+.team.lead.B{background:linear-gradient(165deg, rgba(111,168,199,.14), rgba(111,168,199,.03));border-color:rgba(111,168,199,.4)}
+.team .tag{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);font-weight:600}
+.team .nm{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:19px;line-height:1.05;margin:3px 0 2px}
+.team.A .nm{color:var(--gold-lt)} .team.B .nm{color:var(--teamB)}
+.team .hcp{font-size:10px;color:var(--text3);letter-spacing:.5px;margin-bottom:9px}
+.team .net{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:40px;line-height:.9;letter-spacing:-.5px}
+.team.A .net{color:var(--gold)} .team.B .net{color:var(--teamB)}
+.team .netlbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:3px}
+.vs{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:54px}
+.vs .v{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--text3)}
+.vs .thru{font-size:9px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;text-align:center;line-height:1.3}
+.lead-banner{text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;padding:7px 0 2px;letter-spacing:.3px}
+.lead-banner.A{color:var(--gold-lt)} .lead-banner.B{color:var(--teamB)} .lead-banner.tie{color:var(--text2)}
+
+/* ── Skins strip ── */
+.skins{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin:12px 0 4px;align-items:center}
+.skinbox{border:0.5px solid var(--line);border-radius:12px;background:var(--panel);padding:10px 12px;text-align:center}
+.skinbox .c{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:23px}
+.skinbox.A .c{color:var(--gold)} .skinbox.B .c{color:var(--teamB)}
+.skinbox .l{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:1px}
+.skinbox .e{font-size:12px;color:var(--text2);font-weight:600;margin-top:3px}
+.pot{text-align:center;min-width:74px}
+.pot .pv{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:20px;color:var(--gold-lt)}
+.pot .pl{font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);line-height:1.3}
+.pot.live .pv{animation:potpulse 2.2s ease-in-out infinite}
+@keyframes potpulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── Section heading ── */
+.sechd{display:flex;align-items:center;gap:10px;margin:24px 4px 12px}
+.sechd .t{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);font-weight:600;white-space:nowrap}
+.sechd .ln{flex:1;height:0.5px;background:var(--line)}
+
+/* ── Hole cards ── */
+.hole{border:0.5px solid var(--line);border-radius:14px;background:var(--panel);margin-bottom:9px;overflow:hidden;transition:border-color .2s}
+.hole.done{border-color:rgba(201,168,76,.28)}
+.hole-top{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:11px 14px 8px}
+.hnum{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:25px;color:var(--gold);line-height:1;min-width:30px}
+.hmeta{font-size:10.5px;color:var(--text3);letter-spacing:.5px;line-height:1.5}
+.hmeta b{color:var(--text2);font-weight:600}
+.hwin{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 9px;border-radius:20px;white-space:nowrap}
+.hwin.A{background:rgba(201,168,76,.16);color:var(--gold-lt)}
+.hwin.B{background:rgba(111,168,199,.16);color:var(--teamB)}
+.hwin.tie{background:rgba(157,168,157,.12);color:var(--text2)}
+.hwin.none{opacity:0}
+.hole-body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.cell{background:var(--bg2);padding:10px 12px 12px}
+.cell .ct{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.cell.A .ct b{color:var(--gold-dim)} .cell.B .ct b{color:var(--teamB)}
+.cell .stk{font-size:9px;color:var(--text3)}
+.cell .row{display:flex;align-items:baseline;gap:8px;margin-top:7px}
+.cell input{width:62px;background:var(--bg3);border:0.5px solid var(--line);border-radius:9px;color:var(--text);font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:24px;text-align:center;padding:5px 0;outline:none}
+.cell.A input:focus{border-color:var(--gold)} .cell.B input:focus{border-color:var(--teamB)}
+.cell .net{font-size:11px;color:var(--text2);letter-spacing:.3px}
+.cell .net b{font-family:'Barlow Semi Condensed',sans-serif;font-size:15px}
+.cell.A .net b{color:var(--gold-lt)} .cell.B .net b{color:var(--teamB)}
+.cell.winrow{position:relative}
+.cell.winrow.A{box-shadow:inset 3px 0 0 var(--gold)}
+.cell.winrow.B{box-shadow:inset 3px 0 0 var(--teamB)}
+
+/* ── Settings modal ── */
+.modal{position:fixed;inset:0;background:rgba(4,9,5,.78);backdrop-filter:blur(6px);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.modal.open{display:flex}
+.sheet{width:100%;max-width:540px;background:var(--bg2);border-top-left-radius:22px;border-top-right-radius:22px;border:0.5px solid var(--line);padding:20px 18px calc(28px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
+.sheet h2{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:24px;color:var(--gold);text-align:center;margin-bottom:4px}
+.sheet .sd{text-align:center;font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:18px}
+.fld{margin-bottom:15px}
+.fld label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);font-weight:600;display:block;margin-bottom:6px}
+.fld input{width:100%;background:var(--bg3);border:0.5px solid var(--line);border-radius:10px;color:var(--text);font-size:16px;font-weight:600;padding:11px 13px;outline:none}
+.fld input:focus{border-color:var(--gold)}
+.fld .hint{font-size:10.5px;color:var(--text3);margin-top:5px;line-height:1.4}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;border:none;border-radius:11px;padding:13px;font-family:'Barlow',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;cursor:pointer;margin-top:6px}
+.btn-g{background:linear-gradient(135deg,var(--gold),#B08F3C);color:#1A1306}
+.btn-x{background:transparent;color:var(--text3);border:0.5px solid var(--line);margin-top:10px}
+.btn-danger{background:transparent;color:#C77;border:0.5px solid rgba(204,119,119,.3);margin-top:18px;font-size:12px}
+
+/* ── Footer ── */
+.foot{text-align:center;font-size:10.5px;color:var(--text3);line-height:1.7;margin-top:24px;padding:0 10px}
+.foot .rule{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--gold-dim);margin-bottom:6px}
+.syncdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--win);margin-right:5px;vertical-align:middle}
+.syncdot.off{background:#A66}
+
+/* result banner when complete */
+.final{text-align:center;border:0.5px solid rgba(201,168,76,.4);border-radius:16px;background:linear-gradient(165deg,rgba(201,168,76,.12),rgba(201,168,76,.02));padding:18px;margin:8px 0 4px;display:none}
+.final.show{display:block}
+.final .ft{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);font-weight:600}
+.final .fw{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:30px;color:var(--gold);margin:5px 0;text-shadow:0 0 30px rgba(201,168,76,.3)}
+.final .fd{font-size:12px;color:var(--text2)}
+</style>
+</head>
+<body>
+<div class="wrap hd-rel">
+  <div class="gear" id="gear" onclick="openSettings()">⚙</div>
+  <header class="hd">
+    <div class="eyebrow">The Club · Match Day</div>
+    <h1 id="title">The Beloura Match</h1>
+    <div class="sub">Texas Scramble · 21 June 2026 · Quinta da Beloura</div>
+  </header>
+
+  <div class="final" id="final"></div>
+
+  <div class="board" id="board"></div>
+  <div class="lead-banner" id="leadBanner"></div>
+
+  <div class="skins" id="skins"></div>
+
+  <div class="sechd"><span class="t">Hole by Hole</span><span class="ln"></span></div>
+  <div id="holes"></div>
+
+  <div class="foot">
+    <div class="rule">Net stroke play decides the match · skins ride hole to hole</div>
+    <div><span class="syncdot" id="syncdot"></span><span id="synctxt">Live — synced with the group</span></div>
+    <div style="margin-top:6px">Losing team helps cover the winners' dinner.</div>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h2>Match Settings</h2>
+    <div class="sd">Shared with everyone live</div>
+    <div class="fld">
+      <label>Skin value per hole (€)</label>
+      <input type="number" id="setSkin" inputmode="decimal" step="0.5" min="0">
+      <div class="hint">Each hole is worth this much. Tie a hole and the money carries to the next (classic skins).</div>
+    </div>
+    <div class="two">
+      <div class="fld">
+        <label>Team A handicap</label>
+        <input type="number" id="setHcpA" inputmode="numeric">
+        <div class="hint" id="hintA"></div>
+      </div>
+      <div class="fld">
+        <label>Team B handicap</label>
+        <input type="number" id="setHcpB" inputmode="numeric">
+        <div class="hint" id="hintB"></div>
+      </div>
+    </div>
+    <button class="btn btn-g" onclick="saveSettings()">Save settings</button>
+    <button class="btn btn-x" onclick="closeSettings()">Cancel</button>
+    <button class="btn btn-danger" onclick="resetMatch()">Reset match — clear all scores</button>
+  </div>
+</div>
+
+<script>
+// ───────────────────────── COURSE DATA (Quinta da Beloura, Yellow / Amarelas-Homens) ─────────────────────────
+// Par + Stroke Index verified against the official scorecard AND the DataGolf federation stats.
+const HOLES=[
+  {h:1,par:5,si:3},{h:2,par:4,si:13},{h:3,par:3,si:15},{h:4,par:4,si:11},{h:5,par:3,si:17},
+  {h:6,par:5,si:9},{h:7,par:4,si:1},{h:8,par:4,si:5},{h:9,par:4,si:7},
+  {h:10,par:5,si:4},{h:11,par:4,si:12},{h:12,par:3,si:18},{h:13,par:4,si:10},{h:14,par:4,si:16},
+  {h:15,par:4,si:8},{h:16,par:5,si:2},{h:17,par:3,si:14},{h:18,par:4,si:6}
+];
+const TOTAL_PAR=72;
+
+// Player Course Handicaps at Beloura (HI × 124/113 + (69.1 − 72)), from current Handicap Indexes.
+const ROSTER={
+  A:{name:'Miguel & Toni', members:'Miguel (21) · António (37)'},
+  B:{name:'Branco & Xavi', members:'Branco (28) · Xavier (37)'}
+};
+// Official 2-person scramble allowance: 35% low CH + 15% high CH, rounded.
+//  A: 0.35×21 + 0.15×37 = 12.9 → 13   ·   B: 0.35×28 + 0.15×37 = 15.35 → 15
+const DEFAULTS={ skinValue:5, hcpA:13, hcpB:15 };
+
+// ───────────────────────── FIREBASE (REST, shared with the main app's database) ─────────────────────────
+const DB='https://whs-handicap-default-rtdb.firebaseio.com/beloura_match';
+
+// ───────────────────────── STATE ─────────────────────────
+let STATE={ settings:{...DEFAULTS}, scores:{} };
+let dirtyHole=null;        // hole input currently focused (don't overwrite while typing)
+
+// strokes a team receives on a hole given its team handicap + the hole's stroke index
+function strokesOn(teamHcp, si){
+  const base=Math.floor(teamHcp/18);
+  return base + (si <= (((teamHcp%18)+18)%18) ? 1 : 0);
+}
+
+function compute(){
+  const sv=Number(STATE.settings.skinValue)||0;
+  const hA=Number(STATE.settings.hcpA), hB=Number(STATE.settings.hcpB);
+  let netA=0,netB=0,thru=0,skinsA=0,skinsB=0,valA=0,valB=0,pot=0;
+  const res=[];
+  for(const ho of HOLES){
+    const sc=STATE.scores?.[ho.h]||{};
+    const gA=sc.a, gB=sc.b;
+    const stkA=strokesOn(hA,ho.si), stkB=strokesOn(hB,ho.si);
+    let nA=null,nB=null,winner='none',award=null;
+    const bothIn = (gA!=null && gA!=='' && gB!=null && gB!=='');
+    if(bothIn){
+      nA=Number(gA)-stkA; nB=Number(gB)-stkB;
+      netA+=nA; netB+=nB; thru++;
+      const thisPot=sv+pot;
+      if(nA<nB){ winner='A'; skinsA++; valA+=thisPot; award={team:'A',amt:thisPot}; pot=0; }
+      else if(nB<nA){ winner='B'; skinsB++; valB+=thisPot; award={team:'B',amt:thisPot}; pot=0; }
+      else { winner='tie'; pot=thisPot; award={team:'carry',amt:thisPot}; }
+    }
+    res.push({ho,gA,gB,stkA,stkB,nA,nB,winner,award,bothIn});
+  }
+  return {netA,netB,thru,skinsA,skinsB,valA,valB,pot,res};
+}
+
+const eur=n=>'€'+(Math.round(n*100)/100).toString().replace(/\.00$/,'');
+
+function render(){
+  const c=compute();
+  const leadA = c.netA<c.netB, tie = c.netA===c.netB;
+
+  // Scoreboard
+  document.getElementById('board').innerHTML=`
+    <div class="team A ${!tie&&leadA?'lead':''}">
+      <div class="tag">Team A</div>
+      <div class="nm">${ROSTER.A.name}</div>
+      <div class="hcp">plays off ${STATE.settings.hcpA} · ${ROSTER.A.members}</div>
+      <div class="net">${c.thru?c.netA:'—'}</div>
+      <div class="netlbl">Net thru ${c.thru}</div>
+    </div>
+    <div class="vs"><div class="v">vs</div><div class="thru">${c.thru}/18<br>holes</div></div>
+    <div class="team B ${!tie&&!leadA&&c.thru?'lead':''}">
+      <div class="tag">Team B</div>
+      <div class="nm">${ROSTER.B.name}</div>
+      <div class="hcp">plays off ${STATE.settings.hcpB} · ${ROSTER.B.members}</div>
+      <div class="net">${c.thru?c.netB:'—'}</div>
+      <div class="netlbl">Net thru ${c.thru}</div>
+    </div>`;
+
+  // Lead banner
+  const lb=document.getElementById('leadBanner');
+  if(!c.thru){ lb.className='lead-banner tie'; lb.textContent='Tee it up — enter the first hole'; }
+  else if(tie){ lb.className='lead-banner tie'; lb.textContent='All square'; }
+  else { const by=Math.abs(c.netA-c.netB); lb.className='lead-banner '+(leadA?'A':'B'); lb.textContent=`${leadA?ROSTER.A.name:ROSTER.B.name} lead by ${by} net`; }
+
+  // Skins
+  document.getElementById('skins').innerHTML=`
+    <div class="skinbox A"><div class="c">${c.skinsA}</div><div class="l">A skins</div><div class="e">${eur(c.valA)}</div></div>
+    <div class="pot ${c.pot>0?'live':''}"><div class="pv">${c.pot>0?eur(c.pot):'—'}</div><div class="pl">${c.pot>0?'in the pot':'no carry'}</div></div>
+    <div class="skinbox B"><div class="c">${c.skinsB}</div><div class="l">B skins</div><div class="e">${eur(c.valB)}</div></div>`;
+
+  // Holes
+  document.getElementById('holes').innerHTML=c.res.map(r=>{
+    const winTag = r.winner==='A'?`<span class="hwin A">A wins ${eur(r.award.amt)}</span>`
+      : r.winner==='B'?`<span class="hwin B">B wins ${eur(r.award.amt)}</span>`
+      : r.winner==='tie'?`<span class="hwin tie">Push · ${eur(r.award.amt)} carries</span>`
+      : `<span class="hwin none">—</span>`;
+    const dots=n=>n>0?'●'.repeat(Math.min(n,3))+(n>3?` +${n-3}`:''):'—';
+    return `<div class="hole ${r.bothIn?'done':''}">
+      <div class="hole-top">
+        <div class="hnum">${r.ho.h}</div>
+        <div class="hmeta">Par <b>${r.ho.par}</b> · S.I. <b>${r.ho.si}</b></div>
+        ${winTag}
+      </div>
+      <div class="hole-body">
+        <div class="cell A ${r.winner==='A'?'winrow A':''}">
+          <div class="ct"><b>Team A</b><span class="stk">stroke: ${dots(r.stkA)}</span></div>
+          <div class="row">
+            <input type="number" inputmode="numeric" min="1" data-h="${r.ho.h}" data-t="a" value="${r.gA??''}" placeholder="–">
+            <span class="net">net <b>${r.nA??'—'}</b></span>
+          </div>
+        </div>
+        <div class="cell B ${r.winner==='B'?'winrow B':''}">
+          <div class="ct"><b>Team B</b><span class="stk">stroke: ${dots(r.stkB)}</span></div>
+          <div class="row">
+            <input type="number" inputmode="numeric" min="1" data-h="${r.ho.h}" data-t="b" value="${r.gB??''}" placeholder="–">
+            <span class="net">net <b>${r.nB??'—'}</b></span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // wire inputs
+  document.querySelectorAll('.cell input').forEach(inp=>{
+    inp.addEventListener('focus',()=>{dirtyHole=inp.dataset.h+inp.dataset.t;});
+    inp.addEventListener('blur',()=>{dirtyHole=null; commitInput(inp);});
+    inp.addEventListener('change',()=>commitInput(inp));
+  });
+
+  // Final result
+  const fin=document.getElementById('final');
+  if(c.thru===18){
+    const winner = tie?null:(leadA?ROSTER.A.name:ROSTER.B.name);
+    fin.className='final show';
+    fin.innerHTML = tie
+      ? `<div class="ft">Full 18 — All Square</div><div class="fw">A tie!</div><div class="fd">Net ${c.netA} apiece · settle the dinner like gentlemen</div>`
+      : `<div class="ft">Match Result · 18 holes</div><div class="fw">${winner}</div><div class="fd">Win by ${Math.abs(c.netA-c.netB)} net · skins: A ${eur(c.valA)} · B ${eur(c.valB)}${c.pot>0?` · ${eur(c.pot)} left in the pot`:''}</div>`;
+  } else { fin.className='final'; }
+}
+
+// ───────────────────────── SYNC ─────────────────────────
+async function commitInput(inp){
+  const h=inp.dataset.h, t=inp.dataset.t;
+  const v=inp.value===''?null:Number(inp.value);
+  STATE.scores[h]=STATE.scores[h]||{};
+  STATE.scores[h][t]=v;
+  render();
+  try{
+    await fetch(`${DB}/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[t]:v})});
+    setSync(true);
+  }catch(e){ setSync(false); }
+}
+
+function setSync(ok){
+  document.getElementById('syncdot').className='syncdot'+(ok?'':' off');
+  document.getElementById('synctxt').textContent = ok?'Live — synced with the group':'Offline — changes save when you reconnect';
+}
+
+async function pull(){
+  try{
+    const d=await fetch(`${DB}.json?t=${Date.now()}`).then(r=>r.json());
+    if(d){
+      if(d.settings) STATE.settings={...DEFAULTS,...d.settings};
+      // merge scores but never clobber the field currently being typed
+      const incoming=d.scores||{};
+      const merged={};
+      for(const ho of HOLES){
+        const k=ho.h, inc=incoming[k]||{}, cur=STATE.scores[k]||{};
+        merged[k]={
+          a: dirtyHole===k+'a' ? cur.a : (inc.a!==undefined?inc.a:cur.a),
+          b: dirtyHole===k+'b' ? cur.b : (inc.b!==undefined?inc.b:cur.b)
+        };
+      }
+      STATE.scores=merged;
+    }
+    setSync(true);
+    if(!document.getElementById('modal').classList.contains('open')) render();
+  }catch(e){ setSync(false); }
+}
+
+async function initIfEmpty(){
+  const d=await fetch(`${DB}.json`).then(r=>r.json()).catch(()=>null);
+  if(!d || !d.settings){
+    await fetch(`${DB}/settings.json`,{method:'PATCH',body:JSON.stringify(DEFAULTS)});
+  }
+}
+
+// ───────────────────────── SETTINGS ─────────────────────────
+function openSettings(){
+  document.getElementById('setSkin').value=STATE.settings.skinValue;
+  document.getElementById('setHcpA').value=STATE.settings.hcpA;
+  document.getElementById('setHcpB').value=STATE.settings.hcpB;
+  document.getElementById('hintA').textContent=`${ROSTER.A.name} · official scramble allowance = 13`;
+  document.getElementById('hintB').textContent=`${ROSTER.B.name} · official scramble allowance = 15`;
+  document.getElementById('modal').classList.add('open');
+}
+function closeSettings(){ document.getElementById('modal').classList.remove('open'); }
+async function saveSettings(){
+  const s={
+    skinValue:Number(document.getElementById('setSkin').value)||0,
+    hcpA:Number(document.getElementById('setHcpA').value),
+    hcpB:Number(document.getElementById('setHcpB').value)
+  };
+  STATE.settings={...STATE.settings,...s};
+  closeSettings(); render();
+  try{ await fetch(`${DB}/settings.json`,{method:'PATCH',body:JSON.stringify(s)}); setSync(true);}catch(e){setSync(false);}
+}
+async function resetMatch(){
+  if(!confirm('Clear all scores for this match? This affects everyone.'))return;
+  STATE.scores={};
+  closeSettings(); render();
+  try{ await fetch(`${DB}/scores.json`,{method:'DELETE'}); setSync(true);}catch(e){setSync(false);}
+}
+
+// ───────────────────────── BOOT ─────────────────────────
+(async()=>{
+  await initIfEmpty();
+  await pull();
+  render();
+  setInterval(pull, 2500);   // near-live sync for the foursome
+})();
+</script>
+</body>
+</html>
