@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1A0E">
+<title>The Club · Course Data Sync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A1A0E;--bg2:#0F2218;--bg3:#071009;--panel:rgba(255,255,255,.04);--line:rgba(201,168,76,.18);
+--gold:#C9A84C;--gold-lt:#E6CE80;--text:#ECE8DA;--text2:#9DA89D;--text3:#647061;--ok:#7FB069;--warn:#D8A24A;--bad:#CF6B5C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(130% 50% at 50% -5%,#14301E 0%,var(--bg) 50%,var(--bg3) 100%);color:var(--text);
+font-family:'Barlow',system-ui,sans-serif;min-height:100vh;padding:28px 16px 60px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto}
+h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:32px;color:var(--gold);text-align:center;letter-spacing:.5px}
+.sub{text-align:center;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:5px 0 24px}
+.card{border:0.5px solid var(--line);border-radius:16px;background:var(--panel);padding:16px;margin-bottom:12px}
+.card h3{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:18px;color:var(--gold-lt);margin-bottom:8px}
+.card p,.card li{font-size:13px;line-height:1.65;color:var(--text2)}
+.card ul{list-style:none}
+.card li{padding:4px 0;border-bottom:0.5px solid rgba(201,168,76,.07)}
+.card li:last-child{border-bottom:none}
+.card li b{color:var(--text)}
+.tag{display:inline-block;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:700;border-radius:20px;padding:2px 9px;margin-left:6px;vertical-align:middle}
+.tag.fix{background:rgba(216,162,74,.15);color:var(--warn)}
+.tag.new{background:rgba(127,176,105,.15);color:var(--ok)}
+.tag.data{background:rgba(201,168,76,.14);color:var(--gold-lt)}
+.btn{width:100%;border:none;border-radius:13px;padding:16px;font-family:'Barlow',sans-serif;font-weight:700;font-size:15px;letter-spacing:.5px;cursor:pointer;background:linear-gradient(135deg,var(--gold),#B08F3C);color:#1A1306;margin-top:8px}
+.btn:disabled{opacity:.45}
+#log{font-size:12.5px;line-height:1.8;color:var(--text2);white-space:pre-wrap;font-variant-numeric:tabular-nums}
+#log .ok{color:var(--ok)} #log .warn{color:var(--warn)} #log .bad{color:var(--bad)} #log b{color:var(--text)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+th{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);text-align:left;padding:5px 6px;border-bottom:0.5px solid var(--line)}
+td{padding:6px;border-bottom:0.5px solid rgba(201,168,76,.07);color:var(--text2)}
+td b{color:var(--text)} td .up{color:var(--bad)} td .down{color:var(--ok)} td .same{color:var(--text3)}
+.done{display:none;text-align:center;border:0.5px solid rgba(127,176,105,.4);border-radius:16px;background:rgba(127,176,105,.07);padding:16px;margin-top:14px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Course Data Sync</h1>
+  <div class="sub">One-time update · 16 July 2026</div>
+
+  <div class="card">
+    <h3>What this will do</h3>
+    <ul>
+      <li><b>Backup</b> your entire database first (timestamped, restorable)</li>
+      <li><b>Lisbon Sports</b> <span class="tag fix">Fix</span> Yellow tee corrected to the official <b>67.8 / 124</b> (currently holds the White figures) &middot; White tee <b>69.2 / 127</b> added</li>
+      <li><b>Hendon GC</b> <span class="tag new">New</span> added with White <b>70.5/127</b>, Yellow <b>69.5/124</b>, Red <b>68.3/125</b></li>
+      <li><b>Benamor</b> <span class="tag new">New</span> hole data stored; tee rating used from the app if present, otherwise flagged</li>
+      <li><b>Hole database</b> <span class="tag data">6 courses</span> par + stroke index for Jamor, Estoril Blue, Lisbon Sports, Beloura, Benamor, Hendon &mdash; powering the upcoming live-scoring feature</li>
+      <li><b>Handicap impact</b> of the Lisbon fix shown below, before &rarr; after, per player</li>
+    </ul>
+  </div>
+
+  <button class="btn" id="go" onclick="run()">Review &amp; apply update</button>
+  <div class="card" id="logcard" style="display:none"><h3>Report</h3><div id="log"></div><div id="hitable"></div></div>
+  <div class="done" id="done">All done — open The Club and pull to refresh. ⛳</div>
+</div>
+
+<script>
+function rd(v,d=1){return Math.round(v*Math.pow(10,d))/Math.pow(10,d);}
+function calcDiff(score,cr,sl){return rd((score-cr)*113/sl);}
+function fmtScore(s){return s===0?'E':s>0?`+${s}`:`${s}`;}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
+function scoreClass(s){return s<0?'under':s>0?'over':'even';}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmtCurrency(n){return'€'+n.toLocaleString('en-GB',{minimumFractionDigits:0});}
+
+// Helper: compute current HI from a list of effective differentials.
+// Used during chronological processing to determine HI for the 9-hole expected calc.
+function priorHI(eff){
+  if(eff.length===0)return 54.0;          // bootstrap: WHS max HI for brand-new player
+  const r20=eff.slice(-20),cnt=r20.length;
+  if(cnt<3)return 54.0;
+  const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
+  const sorted=[...r20].sort((a,b)=>a.d-b.d).slice(0,n);
+  const avg=sorted.reduce((s,x)=>s+x.d,0)/n;
+  return Math.min(avg,54);
+}
+
+function calcDiff(score,cr,sl){return rd((score-cr)*113/sl);}
+function fmtScore(s){return s===0?'E':s>0?`+${s}`:`${s}`;}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
+function scoreClass(s){return s<0?'under':s>0?'over':'even';}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmtCurrency(n){return'€'+n.toLocaleString('en-GB',{minimumFractionDigits:0});}
+
+// Helper: compute current HI from a list of effective differentials.
+// Used during chronological processing to determine HI for the 9-hole expected calc.
+function priorHI(eff){
+  if(eff.length===0)return 54.0;          // bootstrap: WHS max HI for brand-new player
+  const r20=eff.slice(-20),cnt=r20.length;
+  if(cnt<3)return 54.0;
+  const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
+  const sorted=[...r20].sort((a,b)=>a.d-b.d).slice(0,n);
+  const avg=sorted.reduce((s,x)=>s+x.d,0)/n;
+  return Math.min(avg,54);
+}
+
+const WHS=[[3,1],[4,1],[5,1],[6,2],[7,2],[8,2],[9,3],[10,3],[11,3],[12,4],[13,4],[14,4],[15,5],[16,5],[17,6],[18,6],[19,7],[20,8]];
+
+function priorHI(eff){
+  if(eff.length===0)return 54.0;          // bootstrap: WHS max HI for brand-new player
+  const r20=eff.slice(-20),cnt=r20.length;
+  if(cnt<3)return 54.0;
+  const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
+  const sorted=[...r20].sort((a,b)=>a.d-b.d).slice(0,n);
+  const avg=sorted.reduce((s,x)=>s+x.d,0)/n;
+  return Math.min(avg,54);
+}
+
+function calcHI(scores,courses){
+  scores=scores||[];
+  const lk={};courses.forEach(c=>{lk[c.name+c.tee]=c;});
+  const twoYearsAgo=new Date();twoYearsAgo.setFullYear(twoYearsAgo.getFullYear()-2);
+
+  // ─── Build records, filtered to last 2 years ───
+  const records=[];
+  scores.forEach((s,i)=>{
+    const c=lk[s.course+s.tee];if(!c)return;
+    if(s.date){const sd=new Date(s.date);if(sd<twoYearsAgo)return;}
+    const d=calcDiff(s.score,c.rating,c.slope);
+    const is9=c.rating<40;
+    records.push({i,d,is9});
+  });
+
+  // Chronological order = insertion order. The original index `i` IS the chronology:
+  // users add scores roughly in the order they're played. Dates are stored when known
+  // (for display + 2-year filtering), but we don't reorder by them — doing so would
+  // misplace recently-dated rounds in front of an older un-dated history.
+
+  // ─── Process records in insertion order, applying the OFFICIAL WHS 2024 rules ───
+  //
+  // OFFICIAL USGA FAQ (verbatim, also published by USGA's affiliated associations):
+  //   "To establish a Handicap Index, a player must play and post a total of 54 holes,
+  //    which can be made up of 9- and/or 18-hole scores. The use of expected score does
+  //    not come into play until a golfer plays and posts 54 individual hole scores."
+  //   "Once the player has posted scores from a total of 54 holes and an expected score
+  //    can be determined for the player, an 18-hole Score Differential will be calculated
+  //    for each 9-hole score and displayed within their scoring record. At this time the
+  //    player will have established their initial Handicap Index."
+  //
+  // So:
+  //   • Warm-up phase (first 54 holes posted): 18-hole rounds get standard 18-hole
+  //     differentials; 9-hole rounds are stored as raw 9-hole differentials (no expected-
+  //     score conversion yet, no Handicap Index yet).
+  //   • At the 54-hole crossover: ALL stored 9-hole rounds get retroactively converted
+  //     to 18-hole Score Differentials via the expected-score formula. The Handicap Index
+  //     used for that conversion is computed from the just-accumulated record.
+  //   • Post-warmup: 9-hole rounds use the 2024 expected-score formula immediately,
+  //     based on the player's current HI.
+  const eff=[];
+  const meta={};
+  let cumulativeHoles=0;
+  let pendingNine=[];   // 9-hole rounds posted during warmup, awaiting retro conversion
+  let warmupConverted=false;
+
+  for(const r of records){
+    const holes=r.is9?9:18;
+    const inWarmup=cumulativeHoles<54;
+
+    if(inWarmup){
+      // WARM-UP — 9-hole rounds stored unconverted; 18-hole rounds direct
+      if(r.is9){
+        pendingNine.push(r);
+        meta[r.i]={is9:true, ninehDiff:r.d, warmup:true, pendingConversion:true};
+      }else{
+        eff.push({i:r.i, d:r.d});
+        meta[r.i]={is9:false, eighteenhDiff:r.d, warmup:true};
+      }
+    }else{
+      // POST WARM-UP — 2024 expected-score formula for 9-hole rounds
+      if(r.is9){
+        const hi=priorHI(eff);
+        const expected9=rd(0.52*hi+1.2);
+        const dToInsert=rd(r.d+expected9);
+        eff.push({i:r.i, d:dToInsert});
+        meta[r.i]={is9:true, ninehDiff:r.d, expected:expected9, hiAtTime:rd(hi), eighteenhDiff:dToInsert, warmup:false};
+      }else{
+        eff.push({i:r.i, d:r.d});
+        meta[r.i]={is9:false, eighteenhDiff:r.d, warmup:false};
+      }
+    }
+
+    cumulativeHoles+=holes;
+
+    // 54-hole crossover: retroactively convert every stored 9-hole round via expected-score.
+    // The HI input is the player's initial Handicap Index, established at this moment.
+    //  • If warm-up already contains ≥3 18-hole differentials, use those directly.
+    //  • Otherwise (the initial period is mostly/entirely 9-hole rounds) there's nothing
+    //    to bootstrap from, so derive a SELF-CONSISTENT initial HI by iteration: guess an
+    //    HI, convert the pending 9-hole rounds, recompute the HI, and repeat until it
+    //    stabilises. This avoids defaulting to the 54.0 cap, which would wrongly inflate a
+    //    brand-new player's earliest rounds.
+    if(!warmupConverted && cumulativeHoles>=54 && pendingNine.length>0){
+      let warmupHI;
+      if(eff.length>=3){
+        warmupHI=priorHI(eff);
+      }else{
+        warmupHI=54.0;                      // initial guess
+        for(let iter=0; iter<25; iter++){
+          const ex=0.52*warmupHI+1.2;
+          const trial=[...eff];
+          pendingNine.forEach(s=>trial.push({i:s.i, d:rd(s.d+ex)}));
+          const next=priorHI(trial);
+          if(Math.abs(next-warmupHI)<0.01){ warmupHI=next; break; }
+          warmupHI=next;
+        }
+      }
+      const expected9=rd(0.52*warmupHI+1.2);
+      for(const stored of pendingNine){
+        const dToInsert=rd(stored.d+expected9);
+        eff.push({i:stored.i, d:dToInsert});
+        meta[stored.i]={
+          is9:true, ninehDiff:stored.d, expected:expected9, hiAtTime:rd(warmupHI),
+          eighteenhDiff:dToInsert, warmup:true, retroactivelyConverted:true
+        };
+      }
+      pendingNine=[];
+      warmupConverted=true;
+    }
+  }
+
+  // ─── Take the most recent 20 effective differentials ───
+  const r20=eff.slice(-20),cnt=r20.length;
+  if(cnt<3)return{hi:null,count:cnt,n:0,countingIdx:new Set(),meta};
+  const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
+  const sorted=[...r20].sort((a,b)=>a.d-b.d);
+  const counting=sorted.slice(0,n);
+  const countingIdx=new Set(counting.map(x=>x.i));
+  const avg=counting.reduce((s,x)=>s+x.d,0)/n;
+
+  return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),countingIdx,meta};
+}
+
+const COURSE_HOLES={
+  "Jamor": {
+    "holes": 9,
+    "par": [
+      4,
+      3,
+      4,
+      4,
+      3,
+      5,
+      4,
+      4,
+      4
+    ],
+    "si9": [
+      6,
+      3,
+      7,
+      4,
+      8,
+      1,
+      2,
+      9,
+      5
+    ],
+    "si18Front": [
+      11,
+      5,
+      13,
+      7,
+      15,
+      1,
+      3,
+      17,
+      9
+    ],
+    "si18Back": [
+      12,
+      6,
+      14,
+      8,
+      16,
+      2,
+      4,
+      18,
+      10
+    ],
+    "source": "DataGolf federation card, verified 2026-06"
+  },
+  "Estoril Blue Course": {
+    "holes": 9,
+    "par": [
+      4,
+      5,
+      4,
+      3,
+      4,
+      3,
+      3,
+      4,
+      4
+    ],
+    "si9": [
+      2,
+      4,
+      7,
+      6,
+      3,
+      8,
+      9,
+      1,
+      5
+    ],
+    "si18Front": [
+      3,
+      7,
+      13,
+      11,
+      5,
+      15,
+      17,
+      1,
+      9
+    ],
+    "si18Back": [
+      4,
+      8,
+      14,
+      12,
+      6,
+      16,
+      18,
+      2,
+      10
+    ],
+    "source": "DataGolf federation card, verified 2026-06"
+  },
+  "Lisbon Sports": {
+    "holes": 18,
+    "par": [
+      3,
+      4,
+      3,
+      4,
+      5,
+      4,
+      4,
+      3,
+      4,
+      4,
+      3,
+      5,
+      3,
+      4,
+      4,
+      5,
+      3,
+      4
+    ],
+    "si": [
+      16,
+      3,
+      8,
+      6,
+      12,
+      10,
+      2,
+      14,
+      18,
+      11,
+      17,
+      13,
+      5,
+      9,
+      7,
+      1,
+      15,
+      4
+    ],
+    "source": "DataGolf federation card, verified 2026-06"
+  },
+  "Quinta da Beloura": {
+    "holes": 18,
+    "par": [
+      5,
+      4,
+      3,
+      4,
+      3,
+      5,
+      4,
+      4,
+      4,
+      5,
+      4,
+      3,
+      4,
+      4,
+      4,
+      5,
+      3,
+      4
+    ],
+    "si": [
+      3,
+      13,
+      15,
+      11,
+      17,
+      9,
+      1,
+      5,
+      7,
+      4,
+      12,
+      18,
+      10,
+      16,
+      8,
+      2,
+      14,
+      6
+    ],
+    "source": "Official scorecard + DataGolf, verified 2026-06"
+  },
+  "Benamor": {
+    "holes": 18,
+    "par": [
+      4,
+      3,
+      4,
+      4,
+      5,
+      4,
+      5,
+      3,
+      4,
+      3,
+      4,
+      3,
+      4,
+      4,
+      5,
+      4,
+      3,
+      5
+    ],
+    "si": [
+      7,
+      17,
+      11,
+      15,
+      1,
+      5,
+      3,
+      9,
+      13,
+      18,
+      12,
+      16,
+      10,
+      8,
+      6,
+      2,
+      14,
+      4
+    ],
+    "source": "Official scorecard 2026-06 (H8 SI corrected 19→9)"
+  },
+  "Hendon GC": {
+    "holes": 18,
+    "par": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      4,
+      5,
+      3,
+      4,
+      4,
+      5,
+      3,
+      4,
+      4,
+      4,
+      3,
+      4
+    ],
+    "parRed": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      4,
+      4,
+      3,
+      4,
+      4,
+      4,
+      3,
+      4,
+      4,
+      4,
+      3,
+      4
+    ],
+    "si": [
+      13,
+      1,
+      7,
+      11,
+      5,
+      3,
+      15,
+      9,
+      17,
+      8,
+      2,
+      10,
+      14,
+      16,
+      18,
+      6,
+      12,
+      4
+    ],
+    "source": "Hendon GC official card, verified 2026-06"
+  }
+};
+
+const BASE='https://whs-handicap-default-rtdb.firebaseio.com';
+const L=(msg,cls)=>{const el=document.getElementById('log');el.innerHTML+=(cls?`<span class="${cls}">${msg}</span>`:msg)+'\n';};
+
+// If we're not running from a real website (e.g. inside a file viewer or file://),
+// database calls will be blocked by the sandbox. Explain instead of failing cryptically.
+(function(){
+  const sandboxed = location.protocol!=='https:' && location.protocol!=='http:';
+  if(sandboxed){
+    const btn=document.getElementById('go');
+    btn.textContent='Upload me to the site first';
+    btn.disabled=true;
+    document.getElementById('logcard').style.display='block';
+    L('This page is being viewed inside a sandboxed preview, which blocks database access.','warn');
+    L('Upload sync.html to the GitHub repo (next to preview.html), then open:','');
+    L('https://miguelamaral300-lgtm.github.io/WHS-Handicap/sync.html','ok');
+    L('and run it from there — it will work exactly like the app does.','');
+  }
+})();
+
+async function run(){
+  const btn=document.getElementById('go');btn.disabled=true;btn.textContent='Working…';
+  document.getElementById('logcard').style.display='block';
+  try{
+    // 1 · fetch + backup
+    L('Fetching database…');
+    const d=await (await fetch(`${BASE}/whsapp.json`)).json();
+    if(!d||!d.players){throw new Error('Database fetch failed');}
+    const bkey=`whsapp_backup_${Date.now()}`;
+    await fetch(`${BASE}/${bkey}.json`,{method:'PUT',body:JSON.stringify(d)});
+    L(`Backup saved → ${bkey}`,'ok');
+
+    d.courses=d.courses||[];
+    const findC=(n,t)=>d.courses.find(c=>c.name===n&&c.tee===t);
+
+    // snapshot HIs BEFORE any change
+    const hiBefore={};
+    for(const p of d.players){const r=calcHI(p.scores||[],d.courses);hiBefore[p.name]=r.hi;}
+
+    // 2 · Lisbon Sports fix
+    const ls=findC('Lisbon Sports','Yellow');
+    if(ls){
+      if(ls.rating!==67.8||ls.slope!==124){
+        L(`Lisbon Sports Yellow: ${ls.rating}/${ls.slope} → 67.8/124`,'warn');
+        ls.rating=67.8; ls.slope=124;
+      } else L('Lisbon Sports Yellow already correct','ok');
+    } else L('Lisbon Sports Yellow not found — skipped','bad');
+    if(!findC('Lisbon Sports','White')){
+      d.courses.push({name:'Lisbon Sports',tee:'White',rating:69.2,slope:127});
+      L('Added Lisbon Sports White 69.2/127','ok');
+    } else L('Lisbon Sports White already present','ok');
+
+    // 3 · Hendon GC
+    const hendon=[['White',70.5,127],['Yellow',69.5,124],['Red',68.3,125]];
+    for(const [tee,r,s] of hendon){
+      if(!findC('Hendon GC',tee)){ d.courses.push({name:'Hendon GC',tee,rating:r,slope:s}); L(`Added Hendon GC ${tee} ${r}/${s}`,'ok'); }
+      else L(`Hendon GC ${tee} already present`,'ok');
+    }
+
+    // 4 · Benamor — use app entry if present
+    const ben=d.courses.filter(c=>/benamor/i.test(c.name));
+    if(ben.length) L(`Benamor tees in app: ${ben.map(c=>`${c.tee} ${c.rating}/${c.slope}`).join(' · ')} — kept as-is`,'ok');
+    else L('Benamor: no tee/rating in app — hole data stored; add the tee with its official rating when you have it','warn');
+
+    // 5 · hole database
+    d.courseHoles=COURSE_HOLES;
+    L(`Hole data written for ${Object.keys(COURSE_HOLES).length} courses`,'ok');
+
+    // 6 · write everything back in ONE atomic put
+    const resp=await fetch(`${BASE}/whsapp.json`,{method:'PUT',body:JSON.stringify(d)});
+    if(!resp.ok) throw new Error('Write failed — nothing partially applied (single PUT)');
+    L('Database updated ✓','ok');
+
+    // 7 · HI impact table
+    let rows='';
+    for(const p of d.players){
+      const r=calcHI(p.scores||[],d.courses);
+      const b=hiBefore[p.name], a=r.hi;
+      const d2=(a==null||b==null)?null:Math.round((a-b)*10)/10;
+      const cls=d2===0||d2===null?'same':(d2>0?'up':'down');
+      const sym=d2===null?'–':(d2===0?'no change':(d2>0?`+${d2}`:`${d2}`));
+      rows+=`<tr><td><b>${p.name}</b></td><td>${b??'–'}</td><td><b>${a??'–'}</b></td><td><span class="${cls}">${sym}</span></td></tr>`;
+    }
+    document.getElementById('hitable').innerHTML=`<table><tr><th>Player</th><th>HI before</th><th>HI after</th><th>Δ</th></tr>${rows}</table>`;
+    document.getElementById('done').style.display='block';
+    btn.textContent='Update applied';
+  }catch(e){
+    L('ERROR: '+e.message,'bad');
+    L('Your data is untouched or fully restorable from the backup above.','warn');
+    btn.disabled=false;btn.textContent='Retry';
+  }
+}
+</script>
+</body>
+</html>
