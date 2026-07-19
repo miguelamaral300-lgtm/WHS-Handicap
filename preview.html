@@ -849,6 +849,53 @@ textarea{resize:vertical;min-height:70px}
 .lp-fbtn.post{border:none;background:linear-gradient(135deg,#7FB069,#5E8B4C);color:#0C1A0C}
 .lp-fbtn.post:disabled{opacity:.4}
 .lp-fbtn.disc{background:transparent;color:#C77;border:0.5px solid rgba(204,119,119,.3)}
+
+/* PLAY v2: lobby, wizard, history, summary */
+.lp-empty{text-align:center;color:var(--text3);font-size:13px;padding:22px 10px;border:0.5px dashed var(--line);border-radius:14px;margin-bottom:10px}
+.lp-back{border:none;background:none;color:var(--text3);font-family:'Barlow',sans-serif;font-weight:600;font-size:13px;padding:2px 0 12px;cursor:pointer}
+.lp-ghost{width:100%;border:0.5px solid var(--line);border-radius:13px;background:transparent;color:var(--text2);font-family:'Barlow',sans-serif;font-weight:600;font-size:13.5px;padding:13px;margin-top:10px;cursor:pointer}
+.lp-ghost.sm{padding:10px;font-size:12.5px;margin-top:8px}
+.lp-step{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text2);font-weight:700;margin:20px 2px 10px}
+.lp-step .n{width:22px;height:22px;border-radius:50%;background:rgba(201,168,76,.16);border:0.5px solid var(--gold);color:var(--gold);display:grid;place-items:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px}
+.lp-cgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lp-ccard{border:0.5px solid var(--line);border-radius:13px;background:var(--panel);padding:13px 12px;cursor:pointer}
+.lp-ccard.on{border-color:var(--gold);background:rgba(201,168,76,.1);box-shadow:0 0 0 1px var(--gold)}
+.lp-ccard .cc-nm{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:16px;color:var(--text);line-height:1.15}
+.lp-ccard.on .cc-nm{color:var(--gold-lt,#E6CE80)}
+.lp-ccard .cc-sub{font-size:10.5px;color:var(--text3);margin-top:4px}
+.lp-chip small{color:var(--text3);font-weight:500}
+.lp-prow .tick{width:20px;color:var(--gold);font-weight:700}
+.lp-prow .gtag,.lp-pl .gtag{font-size:8.5px;letter-spacing:1px;text-transform:uppercase;background:rgba(111,168,199,.16);color:#79B6D6;border-radius:10px;padding:1px 7px;font-weight:700;vertical-align:middle}
+.lp-prow .gdel{color:#C77;font-size:15px;padding:4px 2px 4px 8px}
+.lp-rcard{display:flex;align-items:center;justify-content:space-between;gap:10px;border:0.5px solid var(--line);border-radius:14px;background:var(--panel);padding:13px 14px;margin-bottom:8px;cursor:pointer}
+.lp-rcard.on{border-color:var(--gold)}
+.lp-rcard .rc-course{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:16.5px;color:var(--gold-lt,#E6CE80)}
+.lp-rcard .rc-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.lp-rcard .rc-thru{text-align:right;color:var(--text2);font-size:11px}
+.lp-rcard .rc-thru b{font-family:'Barlow Semi Condensed',sans-serif;font-size:18px;color:var(--text)}
+.lp-rcard .rc-live{display:block;font-size:8.5px;letter-spacing:1px;color:#7FB069;font-weight:700;margin-top:2px;animation:lplive 2s ease-in-out infinite}
+@keyframes lplive{0%,100%{opacity:1}50%{opacity:.4}}
+.lp-schips{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;scroll-behavior:smooth}
+.lp-schips::-webkit-scrollbar{display:none}
+.lp-sc{flex:0 0 42px;max-width:none}
+.lp-sc.isp{border-color:rgba(201,168,76,.45);color:var(--text)}
+.lp-hint{text-align:center;font-size:10.5px;color:var(--text3);margin-top:8px;line-height:1.5}
+.lp-trophy{text-align:center;font-size:44px;margin-top:8px}
+.lp-fw{text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:28px;color:var(--gold);text-shadow:0 0 28px rgba(201,168,76,.3)}
+.lp-fd{text-align:center;font-size:12px;color:var(--text2);margin-top:3px}
+.lp-start.share{display:block;text-align:center;text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#06110A}
+.lp-tblwrap{overflow-x:auto;margin-top:12px}
+.lp-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.lp-tbl th{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);padding:5px 4px;border-bottom:0.5px solid var(--line);text-align:center}
+.lp-tbl td{padding:5px 4px;text-align:center;color:var(--text2);border-bottom:0.5px solid rgba(201,168,76,.06)}
+.lp-tbl .hn{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--gold)}
+.lp-tbl .pr{color:var(--text3)}
+.lp-tbl .mk{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--text)}
+.lp-tbl .mk.b1{border:1.5px solid #7FB069;border-radius:50%;color:#7FB069}
+.lp-tbl .mk.b2{border:1.5px solid var(--gold);border-radius:50%;color:var(--gold)}
+.lp-tbl .mk.o1{border:1.5px solid #D8A24A;border-radius:4px;color:#D8A24A}
+.lp-tbl .mk.o2{border:1.5px solid #CF6B5C;border-radius:4px;color:#CF6B5C}
+.lp-tbl .tot td{font-weight:700;color:var(--text);background:rgba(0,0,0,.2)}
 </style>
 </head>
 <body>
@@ -1334,6 +1381,7 @@ onValue(dbRef,snap=>{
       contests:d.contests||[],purse:d.purse||[],
       courseHoles:d.courseHoles||null
     };
+    try{lpMigrate();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -1439,105 +1487,197 @@ window.fitTrophyEngraving = function(img){
 
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
-// ═══ PLAY — live on-course scoring ═══
-const LR_URL='https://whs-handicap-default-rtdb.firebaseio.com/liveround.json';
-let LR=null,LRHOLE=1,LRMSG=null;
-let LRSEL={course:null,tee:null,players:{}};
+// ═══ PLAY — live on-course scoring (multi-round lobby, history, guests) ═══
+const LRS_URL='https://whs-handicap-default-rtdb.firebaseio.com/liverounds';
+const RH_URL='https://whs-handicap-default-rtdb.firebaseio.com/roundhistory';
+let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0;
+let LRSEL={course:null,tee:null,players:{},guests:[]};
 
 function lpBases(){ if(!S.courseHoles)return[]; return Object.keys(S.courseHoles).filter(n=>S.courses.some(c=>c.name===n)); }
 function lpTees(name){ return S.courses.filter(c=>c.name===name); }
-function lpParArr(name,tee){
-  const ch=S.courseHoles&&S.courseHoles[name]; if(!ch)return null;
-  return (tee==='Red'&&ch.parRed)?ch.parRed:ch.par;
-}
+function lpParArr(name,tee){ const ch=S.courseHoles&&S.courseHoles[name]; if(!ch)return null; return (tee==='Red'&&ch.parRed)?ch.parRed:ch.par; }
 function lpSiArr(name){ const ch=S.courseHoles[name]; return ch.holes===9?ch.si9:ch.si; }
-function lpCH(hi,c,nHoles,roundPar){
-  if(hi==null)return null;
-  const h=nHoles===9?hi/2:hi;
-  return Math.round(h*c.slope/113+(c.rating-roundPar));
-}
+function lpCH(hi,c,nHoles,roundPar){ if(hi==null)return null; const h=nHoles===9?hi/2:hi; return Math.round(h*c.slope/113+(c.rating-roundPar)); }
 function lpStrokes(ch,si,n){ if(ch==null)return 0; const base=Math.floor(ch/n),rem=((ch%n)+n)%n; return base+(si<=rem?1:0); }
 function lpNote(g,par){ if(g==null)return''; const d=g-par; if(d<=-2)return'b2'; if(d===-1)return'b1'; if(d===1)return'o1'; if(d>=2)return'o2'; return''; }
-
-function lpBoard(){
-  const n=LR.holes;
-  return LR.players.map(p=>{
+function lpHasScore(sc,h,pid){ return sc&&sc[h]&&(sc[h][pid]===0||sc[h][pid])?true:false; }
+function lpBoard(r){
+  const n=r.holes;
+  return r.players.map(p=>{
     let thru=0,gross=0,toPar=0,stb=0;
     for(let h=1;h<=n;h++){
-      const g=LR.scores&&LR.scores[h]&&(LR.scores[h][p.id]===0||LR.scores[h][p.id])?LR.scores[h][p.id]:null;
-      if(g==null)continue;
-      const par=LR.parArr[h-1],stk=lpStrokes(p.ch,LR.siArr[h-1],n);
+      if(!lpHasScore(r.scores,h,p.id))continue;
+      const g=r.scores[h][p.id],par=r.parArr[h-1],stk=lpStrokes(p.ch,r.siArr[h-1],n);
       thru++;gross+=g;toPar+=(g-stk-par);stb+=Math.max(0,par+stk-g+2);
     }
     return {...p,thru,gross,toPar,stb};
   }).sort((a,b)=>a.thru===0&&b.thru===0?0:b.thru===0?-1:a.thru===0?1:(a.toPar-b.toPar)||(b.stb-a.stb));
 }
+function lpThru(r){ let t=0; for(let h=1;h<=r.holes;h++){ if(r.players.every(p=>lpHasScore(r.scores,h,p.id)))t++; } return t; }
+function lpShareText(rec){
+  const B=lpBoard(rec);
+  const d=rec.date.split('-').reverse().join('/');
+  let t=`⛳ The Club — ${rec.course} (${rec.tee}) · ${d}\n`;
+  B.forEach((p,i)=>{ t+=`${i+1}. ${p.name}${p.guest?' (guest)':''} — ${p.gross} gross · net ${p.toPar>0?'+':''}${p.toPar} · ${p.stb} pts\n`; });
+  return t;
+}
+// One-time self-healing migration: official Benamor card (July 2026) corrects SI + tee ratings
+function lpMigrate(){
+  if(!S.courseHoles||!S.courseHoles['Benamor'])return;
+  let dirty=false;
+  const b=S.courseHoles['Benamor'];
+  const SI=[9,7,17,13,1,5,15,3,11,10,18,16,8,2,14,6,12,4];
+  if(JSON.stringify(b.si)!==JSON.stringify(SI)){b.si=SI;b.source='Official Benamor scorecard, July 2026';dirty=true;}
+  const fix=(tee,r,sl)=>{
+    const c=S.courses.find(x=>x.name==='Benamor'&&x.tee===tee);
+    if(c){ if(c.rating!==r||c.slope!==sl){c.rating=r;c.slope=sl;dirty=true;} }
+    else { S.courses.push({name:'Benamor',tee,rating:r,slope:sl});dirty=true; }
+  };
+  fix('White',68.2,121);fix('Yellow',66.7,118);fix('Red',69,118);
+  if(dirty)upd(S);
+}
 
 function renderPlay(){
   let h='<div class="lp-wrap">';
   if(LRMSG){h+=`<div class="lp-msg">${LRMSG}</div>`;}
-  if(!LR){
-    // ── SETUP ──
+
+  if(LPV==='list'){
+    const live=ROUNDS?Object.entries(ROUNDS).filter(([id,r])=>r&&r.active):[];
+    h+=`<div class="lp-sec">Live now</div>`;
+    if(!live.length) h+=`<div class="lp-empty">No rounds in play — start one below.</div>`;
+    else h+=live.map(([id,r])=>{
+      const t=lpThru(r);
+      return `<div class="lp-rcard" onclick="LP_JOIN('${id}')">
+        <div><div class="rc-course">${r.course} · ${r.tee}</div>
+        <div class="rc-sub">${r.players.map(p=>p.name.split(' ')[0]).join(' · ')}</div></div>
+        <div class="rc-thru"><b>${t}</b><small>/${r.holes} thru</small><span class="rc-live">● LIVE</span></div>
+      </div>`;
+    }).join('');
+    h+=`<button class="lp-start" onclick="LP_NEW()">Start a new round</button>`;
+    h+=`<button class="lp-ghost" onclick="LP_HIST()">Past rounds →</button>`;
+  }
+
+  else if(LPV==='setup'){
     const bases=lpBases();
-    if(!bases.length){return h+'<div style="text-align:center;color:var(--text3);padding:50px 20px">No course hole data found — run the course sync first.</div></div>';}
+    h+=`<button class="lp-back" onclick="LP_BACK()">‹ Back</button>`;
+    if(!bases.length)return h+'<div class="lp-empty">No course hole data found.</div></div>';
     if(LRSEL.course&&!bases.includes(LRSEL.course))LRSEL.course=null;
-    h+=`<div class="lp-sec">Course</div><div class="lp-chips">${bases.map(n=>`<button class="lp-chip${LRSEL.course===n?' on':''}" onclick="LP_C('${n.replace(/'/g,"\\'")}')">${n}${S.courseHoles[n].holes===9?' · 9H':''}</button>`).join('')}</div>`;
+    h+=`<div class="lp-step"><span class="n">1</span>Course</div>`;
+    h+=`<div class="lp-cgrid">${bases.map(n=>{
+      const c9=S.courseHoles[n].holes===9;
+      return `<div class="lp-ccard${LRSEL.course===n?' on':''}" onclick="LP_C('${n.replace(/'/g,"\\'")}')"><div class="cc-nm">${n}</div><div class="cc-sub">${c9?'9 holes':'18 holes'} · par ${(lpParArr(n,'')||[]).reduce((a,b)=>a+b,0)}</div></div>`;
+    }).join('')}</div>`;
     if(LRSEL.course){
       const tees=lpTees(LRSEL.course);
       if(LRSEL.tee&&!tees.some(t=>t.tee===LRSEL.tee))LRSEL.tee=null;
-      h+=`<div class="lp-sec">Tee</div><div class="lp-chips">${tees.map(t=>`<button class="lp-chip${LRSEL.tee===t.tee?' on':''}" onclick="LP_T('${t.tee}')">${t.tee} · ${t.rating}/${t.slope}</button>`).join('')}</div>`;
+      h+=`<div class="lp-step"><span class="n">2</span>Tee</div><div class="lp-chips">${tees.map(t=>`<button class="lp-chip${LRSEL.tee===t.tee?' on':''}" onclick="LP_T('${t.tee}')">${t.tee}<small> ${t.rating}/${t.slope}</small></button>`).join('')}</div>`;
     }
     if(LRSEL.course&&LRSEL.tee){
       const cEnt=lpTees(LRSEL.course).find(t=>t.tee===LRSEL.tee);
       const nH=S.courseHoles[LRSEL.course].holes;
-      const parArr=lpParArr(LRSEL.course,LRSEL.tee);
-      const rPar=parArr.reduce((a,b)=>a+b,0);
+      const rPar=lpParArr(LRSEL.course,LRSEL.tee).reduce((a,b)=>a+b,0);
       const R=ranked();
-      h+=`<div class="lp-sec">Players · course handicap at ${LRSEL.tee}</div>`;
+      h+=`<div class="lp-step"><span class="n">3</span>Who's playing</div>`;
       h+=R.map(p=>{
         const ch=lpCH(p.hi,cEnt,nH,rPar);
         const on=!!LRSEL.players[p.id];
         if(ch==null)return `<div class="lp-prow dis"><div><div class="nm">${p.name}</div><div class="hi">no Handicap Index yet</div></div></div>`;
-        return `<div class="lp-prow${on?' on':''}" onclick="LP_P('${p.id}')"><div><div class="nm">${p.name}</div><div class="hi">HI ${p.hi}</div></div><div class="ch">${ch}<small>plays off</small></div></div>`;
+        return `<div class="lp-prow${on?' on':''}" onclick="LP_P('${p.id}')"><div class="tick">${on?'✓':''}</div><div style="flex:1"><div class="nm">${p.name}</div><div class="hi">HI ${p.hi}</div></div><div class="ch">${ch}<small>plays off</small></div></div>`;
       }).join('');
-      const cnt=Object.keys(LRSEL.players).filter(k=>LRSEL.players[k]).length;
-      h+=`<button class="lp-start" ${cnt<1?'disabled':''} onclick="LP_START()">Start round — ${LRSEL.course} · ${nH} holes</button>`;
+      h+=LRSEL.guests.map((g,i)=>{
+        const ch=lpCH(g.hi,cEnt,nH,rPar);
+        return `<div class="lp-prow on guest"><div class="tick">✓</div><div style="flex:1"><div class="nm">${g.name} <span class="gtag">guest</span></div><div class="hi">HI ${g.hi}</div></div><div class="ch">${ch}<small>plays off</small></div><div class="gdel" onclick="event.stopPropagation();LP_GDEL(${i})">✕</div></div>`;
+      }).join('');
+      h+=`<button class="lp-ghost sm" onclick="LP_GADD()">+ Add a guest</button>`;
+      const cnt=Object.keys(LRSEL.players).filter(k=>LRSEL.players[k]).length+LRSEL.guests.length;
+      h+=`<button class="lp-start" ${cnt<1?'disabled':''} onclick="LP_START()">Tee off — ${LRSEL.course} · ${nH} holes</button>`;
     }
-  }else{
-    // ── SCORING ──
+  }
+
+  else if(LPV==='round'&&LR){
     const n=LR.holes;
     if(LRHOLE>n)LRHOLE=n;
     const par=LR.parArr[LRHOLE-1],si=LR.siArr[LRHOLE-1];
-    const done=h2=>LR.players.every(p=>LR.scores&&LR.scores[h2]&&(LR.scores[h2][p.id]===0||LR.scores[h2][p.id]));
+    const done=h2=>LR.players.every(p=>lpHasScore(LR.scores,h2,p.id));
     h+=`<div class="lp-strip">${Array.from({length:n},(_,i)=>i+1).map(x=>`<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${x}</div>`).join('')}</div>`;
     h+=`<div class="lp-hole"><div class="lp-hh"><div><div class="lbl">${LR.course} · ${LR.tee}</div><div class="big">Hole ${LRHOLE}</div></div><div class="meta">Par <b>${par}</b><br>S.I. <b>${si}</b></div></div>`;
     h+=LR.players.map(p=>{
-      const g=LR.scores&&LR.scores[LRHOLE]&&(LR.scores[LRHOLE][p.id]===0||LR.scores[LRHOLE][p.id])?LR.scores[LRHOLE][p.id]:null;
+      const g=lpHasScore(LR.scores,LRHOLE,p.id)?LR.scores[LRHOLE][p.id]:null;
       const stk=lpStrokes(p.ch,si,n);
-      const lo=Math.max(1,par-2),hi2=par+5;
       let chips='';
-      for(let v=lo;v<=hi2;v++)chips+=`<div class="lp-sc${g===v?' sel '+lpNote(v,par):''}" onclick="LP_S('${p.id}',${v})">${v}</div>`;
-      return `<div class="lp-pl"><div class="top"><span class="pnm">${p.name} <span class="pstk">· ${stk>0?stk+' stroke'+(stk>1?'s':''):'no stroke'}</span></span><span class="pnet">net <b>${g!=null?g-stk:'–'}</b></span></div><div class="lp-schips">${chips}</div></div>`;
+      for(let v=1;v<=15;v++)chips+=`<div class="lp-sc${g===v?' sel '+lpNote(v,par):''}${v===par&&g==null?' isp':''}" onclick="LP_S('${p.id}',${v})">${v}</div>`;
+      return `<div class="lp-pl"><div class="top"><span class="pnm">${p.name}${p.guest?' <span class="gtag">guest</span>':''} <span class="pstk">· ${stk>0?stk+' stroke'+(stk>1?'s':''):'no stroke'}</span></span><span class="pnet">net <b>${g!=null?g-stk:'–'}</b></span></div><div class="lp-schips" data-par="${par}">${chips}</div></div>`;
     }).join('');
     h+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
-    // leaderboard
-    const B=lpBoard();
+    const B=lpBoard(LR);
     h+=`<div class="lp-sec" style="margin-top:20px">Leaderboard · live</div><div class="lp-lb">`;
     h+=`<div class="row hd"><div></div><div>Player</div><div style="text-align:right">Gross</div><div style="text-align:right">Net±</div><div style="text-align:right">Pts</div><div style="text-align:right">Thru</div></div>`;
     h+=B.map((p,i)=>{
       const tp=p.thru?((p.toPar>0?'+':'')+p.toPar):'–';
-      return `<div class="row"><div class="pos">${p.thru?i+1:'–'}</div><div class="nm2">${p.name}</div><div class="num">${p.thru?p.gross:'–'}</div><div class="num ${p.toPar>0?'u':p.toPar<0?'d':''}">${tp}</div><div class="num">${p.thru?p.stb:'–'}</div><div class="num"><small>${p.thru}/${n}</small></div></div>`;
+      return `<div class="row"><div class="pos">${p.thru?i+1:'–'}</div><div class="nm2">${p.name}${p.guest?' ᵍ':''}</div><div class="num">${p.thru?p.gross:'–'}</div><div class="num ${p.toPar>0?'u':p.toPar<0?'d':''}">${tp}</div><div class="num">${p.thru?p.stb:'–'}</div><div class="num"><small>${p.thru}/${n}</small></div></div>`;
     }).join('');
     h+=`</div>`;
-    const allDone=LR.players.every(p=>lpBoard().find(x=>x.id===p.id).thru===n);
-    h+=`<div class="lp-fin"><button class="lp-fbtn disc" onclick="LP_X()">Discard round</button><button class="lp-fbtn post" ${allDone?'':'disabled'} onclick="LP_F()">Finish &amp; post to handicaps</button></div>`;
-    if(!allDone)h+=`<div style="text-align:center;font-size:10.5px;color:var(--text3);margin-top:8px">Posting unlocks when every player has all ${n} holes in.</div>`;
+    const allDone=B.every(p=>p.thru===n);
+    h+=`<div class="lp-fin"><button class="lp-fbtn disc" onclick="LP_X()">Discard</button><button class="lp-fbtn post" ${allDone?'':'disabled'} onclick="LP_F()">Finish round</button></div>`;
+    if(!allDone)h+=`<div class="lp-hint">Finishing unlocks when every player has all ${n} holes in. The round is saved live — closing the app never loses it.</div>`;
+    h+=`<button class="lp-ghost sm" onclick="LP_BACK()">‹ Leave (round keeps running)</button>`;
+  }
+
+  else if(LPV==='summary'&&SUMMARY){
+    const B=lpBoard(SUMMARY);
+    h+=`<div class="lp-trophy">🏆</div>`;
+    h+=`<div class="lp-fw">${B[0].name}${B[0].guest?' (guest)':''} wins</div>`;
+    h+=`<div class="lp-fd">${SUMMARY.course} · ${SUMMARY.tee} · ${SUMMARY.date.split('-').reverse().join('/')}</div>`;
+    h+=`<div class="lp-lb" style="margin-top:14px">`;
+    h+=B.map((p,i)=>`<div class="row"><div class="pos">${i+1}</div><div class="nm2">${p.name}${p.guest?' ᵍ':''}</div><div class="num">${p.gross}</div><div class="num ${p.toPar>0?'u':p.toPar<0?'d':''}">${(p.toPar>0?'+':'')+p.toPar}</div><div class="num">${p.stb}</div><div class="num"><small>pts</small></div></div>`).join('');
+    h+=`</div>`;
+    h+=`<a class="lp-start share" href="https://wa.me/?text=${encodeURIComponent(lpShareText(SUMMARY))}" target="_blank">Share to WhatsApp</a>`;
+    h+=`<button class="lp-ghost" onclick="LP_DONE()">Done</button>`;
+  }
+
+  else if(LPV==='hist'){
+    h+=`<button class="lp-back" onclick="LP_BACK()">‹ Back</button>`;
+    h+=`<div class="lp-sec">Past rounds</div>`;
+    if(HIST===null){h+=`<div class="lp-empty">Loading…</div>`;}
+    else{
+      const recs=Object.entries(HIST||{}).map(([id,r])=>({id,...r})).sort((a,b)=>(b.finishedAt||0)-(a.finishedAt||0));
+      const names=[...new Set(recs.flatMap(r=>r.players.map(p=>p.name)))];
+      if(names.length>1)h+=`<div class="lp-chips" style="margin-bottom:12px">${names.map(nm=>`<button class="lp-chip${HISTFILT===nm?' on':''}" onclick="LP_HFILT('${nm.replace(/'/g,"\\'")}')">${nm.split(' ')[0]}</button>`).join('')}</div>`;
+      const shown=HISTFILT?recs.filter(r=>r.players.some(p=>p.name===HISTFILT)):recs;
+      if(!shown.length)h+=`<div class="lp-empty">No rounds yet — they'll appear here after you finish one.</div>`;
+      if(HISTOPEN){
+        const r=shown.find(x=>x.id===HISTOPEN)||recs.find(x=>x.id===HISTOPEN);
+        if(r){
+          const B=lpBoard(r);
+          h+=`<div class="lp-hole" style="margin-bottom:12px"><div class="lp-hh"><div><div class="lbl">${r.date.split('-').reverse().join('/')}</div><div class="big" style="font-size:26px">${r.course}</div></div><div class="meta">${r.tee}<br>${r.holes} holes</div></div>`;
+          h+=`<div class="lp-tblwrap"><table class="lp-tbl"><tr><th>H</th><th>Par</th>${r.players.map(p=>`<th>${p.name.split(' ')[0]}${p.guest?' ᵍ':''}</th>`).join('')}</tr>`;
+          for(let x=1;x<=r.holes;x++){
+            h+=`<tr><td class="hn">${x}</td><td class="pr">${r.parArr[x-1]}</td>${r.players.map(p=>{
+              const g=lpHasScore(r.scores,x,p.id)?r.scores[x][p.id]:null;
+              return `<td><span class="mk ${lpNote(g,r.parArr[x-1])}">${g??'–'}</span></td>`;
+            }).join('')}</tr>`;
+          }
+          h+=`<tr class="tot"><td colspan="2">Gross</td>${B.sort((a,b)=>r.players.findIndex(p=>p.id===a.id)-r.players.findIndex(p=>p.id===b.id)).map(p=>`<td>${p.gross}</td>`).join('')}</tr>`;
+          h+=`<tr class="tot"><td colspan="2">Net±</td>${B.map(p=>`<td>${(p.toPar>0?'+':'')+p.toPar}</td>`).join('')}</tr>`;
+          h+=`<tr class="tot"><td colspan="2">Pts</td>${B.map(p=>`<td>${p.stb}</td>`).join('')}</tr></table></div></div>`;
+        }
+      }
+      h+=shown.map(r=>{
+        const B=lpBoard(r);
+        return `<div class="lp-rcard${HISTOPEN===r.id?' on':''}" onclick="LP_HOPEN('${r.id}')">
+          <div><div class="rc-course">${r.course} · ${r.tee}</div>
+          <div class="rc-sub">${B.map(p=>`${p.name.split(' ')[0]} ${p.gross}`).join(' · ')}</div></div>
+          <div class="rc-thru"><small>${r.date.split('-').reverse().join('/')}</small></div>
+        </div>`;
+      }).join('');
+    }
   }
   return h+'</div>';
 }
 
 function render(){
   const root=document.getElementById('app');
+  requestAnimationFrame(lpAutoScroll);
   if(!INIT){root.innerHTML='<div style="padding:70px;text-align:center;color:var(--text3);font-family:\'Playfair Display\',serif;font-size:18px">Connecting to The Club…</div>';return;}
   const R=ranked(),AP=S.players.find(p=>p.id===PID),AT=S.tournaments.find(t=>t.id===TID);
 
@@ -2367,12 +2507,21 @@ function renderPredictModal(){
 }
 
 // ── HANDLERS ──────────────────────────────────────────────────────────────────
-window.SV=v=>{V=v;OPEN_COURSE=null;OPEN_SCORE=null;if(v==='play'){LRMSG=null;lpPull();}render();};
+window.SV=v=>{V=v;OPEN_COURSE=null;OPEN_SCORE=null;if(v==='play'){LRMSG=null;LPV=LR?'round':'list';lpPull();}render();};
 
 // ── PLAY handlers ──
+window.LP_NEW=()=>{LPV='setup';LRMSG=null;LRSEL={course:null,tee:null,players:{},guests:[]};render();};
+window.LP_BACK=()=>{LPV='list';HISTOPEN=null;LRMSG=null;lpPull();render();};
 window.LP_C=n=>{LRSEL.course=n;LRSEL.tee=null;render();};
 window.LP_T=t=>{LRSEL.tee=t;render();};
 window.LP_P=id=>{LRSEL.players[id]=!LRSEL.players[id];render();};
+window.LP_GADD=()=>{
+  const name=prompt('Guest name?');if(!name)return;
+  const hiS=prompt(`Handicap Index for ${name}? (e.g. 18.4)`);const hi=parseFloat((hiS||'').replace(',','.'));
+  if(isNaN(hi)||hi<-10||hi>54){alert('Please enter a valid Handicap Index (up to 54).');return;}
+  LRSEL.guests.push({name:name.trim(),hi:Math.round(hi*10)/10});render();
+};
+window.LP_GDEL=i=>{LRSEL.guests.splice(i,1);render();};
 window.LP_START=async()=>{
   const cEnt=lpTees(LRSEL.course).find(t=>t.tee===LRSEL.tee);
   const nH=S.courseHoles[LRSEL.course].holes;
@@ -2380,50 +2529,93 @@ window.LP_START=async()=>{
   const rPar=parArr.reduce((a,b)=>a+b,0);
   const players=ranked().filter(p=>LRSEL.players[p.id]&&p.hi!=null)
     .map(p=>({id:p.id,name:p.name,hi:p.hi,ch:lpCH(p.hi,cEnt,nH,rPar)}));
+  LRSEL.guests.forEach((g,i)=>players.push({id:'g'+i+'_'+Date.now(),name:g.name,hi:g.hi,ch:lpCH(g.hi,cEnt,nH,rPar),guest:true}));
   if(!players.length)return;
-  LR={active:true,course:LRSEL.course,tee:LRSEL.tee,holes:nH,
-      parArr,siArr:lpSiArr(LRSEL.course),players,scores:{},startedAt:Date.now(),
-      date:new Date().toISOString().slice(0,10)};
-  LRHOLE=1;LRMSG=null;render();
-  try{await fetch(LR_URL,{method:'PUT',body:JSON.stringify(LR)});}catch(e){}
+  LRID='r'+Date.now();
+  LR={active:true,course:LRSEL.course,tee:LRSEL.tee,holes:nH,parArr,siArr:lpSiArr(LRSEL.course),
+      players,scores:{},startedAt:Date.now(),date:new Date().toISOString().slice(0,10)};
+  LRHOLE=1;LRMSG=null;LPV='round';render();
+  try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'PUT',body:JSON.stringify(LR)});}catch(e){}
 };
+window.LP_JOIN=id=>{LRID=id;LR=ROUNDS[id];LRHOLE=1;
+  // jump to first incomplete hole
+  if(LR){for(let x=1;x<=LR.holes;x++){if(!LR.players.every(p=>lpHasScore(LR.scores,x,p.id))){LRHOLE=x;break;}LRHOLE=LR.holes;}}
+  LPV='round';LRMSG=null;render();};
 window.LP_S=async(pid,v)=>{
   const h=LRHOLE;
   LR.scores=LR.scores||{};LR.scores[h]=LR.scores[h]||{};
-  if(LR.scores[h][pid]===v)LR.scores[h][pid]=null;else LR.scores[h][pid]=v;
+  const clear=LR.scores[h][pid]===v;
+  LR.scores[h][pid]=clear?null:v;
+  LPLASTW=Date.now();
   if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
+  // auto-advance when the hole completes
+  const complete=!clear&&LR.players.every(p=>lpHasScore(LR.scores,h,p.id));
   render();
-  try{await fetch(`https://whs-handicap-default-rtdb.firebaseio.com/liveround/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[pid]:LR.scores[h][pid]})});}catch(e){}
+  try{await fetch(`${LRS_URL}/${LRID}/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[pid]:LR.scores[h][pid]})});}catch(e){}
+  if(complete&&h<LR.holes){setTimeout(()=>{if(LRHOLE===h&&LPV==='round'){LRHOLE=h+1;render();}},650);}
 };
 window.LP_N=d=>{const x=LRHOLE+d;if(x>=1&&x<=LR.holes){LRHOLE=x;render();}};
 window.LP_J=x=>{LRHOLE=x;render();};
 window.LP_X=async()=>{
-  if(!confirm('Discard this round for everyone? Scores will not be posted.'))return;
-  LR=null;LRMSG='Round discarded.';render();
-  try{await fetch(LR_URL,{method:'DELETE'});}catch(e){}
+  if(!confirm('Discard this round for EVERYONE?\n\nNo scores will be posted and the round will be deleted.'))return;
+  if(!confirm('Are you absolutely sure?\n\nThis cannot be undone. Press OK to permanently delete the round.'))return;
+  try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'DELETE'});}catch(e){}
+  LR=null;LRID=null;LPV='list';LRMSG='Round discarded.';lpPull();render();
 };
 window.LP_F=async()=>{
-  const B=lpBoard();
-  const lines=B.map(p=>`${p.name}: ${p.gross} gross`).join('\n');
-  if(!confirm(`Post these rounds to handicaps?\n\n${lines}\n\nCourse: ${LR.course} (${LR.tee}) · ${LR.date}`))return;
+  const B=lpBoard(LR);
+  const lines=B.map(p=>`${p.name}${p.guest?' (guest — not posted)':''}: ${p.gross} gross`).join('\n');
+  if(!confirm(`Finish this round?\n\n${lines}\n\nCourse: ${LR.course} (${LR.tee}) · ${LR.date}\n\nMember scores post to handicaps. Guests appear in history only.`))return;
+  const rec={...LR,active:false,finishedAt:Date.now()};
+  // 1 · history (permanent)
+  try{await fetch(`${RH_URL}/${LRID}.json`,{method:'PUT',body:JSON.stringify(rec)});}catch(e){}
+  // 2 · post member scores to handicaps
   const ns={...S,players:S.players.map(p=>{
-    const b=B.find(x=>x.id===p.id);
+    const b=B.find(x=>x.id===p.id&&!x.guest);
     if(!b)return p;
     return {...p,scores:[...(p.scores||[]),{date:LR.date,course:LR.course,tee:LR.tee,score:b.gross}]};
   })};
   upd(ns);
-  LR=null;LRMSG='Round posted — handicaps updated. ⛳';
-  try{await fetch(LR_URL,{method:'DELETE'});}catch(e){}
-  render();
+  // 3 · remove from live lobby
+  try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'DELETE'});}catch(e){}
+  SUMMARY=rec;LR=null;LRID=null;HIST=null;LPV='summary';render();
 };
+window.LP_DONE=()=>{SUMMARY=null;LPV='list';LRMSG='Round saved to history — handicaps updated. ⛳';lpPull();render();};
+window.LP_HIST=async()=>{LPV='hist';HIST=null;HISTOPEN=null;render();
+  try{HIST=await(await fetch(`${RH_URL}.json?t=${Date.now()}`)).json()||{};}catch(e){HIST={};}
+  render();};
+window.LP_HOPEN=id=>{HISTOPEN=HISTOPEN===id?null:id;render();};
+window.LP_HFILT=nm=>{HISTFILT=HISTFILT===nm?null:nm;HISTOPEN=null;render();};
+
 async function lpPull(){
   try{
-    const d=await(await fetch(LR_URL+'?t='+Date.now())).json();
-    LR=(d&&d.active)?d:null;
-    if(V==='play'&&!MOD)render();
+    if(LPV==='round'&&LRID){
+      const d=await(await fetch(`${LRS_URL}/${LRID}.json?t=${Date.now()}`)).json();
+      if(!d||!d.active){
+        // round finished or discarded elsewhere
+        if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was closed on another phone.';}
+      }else{
+        if(Date.now()-LPLASTW<3500){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score
+        LR=d;
+      }
+      if(V==='play'&&!MOD)render();
+    }else if(LPV==='list'){
+      const d=await(await fetch(`${LRS_URL}.json?t=${Date.now()}`)).json();
+      ROUNDS=d||{};
+      if(V==='play'&&!MOD)render();
+    }
   }catch(e){}
 }
 setInterval(()=>{if(V==='play')lpPull();},2500);
+// auto-center score chips on the selected value (or par)
+const lpAutoScroll=()=>{
+  if(V!=='play'||LPV!=='round')return;
+  document.querySelectorAll('.lp-schips').forEach(el=>{
+    const t=el.querySelector('.sel')||el.querySelector('.isp');
+    if(t)el.scrollLeft=t.offsetLeft-el.clientWidth/2+21;
+  });
+};
+const _lpOrigRender=render;
 
 // Download a JSON snapshot of all club data — useful as a safety backup
 // before any big change (it includes players, courses, tournaments, etc.)
