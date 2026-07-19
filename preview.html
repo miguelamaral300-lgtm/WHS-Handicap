@@ -851,6 +851,17 @@ textarea{resize:vertical;min-height:70px}
 .lp-fbtn.disc{background:transparent;color:#C77;border:0.5px solid rgba(204,119,119,.3)}
 
 /* PLAY v2: lobby, wizard, history, summary */
+.lp-stepper{display:flex;align-items:center;gap:9px}
+.st-btn{flex:0 0 58px;height:54px;border-radius:13px;border:0.5px solid var(--line);background:#071009;color:var(--text2);font-size:27px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;line-height:1}
+.st-btn:active{transform:scale(.93);border-color:var(--gold);color:#E6CE80}
+.st-val{flex:1;height:54px;border-radius:13px;border:0.5px solid var(--line);background:rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:27px;color:var(--text);line-height:1;cursor:pointer}
+.st-val small{font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-top:3px;font-family:'Barlow',sans-serif}
+.st-val.empty{color:var(--text3)}
+.st-val.b1{border-color:#7FB069;color:#7FB069;border-radius:50px}
+.st-val.b2{border-color:var(--gold);color:var(--gold);border-radius:50px;box-shadow:inset 0 0 0 2px rgba(201,168,76,.35)}
+.st-val.o1{border-color:#D8A24A;color:#D8A24A}
+.st-val.o2{border-color:#CF6B5C;color:#CF6B5C;box-shadow:inset 0 0 0 2px rgba(207,107,92,.3)}
+.st-clr{flex:0 0 36px;height:36px;border-radius:50%;border:0.5px solid rgba(204,119,119,.3);background:transparent;color:#C77;font-size:13px;cursor:pointer}
 .lp-empty{text-align:center;color:var(--text3);font-size:13px;padding:22px 10px;border:0.5px dashed var(--line);border-radius:14px;margin-bottom:10px}
 .lp-back{border:none;background:none;color:var(--text3);font-family:'Barlow',sans-serif;font-weight:600;font-size:13px;padding:2px 0 12px;cursor:pointer}
 .lp-ghost{width:100%;border:0.5px solid var(--line);border-radius:13px;background:transparent;color:var(--text2);font-family:'Barlow',sans-serif;font-weight:600;font-size:13.5px;padding:13px;margin-top:10px;cursor:pointer}
@@ -1490,7 +1501,7 @@ window.fitTrophyEngraving = function(img){
 // ═══ PLAY — live on-course scoring (multi-round lobby, history, guests) ═══
 const LRS_URL='https://whs-handicap-default-rtdb.firebaseio.com/liverounds';
 const RH_URL='https://whs-handicap-default-rtdb.firebaseio.com/roundhistory';
-let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0;
+let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0,LPADV=null;
 let LRSEL={course:null,tee:null,players:{},guests:[]};
 
 function lpBases(){ if(!S.courseHoles)return[]; return Object.keys(S.courseHoles).filter(n=>S.courses.some(c=>c.name===n)); }
@@ -1604,9 +1615,15 @@ function renderPlay(){
     h+=LR.players.map(p=>{
       const g=lpHasScore(LR.scores,LRHOLE,p.id)?LR.scores[LRHOLE][p.id]:null;
       const stk=lpStrokes(p.ch,si,n);
-      let chips='';
-      for(let v=1;v<=15;v++)chips+=`<div class="lp-sc${g===v?' sel '+lpNote(v,par):''}${v===par&&g==null?' isp':''}" onclick="LP_S('${p.id}',${v})">${v}</div>`;
-      return `<div class="lp-pl"><div class="top"><span class="pnm">${p.name}${p.guest?' <span class="gtag">guest</span>':''} <span class="pstk">· ${stk>0?stk+' stroke'+(stk>1?'s':''):'no stroke'}</span></span><span class="pnet">net <b>${g!=null?g-stk:'–'}</b></span></div><div class="lp-schips" data-par="${par}">${chips}</div></div>`;
+      const empty=g==null;
+      const note=empty?'':lpNote(g,par);
+      return `<div class="lp-pl"><div class="top"><span class="pnm">${p.name}${p.guest?' <span class="gtag">guest</span>':''} <span class="pstk">· ${stk>0?stk+' stroke'+(stk>1?'s':''):'no stroke'}</span></span><span class="pnet">net <b>${empty?'–':g-stk}</b></span></div>
+      <div class="lp-stepper">
+        <button class="st-btn" onclick="LP_INC('${p.id}',-1)">−</button>
+        <div class="st-val ${note}${empty?' empty':''}" onclick="LP_INC('${p.id}',0)">${empty?par:g}${empty?'<small>tap = par</small>':''}</div>
+        <button class="st-btn" onclick="LP_INC('${p.id}',1)">＋</button>
+        <button class="st-clr"${empty?' style="visibility:hidden"':''} onclick="LP_CLR('${p.id}')">✕</button>
+      </div></div>`;
     }).join('');
     h+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
     const B=lpBoard(LR);
@@ -1677,7 +1694,6 @@ function renderPlay(){
 
 function render(){
   const root=document.getElementById('app');
-  requestAnimationFrame(lpAutoScroll);
   if(!INIT){root.innerHTML='<div style="padding:70px;text-align:center;color:var(--text3);font-family:\'Playfair Display\',serif;font-size:18px">Connecting to The Club…</div>';return;}
   const R=ranked(),AP=S.players.find(p=>p.id===PID),AT=S.tournaments.find(t=>t.id===TID);
 
@@ -2541,19 +2557,27 @@ window.LP_JOIN=id=>{LRID=id;LR=ROUNDS[id];LRHOLE=1;
   // jump to first incomplete hole
   if(LR){for(let x=1;x<=LR.holes;x++){if(!LR.players.every(p=>lpHasScore(LR.scores,x,p.id))){LRHOLE=x;break;}LRHOLE=LR.holes;}}
   LPV='round';LRMSG=null;render();};
-window.LP_S=async(pid,v)=>{
+async function lpWrite(pid,v){
   const h=LRHOLE;
   LR.scores=LR.scores||{};LR.scores[h]=LR.scores[h]||{};
-  const clear=LR.scores[h][pid]===v;
-  LR.scores[h][pid]=clear?null:v;
+  LR.scores[h][pid]=v;
   LPLASTW=Date.now();
   if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
-  // auto-advance when the hole completes
-  const complete=!clear&&LR.players.every(p=>lpHasScore(LR.scores,h,p.id));
+  // auto-advance only after a quiet pause, and cancel it on any further tap
+  if(LPADV){clearTimeout(LPADV);LPADV=null;}
+  const complete=v!=null&&LR.players.every(p=>lpHasScore(LR.scores,h,p.id));
   render();
-  try{await fetch(`${LRS_URL}/${LRID}/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[pid]:LR.scores[h][pid]})});}catch(e){}
-  if(complete&&h<LR.holes){setTimeout(()=>{if(LRHOLE===h&&LPV==='round'){LRHOLE=h+1;render();}},650);}
+  try{await fetch(`${LRS_URL}/${LRID}/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[pid]:v})});}catch(e){}
+  if(complete&&h<LR.holes){LPADV=setTimeout(()=>{LPADV=null;if(LRHOLE===h&&LPV==='round'){LRHOLE=h+1;render();}},1600);}
+}
+window.LP_INC=(pid,d)=>{
+  const par=LR.parArr[LRHOLE-1];
+  const cur=lpHasScore(LR.scores,LRHOLE,pid)?LR.scores[LRHOLE][pid]:null;
+  const v=cur==null?par:Math.min(15,Math.max(1,cur+d));
+  if(v===cur)return;
+  lpWrite(pid,v);
 };
+window.LP_CLR=pid=>{lpWrite(pid,null);};
 window.LP_N=d=>{const x=LRHOLE+d;if(x>=1&&x<=LR.holes){LRHOLE=x;render();}};
 window.LP_J=x=>{LRHOLE=x;render();};
 window.LP_X=async()=>{
@@ -2593,29 +2617,23 @@ async function lpPull(){
       const d=await(await fetch(`${LRS_URL}/${LRID}.json?t=${Date.now()}`)).json();
       if(!d||!d.active){
         // round finished or discarded elsewhere
-        if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was closed on another phone.';}
+        if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was closed on another phone.';if(V==='play'&&!MOD)render();}
       }else{
         if(Date.now()-LPLASTW<3500){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score
+        const changed=JSON.stringify(d)!==JSON.stringify(LR);
         LR=d;
+        if(changed&&V==='play'&&!MOD)render();   // stable screen: no change → no rebuild
       }
-      if(V==='play'&&!MOD)render();
     }else if(LPV==='list'){
       const d=await(await fetch(`${LRS_URL}.json?t=${Date.now()}`)).json();
+      const changed=JSON.stringify(d||{})!==JSON.stringify(ROUNDS||{});
       ROUNDS=d||{};
-      if(V==='play'&&!MOD)render();
+      if(changed&&V==='play'&&!MOD)render();
     }
   }catch(e){}
 }
 setInterval(()=>{if(V==='play')lpPull();},2500);
-// auto-center score chips on the selected value (or par)
-const lpAutoScroll=()=>{
-  if(V!=='play'||LPV!=='round')return;
-  document.querySelectorAll('.lp-schips').forEach(el=>{
-    const t=el.querySelector('.sel')||el.querySelector('.isp');
-    if(t)el.scrollLeft=t.offsetLeft-el.clientWidth/2+21;
-  });
-};
-const _lpOrigRender=render;
+
 
 // Download a JSON snapshot of all club data — useful as a safety backup
 // before any big change (it includes players, courses, tournaments, etc.)
