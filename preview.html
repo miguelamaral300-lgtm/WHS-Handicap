@@ -1501,7 +1501,7 @@ window.fitTrophyEngraving = function(img){
 // ═══ PLAY — live on-course scoring (multi-round lobby, history, guests) ═══
 const LRS_URL='https://whs-handicap-default-rtdb.firebaseio.com/liverounds';
 const RH_URL='https://whs-handicap-default-rtdb.firebaseio.com/roundhistory';
-let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0,LPADV=null;
+let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0;
 let LRSEL={course:null,tee:null,players:{},guests:[]};
 
 function lpBases(){ if(!S.courseHoles)return[]; return Object.keys(S.courseHoles).filter(n=>S.courses.some(c=>c.name===n)); }
@@ -2558,17 +2558,15 @@ window.LP_JOIN=id=>{LRID=id;LR=ROUNDS[id];LRHOLE=1;
   if(LR){for(let x=1;x<=LR.holes;x++){if(!LR.players.every(p=>lpHasScore(LR.scores,x,p.id))){LRHOLE=x;break;}LRHOLE=LR.holes;}}
   LPV='round';LRMSG=null;render();};
 async function lpWrite(pid,v){
+  // No automatic transitions of any kind. The player enters scores at their own
+  // pace and moves holes only by tapping Next / Prev / a hole pip themselves.
   const h=LRHOLE;
   LR.scores=LR.scores||{};LR.scores[h]=LR.scores[h]||{};
   LR.scores[h][pid]=v;
   LPLASTW=Date.now();
   if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
-  // auto-advance only after a quiet pause, and cancel it on any further tap
-  if(LPADV){clearTimeout(LPADV);LPADV=null;}
-  const complete=v!=null&&LR.players.every(p=>lpHasScore(LR.scores,h,p.id));
   render();
   try{await fetch(`${LRS_URL}/${LRID}/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[pid]:v})});}catch(e){}
-  if(complete&&h<LR.holes){LPADV=setTimeout(()=>{LPADV=null;if(LRHOLE===h&&LPV==='round'){LRHOLE=h+1;render();}},1600);}
 }
 window.LP_INC=(pid,d)=>{
   const par=LR.parArr[LRHOLE-1];
@@ -2619,7 +2617,7 @@ async function lpPull(){
         // round finished or discarded elsewhere
         if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was closed on another phone.';if(V==='play'&&!MOD)render();}
       }else{
-        if(Date.now()-LPLASTW<3500){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score
+        if(Date.now()-LPLASTW<6000){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score, generous window
         const changed=JSON.stringify(d)!==JSON.stringify(LR);
         LR=d;
         if(changed&&V==='play'&&!MOD)render();   // stable screen: no change → no rebuild
