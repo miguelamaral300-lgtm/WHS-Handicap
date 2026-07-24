@@ -1393,6 +1393,7 @@ onValue(dbRef,snap=>{
       courseHoles:d.courseHoles||null
     };
     try{lpMigrate();}catch(e){}
+    try{lpMigrateBoavista();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -1533,6 +1534,28 @@ function lpShareText(rec){
   return t;
 }
 // One-time self-healing migration: official Benamor card (July 2026) corrects SI + tee ratings
+function lpMigrateBoavista(){
+  if(!S.courseHoles)return;
+  let dirty=false;
+  if(!S.courseHoles['Boavista Golf Course']){
+    S.courseHoles['Boavista Golf Course']={
+      holes:18,
+      par:[4,3,5,3,4,3,4,5,4, 4,3,4,5,3,4,5,4,4],
+      si:[14,16,8,6,12,4,10,2,18, 3,13,11,15,7,1,9,17,5],
+      source:'Boavista Golf Course official scorecard, verified 2026-07'
+    };
+    dirty=true;
+  }
+  const addTee=(tee,r,sl)=>{
+    const exists=S.courses.some(c=>c.name==='Boavista Golf Course'&&c.tee===tee);
+    if(!exists){ S.courses.push({name:'Boavista Golf Course',tee,rating:r,slope:sl}); dirty=true; }
+  };
+  addTee('Black',73.3,136);
+  addTee('White',71.2,132);
+  addTee('Yellow',68.9,127);
+  addTee('Red',71.2,131);
+  if(dirty)upd(S);
+}
 function lpMigrate(){
   if(!S.courseHoles||!S.courseHoles['Benamor'])return;
   let dirty=false;
