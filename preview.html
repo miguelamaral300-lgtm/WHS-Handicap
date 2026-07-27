@@ -850,6 +850,33 @@ textarea{resize:vertical;min-height:70px}
 .lp-fbtn.post:disabled{opacity:.4}
 .lp-fbtn.disc{background:transparent;color:#C77;border:0.5px solid rgba(204,119,119,.3)}
 
+/* GPS distances */
+.lp-offline{text-align:center;font-size:11px;color:#D8A24A;background:rgba(216,162,74,.09);border:0.5px solid rgba(216,162,74,.3);border-radius:11px;padding:9px;margin-top:11px;line-height:1.5}
+.lp-offline b{color:#E6CE80;text-decoration:underline;cursor:pointer}
+.gp-link{width:100%;border:none;border-radius:12px;padding:13px;font-family:'Barlow',sans-serif;font-weight:700;font-size:13.5px;background:linear-gradient(135deg,#7FB069,#5E8B4C);color:#08140A;margin-top:11px;cursor:pointer}
+.gp-lock{text-align:center;font-size:10.5px;letter-spacing:.5px;color:var(--text3);margin-top:10px;font-weight:600}
+.gp-lock.on{color:#7FB069}
+.gp-unit{width:100%;border:0.5px solid var(--line);border-radius:11px;background:transparent;color:var(--text3);font-family:'Barlow',sans-serif;font-weight:600;font-size:11.5px;padding:9px;margin-top:9px;cursor:pointer}
+.gp-panel{margin-top:13px;border:0.5px solid var(--line);border-radius:16px;background:linear-gradient(170deg,rgba(0,0,0,.28),rgba(0,0,0,.12));padding:15px 14px 14px}
+.gp-toggle{width:100%;border:0.5px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text2);font-family:'Barlow',sans-serif;font-weight:600;font-size:13.5px;padding:12px;margin-top:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.gp-toggle.on{border-color:var(--gold);color:#E6CE80;background:rgba(201,168,76,.09)}
+.gp-big{text-align:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:74px;line-height:.86;color:var(--gold);letter-spacing:-1px;text-shadow:0 0 34px rgba(201,168,76,.28)}
+.gp-big small{font-size:19px;color:var(--text3);letter-spacing:1px;margin-left:4px;font-weight:600}
+.gp-cap{text-align:center;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-top:2px}
+.gp-fb{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.gp-cell{border:0.5px solid var(--line);border-radius:11px;background:rgba(0,0,0,.2);padding:9px;text-align:center}
+.gp-cell .v{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:25px;color:var(--text)}
+.gp-cell .l{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-top:1px}
+.gp-acc{text-align:center;font-size:10.5px;color:var(--text3);margin-top:11px;line-height:1.5}
+.gp-acc b{color:var(--text2)}
+.gp-warn{text-align:center;font-size:11.5px;color:var(--bogey,#D8A24A);line-height:1.55;padding:6px 2px}
+.gp-cap3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:11px}
+.gp-cbtn{border:0.5px solid var(--line);border-radius:11px;background:#071009;color:var(--text2);font-family:'Barlow',sans-serif;font-weight:600;font-size:12px;padding:11px 4px;cursor:pointer}
+.gp-cbtn.set{border-color:#7FB069;color:#7FB069}
+.gp-cbtn:active{transform:scale(.95)}
+.gp-imp{width:100%;border:none;border-radius:12px;padding:13px;font-family:'Barlow',sans-serif;font-weight:700;font-size:13.5px;background:linear-gradient(135deg,var(--gold),#B08F3C);color:#1A1306;margin-top:11px;cursor:pointer}
+.gp-imp:disabled{opacity:.5}
+.gp-note{font-size:10.5px;color:var(--text3);text-align:center;margin-top:9px;line-height:1.5}
 /* PLAY v2: lobby, wizard, history, summary */
 .lp-stepper{display:flex;align-items:center;gap:9px}
 .st-btn{flex:0 0 58px;height:54px;border-radius:13px;border:0.5px solid var(--line);background:#071009;color:var(--text2);font-size:27px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;line-height:1}
@@ -1394,6 +1421,7 @@ onValue(dbRef,snap=>{
     };
     try{lpMigrate();}catch(e){}
     try{lpMigrateBoavista();}catch(e){}
+    try{lpMigrateOeiras();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -1503,6 +1531,47 @@ window.fitTrophyEngraving = function(img){
 const LRS_URL='https://whs-handicap-default-rtdb.firebaseio.com/liverounds';
 const RH_URL='https://whs-handicap-default-rtdb.firebaseio.com/roundhistory';
 let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0;
+// ── Offline safety net ──────────────────────────────────────────────────────────
+// Golf courses have dead zones. Any score that fails to reach the database is kept
+// in this queue, retried in the background, re-applied on top of anything the sync
+// poll returns, and mirrored to the device so closing the app cannot lose it.
+let LPQ=[],LPFLUSH=false;
+function lpSaveLocal(){
+  try{ localStorage.setItem('lpPending',JSON.stringify({id:LRID,q:LPQ})); }catch(e){}
+}
+function lpLoadLocal(id){
+  try{
+    const raw=localStorage.getItem('lpPending'); if(!raw)return;
+    const o=JSON.parse(raw);
+    if(o&&o.id===id&&Array.isArray(o.q)) LPQ=o.q;
+  }catch(e){}
+}
+function lpQueue(h,pid,v){
+  LPQ=LPQ.filter(w=>!(w.h===h&&w.pid===pid));   // only the newest value per player per hole
+  LPQ.push({h,pid,v,t:Date.now()});
+  lpSaveLocal();
+}
+// re-apply everything still unsent on top of a set of scores from the server
+function lpApplyQ(sc){
+  const out=JSON.parse(JSON.stringify(sc||{}));
+  for(const w of LPQ){ out[w.h]=out[w.h]||{}; out[w.h][w.pid]=w.v; }
+  return out;
+}
+async function lpFlush(){
+  if(LPFLUSH||!LPQ.length||!LRID)return;
+  LPFLUSH=true;
+  const pending=[...LPQ];
+  for(const w of pending){
+    try{
+      const r=await fetch(`${LRS_URL}/${LRID}/scores/${w.h}.json`,{method:'PATCH',body:JSON.stringify({[w.pid]:w.v})});
+      if(!r.ok)break;                      // server unhappy — stop, keep the rest queued
+      LPQ=LPQ.filter(x=>!(x.h===w.h&&x.pid===w.pid&&x.t===w.t));
+      lpSaveLocal();
+    }catch(e){ break; }                    // still offline — try again on the next tick
+  }
+  LPFLUSH=false;
+  if(V==='play'&&LPV==='round'&&!MOD)render();
+}
 let LRSEL={course:null,tee:null,players:{},guests:[]};
 
 function lpBases(){ if(!S.courseHoles)return[]; return Object.keys(S.courseHoles).filter(n=>S.courses.some(c=>c.name===n)); }
@@ -1534,6 +1603,38 @@ function lpShareText(rec){
   return t;
 }
 // One-time self-healing migration: official Benamor card (July 2026) corrects SI + tee ratings
+function lpMigrateOeiras(){
+  if(!S.courseHoles)return;
+  let dirty=false;
+  const NAME='Oeiras Green Valley';
+  if(!S.courseHoles[NAME]){
+    // 9-hole course played twice. Card: par 37 per nine (74 for 18), verified against
+    // OUT/IN/TOT and the full 1-18 stroke index set. DataGolf scorecard, July 2026.
+    S.courseHoles[NAME]={
+      holes:9,
+      par:[4,5,5,4,4,3,5,3,4],
+      si9:[9,7,1,6,3,8,4,5,2],
+      si18Front:[17,13,1,11,5,15,7,9,3],
+      si18Back:[18,14,2,12,6,16,8,10,4],
+      source:'DataGolf scorecard (Oeiras), verified 2026-07'
+    };
+    dirty=true;
+  }
+  // Men's tees. The card quotes 18-hole ratings; a 9-hole record stores half of each
+  // (which also keeps them under 40, how the app recognises a nine).
+  const addTee=(tee,r,sl)=>{
+    const c=S.courses.find(x=>x.name===NAME&&x.tee===tee);
+    if(!c){ S.courses.push({name:NAME,tee,rating:r,slope:sl}); dirty=true; }
+    else if(c.rating!==r||c.slope!==sl){ c.rating=r; c.slope=sl; dirty=true; }
+  };
+  addTee('White',37.5,135);
+  addTee('Yellow',36.2,129);
+  addTee('Blue',35.2,125);
+  addTee('Red',33.9,119);
+  addTee('Green',31.3,109);
+  addTee('Purple',29.4,100);
+  if(dirty)upd(S);
+}
 function lpMigrateBoavista(){
   if(!S.courseHoles)return;
   let dirty=false;
@@ -1569,6 +1670,121 @@ function lpMigrate(){
   };
   fix('White',68.2,121);fix('Yellow',66.7,118);fix('Red',69,118);
   if(dirty)upd(S);
+}
+
+// ═══ GPS — distance to green (front / centre / back) ═══
+const GEO_URL='https://whs-handicap-default-rtdb.firebaseio.com/coursegeo';
+// OpenStreetMap objects for each course, verified individually in July 2026.
+// 'holes' is what a complete map must contain — the import refuses anything less.
+const OSM_SITES={
+  'Quinta da Beloura':{type:'relation',id:3239319,holes:18},
+  'Hendon GC':{type:'way',id:4179926,holes:18},
+  'Boavista Golf Course':{type:'relation',id:2168122,holes:18},
+  'Jamor':{type:'way',id:49167468,holes:9},
+  'Lisbon Sports':{type:'way',id:210138245,holes:18},
+  'Estoril Blue Course':{type:'relation',id:3239244,holes:9}
+};
+let GPON=false,GPPOS=null,GPERR=null,GPWATCH=null,GPGEO=null,GPBUSY=false,GPMSG=null;
+let GPBUF=[],GPUNIT='m',GPCAP=null;
+try{const u=localStorage.getItem('gpUnit');if(u==='y'||u==='m')GPUNIT=u;}catch(e){}
+const GP_MAXACC=25;      // metres — fixes worse than this are discarded outright
+const GP_WINDOW=15000;   // only fixes from the last 15s are trusted
+// Combine recent fixes by inverse-variance weighting: a ±3m fix counts far more than a ±12m one.
+// Averaging independent fixes shrinks random error roughly as 1/sqrt(n), so standing still
+// for a few seconds gives a materially tighter number than any single reading.
+function gpFix(){
+  const now=Date.now();
+  GPBUF=GPBUF.filter(f=>now-f.t<GP_WINDOW&&f.acc<=GP_MAXACC);
+  if(!GPBUF.length)return null;
+  let wsum=0,la=0,lo=0;
+  for(const f of GPBUF){const w=1/(f.acc*f.acc);wsum+=w;la+=f.lat*w;lo+=f.lon*w;}
+  const pos={lat:la/wsum,lon:lo/wsum};
+  // scatter of the individual fixes around the combined point = real-world stability
+  let sq=0;for(const f of GPBUF)sq+=Math.pow(gpDist(pos,f),2);
+  const spread=Math.sqrt(sq/GPBUF.length);
+  const best=Math.min(...GPBUF.map(f=>f.acc));
+  // honest error estimate: never claim better than 2m from a phone
+  const sigma=Math.max(2,Math.round(Math.min(best,1/Math.sqrt(wsum))/Math.sqrt(Math.min(GPBUF.length,8))*10)/10);
+  return {...pos,acc:Math.round(sigma*10)/10,n:GPBUF.length,spread:Math.round(spread),
+          locked:GPBUF.length>=5&&spread<=4&&sigma<=6};
+}
+const gpUnit=m=>GPUNIT==='y'?Math.round(m/0.9144):m;
+const geoKey=n=>n.replace(/[.#$/\[\]]/g,'_');
+function gpDist(a,b){ // metres, haversine
+  const R=6371000,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
+  const la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180;
+  const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;
+  return Math.round(2*R*Math.asin(Math.sqrt(h)));
+}
+function gpHole(){ return (GPGEO&&GPGEO[String(LRHOLE)])||null; }
+function gpStart(){
+  if(!navigator.geolocation){GPERR='This device has no GPS support.';render();return;}
+  GPERR=null;
+  GPWATCH=navigator.geolocation.watchPosition(
+    p=>{
+      const acc=Math.round(p.coords.accuracy);
+      GPBUF.push({lat:p.coords.latitude,lon:p.coords.longitude,acc,t:Date.now()});
+      if(GPBUF.length>14)GPBUF.shift();
+      GPPOS=gpFix();
+      if(GPCAP)GPCAP.fixes.push({lat:p.coords.latitude,lon:p.coords.longitude,acc});
+      GPERR=(!GPPOS&&acc>GP_MAXACC)?`GPS is only accurate to ±${acc}m here — too rough to trust. Waiting for a better signal…`:null;
+      if(V==='play'&&LPV==='round')render();
+    },
+    e=>{GPERR=e.code===1?'Location permission denied — enable it in your browser settings to use GPS.':'Waiting for a GPS signal…';if(V==='play')render();},
+    {enableHighAccuracy:true,maximumAge:2000,timeout:20000}
+  );
+}
+function gpStop(){ if(GPWATCH!=null){try{navigator.geolocation.clearWatch(GPWATCH)}catch(e){}GPWATCH=null;} GPPOS=null; GPBUF=[]; GPCAP=null; }
+function renderGPS(){
+  if(!GPON) return `<button class="gp-toggle" onclick="GP_ON()">📍 &nbsp;Show GPS distances</button>`;
+  const g=gpHole();
+  let h=`<div class="gp-panel">`;
+  if(GPERR) h+=`<div class="gp-warn">${GPERR}</div>`;
+  else if(!GPPOS) h+=`<div class="gp-warn">Acquiring GPS…</div>`;
+  else if(!g||!g.c) h+=`<div class="gp-warn">No green position stored for hole ${LRHOLE} yet.</div>`;
+  else{
+    const dc=gpDist(GPPOS,g.c);
+    // With the full green outline we measure front and back from where the player is
+    // actually standing, so a dog-leg can never mislabel the near and far edges.
+    let df=null,db=null;
+    if(g.poly&&g.poly.length){
+      let lo=Infinity,hi=-Infinity;
+      for(const v of g.poly){const d=gpDist(GPPOS,{lat:v[0],lon:v[1]});if(d<lo)lo=d;if(d>hi)hi=d;}
+      df=lo;db=hi;
+    }else{
+      df=g.f?gpDist(GPPOS,g.f):null; db=g.b?gpDist(GPPOS,g.b):null;
+    }
+    h+=`<div class="gp-big">${gpUnit(dc)}<small>${GPUNIT==='y'?'yd':'m'}</small></div>`;
+    h+=`<div class="gp-cap">to centre &nbsp;±${gpUnit(Math.round(GPPOS.acc))}${GPUNIT==='y'?'yd':'m'}</div>`;
+    h+=`<div class="gp-fb"><div class="gp-cell"><div class="v">${df!=null?gpUnit(df):'–'}</div><div class="l">Front</div></div><div class="gp-cell"><div class="v">${db!=null?gpUnit(db):'–'}</div><div class="l">Back</div></div></div>`;
+    h+=`<div class="gp-lock ${GPPOS.locked?'on':''}">${GPPOS.locked?`● Locked — ${GPPOS.n} fixes agree within ${GPPOS.spread}m`:`Settling… ${GPPOS.n} fix${GPPOS.n>1?'es':''}, scatter ${GPPOS.spread}m · stand still a moment`}</div>`;
+    h+=`<div class="gp-acc">${g.poly?'Edges measured live from the green outline':(g.src==='osm'?'Green from OpenStreetMap':'Green set by your group')} · a rangefinder is still the sharper tool inside 100${GPUNIT==='y'?'yd':'m'}</div>`;
+    h+=`<button class="gp-unit" onclick="GP_UNIT()">Show in ${GPUNIT==='y'?'metres':'yards'}</button>`;
+  }
+  // one-tap identify, when exact outlines are waiting and this hole is still blank
+  if(GPPOS&&!GPERR&&GPGEO&&GPGEO._pool&&GPGEO._pool.length&&!(g&&g.c)){
+    h+=`<button class="gp-link" onclick="GP_LINK()">📌 &nbsp;This green is hole ${LRHOLE}</button>`;
+    h+=`<div class="gp-note">${GPGEO._pool.length} exact green outline${GPGEO._pool.length>1?'s':''} from OpenStreetMap still to be identified. Stand on the green and tap — you get true front and back, no edge-walking.</div>`;
+  }
+  // capture controls
+  if(GPPOS&&!GPERR){
+    h+=`<div class="gp-cap3">
+      <button class="gp-cbtn${g&&g.f?' set':''}" onclick="GP_SET('f')">${g&&g.f?'✓ ':''}Set front</button>
+      <button class="gp-cbtn${g&&g.c?' set':''}" onclick="GP_SET('c')">${g&&g.c?'✓ ':''}Set centre</button>
+      <button class="gp-cbtn${g&&g.b?' set':''}" onclick="GP_SET('b')">${g&&g.b?'✓ ':''}Set back</button>
+    </div><div class="gp-note">Standing on the green? Tap to record its edges — saved for your whole group, permanently.</div>`;
+  }
+  const site=LR&&OSM_SITES[LR.course];
+  if(site) h+=`<button class="gp-imp" ${GPBUSY?'disabled':''} onclick="GP_IMPORT()">${GPBUSY?'Importing from OpenStreetMap…':'Auto-map all holes from OpenStreetMap'}</button>`;
+  if(GPMSG) h+=`<div class="gp-note">${GPMSG}</div>`;
+  // completeness banner — always know whether this course is fully mapped
+  if(LR){
+    const need=LR.holes, have=Object.keys(GPGEO||{}).filter(k=>k!=='_pool'&&GPGEO[k]&&GPGEO[k].c&&+k>=1&&+k<=need).length;
+    const miss=[]; for(let i=1;i<=need;i++){ if(!(GPGEO&&GPGEO[i]&&GPGEO[i].c)) miss.push(i); }
+    h+=`<div class="gp-note" style="${have===need?'color:#7FB069':''}">${have===need?`✓ ${LR.course} fully mapped — ${need}/${need} holes`:`${have}/${need} holes mapped${miss.length&&miss.length<=8?` · missing ${miss.join(', ')}`:''}`}</div>`;
+  }
+  h+=`<button class="gp-toggle on" onclick="GP_OFF()">Hide GPS &nbsp;·&nbsp; saves battery</button>`;
+  return h+`</div>`;
 }
 
 function renderPlay(){
@@ -1648,6 +1864,7 @@ function renderPlay(){
         <button class="st-clr"${empty?' style="visibility:hidden"':''} onclick="LP_CLR('${p.id}')">✕</button>
       </div></div>`;
     }).join('');
+    h+=renderGPS();
     h+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
     const B=lpBoard(LR);
     h+=`<div class="lp-sec" style="margin-top:20px">Leaderboard · live</div><div class="lp-lb">`;
@@ -1657,6 +1874,7 @@ function renderPlay(){
       return `<div class="row"><div class="pos">${p.thru?i+1:'–'}</div><div class="nm2">${p.name}${p.guest?' ᵍ':''}</div><div class="num">${p.thru?p.gross:'–'}</div><div class="num ${p.toPar>0?'u':p.toPar<0?'d':''}">${tp}</div><div class="num">${p.thru?p.stb:'–'}</div><div class="num"><small>${p.thru}/${n}</small></div></div>`;
     }).join('');
     h+=`</div>`;
+    if(LPQ.length) h+=`<div class="lp-offline">⟳ ${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
     const allDone=B.every(p=>p.thru===n);
     h+=`<div class="lp-fin"><button class="lp-fbtn disc" onclick="LP_X()">Discard</button><button class="lp-fbtn post" ${allDone?'':'disabled'} onclick="LP_F()">Finish round</button></div>`;
     if(!allDone)h+=`<div class="lp-hint">Finishing unlocks when every player has all ${n} holes in. The round is saved live — closing the app never loses it.</div>`;
@@ -2546,11 +2764,198 @@ function renderPredictModal(){
 }
 
 // ── HANDLERS ──────────────────────────────────────────────────────────────────
-window.SV=v=>{V=v;OPEN_COURSE=null;OPEN_SCORE=null;if(v==='play'){LRMSG=null;LPV=LR?'round':'list';lpPull();}render();};
+window.SV=v=>{V=v;OPEN_COURSE=null;OPEN_SCORE=null;if(v!=='play'&&GPON){GPON=false;gpStop();}if(v==='play'){LRMSG=null;LPV=LR?'round':'list';lpPull();}render();};
 
 // ── PLAY handlers ──
+// ── GPS handlers ──
+window.GP_ON=async()=>{GPON=true;GPMSG=null;render();gpStart();await gpLoad();};
+window.GP_OFF=()=>{GPON=false;gpStop();render();};
+async function gpLoad(){
+  if(!LR)return;
+  try{
+    const d=await(await fetch(`${GEO_URL}/${geoKey(LR.course)}.json?t=${Date.now()}`)).json();
+    GPGEO=d||{};
+  }catch(e){ GPGEO=GPGEO||{}; }
+  if(V==='play')render();
+}
+// Precision capture: hold still while we collect ~10s of fixes and average the best of
+// them. This makes a hand-set green point considerably tighter than a single reading —
+// and tighter than tracing it off satellite imagery.
+window.GP_SET=async(which)=>{
+  if(!GPPOS||!LR||GPCAP)return;
+  const label=which==='f'?'front':which==='b'?'back':'centre';
+  GPCAP={which,fixes:[],started:Date.now()};
+  GPMSG=`Hold still — measuring ${label} of hole ${LRHOLE}…`;render();
+  for(let i=0;i<20;i++){
+    await new Promise(r=>setTimeout(r,500));
+    if(!GPCAP)return;
+    GPMSG=`Hold still — measuring ${label}… ${Math.min(10,Math.round((Date.now()-GPCAP.started)/1000))}s · ${GPCAP.fixes.length} fixes`;
+    render();
+    if(Date.now()-GPCAP.started>10000)break;
+  }
+  const good=GPCAP.fixes.filter(f=>f.acc<=GP_MAXACC);
+  GPCAP=null;
+  if(good.length<3){GPMSG=`Only ${good.length} usable fix${good.length===1?'':'es'} — signal too weak to record ${label} accurately. Nothing saved.`;render();return;}
+  let wsum=0,la=0,lo=0;
+  for(const f of good){const w=1/(f.acc*f.acc);wsum+=w;la+=f.lat*w;lo+=f.lon*w;}
+  const pt={lat:la/wsum,lon:lo/wsum};
+  let sq=0;for(const f of good)sq+=Math.pow(gpDist(pt,f),2);
+  const spread=Math.round(Math.sqrt(sq/good.length));
+  if(spread>8&&!confirm(`Those ${good.length} readings scattered by about ${spread}m, so this point would be rough.\n\nSave it anyway?`)){GPMSG='Not saved.';render();return;}
+  GPGEO=GPGEO||{};
+  const k=String(LRHOLE);
+  GPGEO[k]={...(GPGEO[k]||{}),[which]:pt,src:'capture'};
+  if(GPGEO[k].poly)delete GPGEO[k].poly;   // hand-set points supersede an imported outline
+  if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
+  GPMSG=`Hole ${LRHOLE} ${label} saved from ${good.length} fixes (±${Math.max(2,spread)}m).`;
+  render();
+  try{await fetch(`${GEO_URL}/${geoKey(LR.course)}/${k}.json`,{method:'PUT',body:JSON.stringify(GPGEO[k])});}catch(e){GPMSG='Saved on this phone — will sync when you have signal.';render();}
+};
+// Standing on an unnumbered green: match the player's position to the nearest
+// unclaimed OSM outline and bind it to this hole. Exact geometry, one tap, no guessing.
+window.GP_LINK=async()=>{
+  if(!GPPOS||!LR||!GPGEO||!GPGEO._pool||!GPGEO._pool.length)return;
+  let best=null;
+  GPGEO._pool.forEach((p,idx)=>{
+    let lo=Infinity;
+    for(const v of p.poly){const d=gpDist(GPPOS,{lat:v[0],lon:v[1]});if(d<lo)lo=d;}
+    if(!best||lo<best.d)best={d:lo,idx,p};
+  });
+  if(!best)return;
+  if(best.d>70){GPMSG=`Nearest unidentified green is ${best.d}m away — walk onto the green you want to record, then tap again.`;render();return;}
+  if(!GPPOS.locked&&!confirm(`GPS has not settled yet (${GPPOS.n} fixes, ±${GPPOS.acc}m scatter ${GPPOS.spread}m).\n\nIt is safer to wait a few seconds for "Locked". Record hole ${LRHOLE} anyway?`))return;
+  const k=String(LRHOLE);
+  GPGEO=GPGEO||{};
+  GPGEO[k]={c:best.p.c,poly:best.p.poly,src:'linked'};
+  GPGEO._pool=GPGEO._pool.filter((_,i)=>i!==best.idx);
+  if(navigator.vibrate)try{navigator.vibrate(14)}catch(e){}
+  const left=GPGEO._pool.length;
+  GPMSG=`Hole ${LRHOLE} green recorded from its exact outline${left?` · ${left} left to identify`:' · every green now identified ✓'}`;
+  render();
+  try{
+    await fetch(`${GEO_URL}/${geoKey(LR.course)}/${k}.json`,{method:'PUT',body:JSON.stringify(GPGEO[k])});
+    await fetch(`${GEO_URL}/${geoKey(LR.course)}/_pool.json`,{method:'PUT',body:JSON.stringify(GPGEO._pool)});
+  }catch(e){GPMSG='Recorded on this phone — will sync when you have signal.';render();}
+};
+window.GP_UNIT=()=>{GPUNIT=GPUNIT==='m'?'y':'m';try{localStorage.setItem('gpUnit',GPUNIT)}catch(e){}render();};
+window.GP_IMPORT=async()=>{
+  const site=OSM_SITES[LR.course]; if(!site)return;
+  GPBUSY=true;GPMSG='Querying OpenStreetMap…';render();
+  const sel=site.type==='relation'?`rel(${site.id})`:`way(${site.id})`;
+  // Query strictly INSIDE the course boundary, so a neighbouring club's greens
+  // can never be pulled in by a loose bounding box.
+  const q=`[out:json][timeout:60];
+${sel}; map_to_area->.a;
+(way["golf"="green"](area.a); way["golf"="hole"](area.a); way["golf"="tee"](area.a););
+out geom;`;
+  const eps=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+  let data=null;
+  for(const ep of eps){
+    const ac=new AbortController(); const to=setTimeout(()=>ac.abort(),20000);
+    try{
+      const r=await fetch(ep,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});
+      clearTimeout(to);
+      const t=await r.text();
+      if(t.trim().startsWith('{')){data=JSON.parse(t);break;}
+    }catch(e){clearTimeout(to);}
+  }
+  if(!data){GPBUSY=false;GPMSG='OpenStreetMap is not responding right now. Nothing was changed — try again later, or tap the greens yourself as you play.';render();return;}
+
+  const els=data.elements||[];
+  const refOf=e=>{const t=e.tags||{};const v=t.ref||t.name||t['golf:hole']||t.hole;const n=parseInt(v,10);return isNaN(n)?null:n;};
+  const greens=els.filter(e=>e.tags&&e.tags.golf==='green'&&e.geometry&&e.geometry.length>2);
+  const lines=els.filter(e=>e.tags&&e.tags.golf==='hole'&&e.geometry&&e.geometry.length>1&&refOf(e)!=null);
+  const tees=els.filter(e=>e.tags&&e.tags.golf==='tee'&&e.geometry);
+  const cent=geo=>({lat:geo.reduce((s,p)=>s+p.lat,0)/geo.length, lon:geo.reduce((s,p)=>s+p.lon,0)/geo.length});
+  const N=site.holes, MATCH_LIMIT=35;
+
+  // Strategy A — greens already carry their hole number (cleanest).
+  // Strategy B — match each numbered hole centre-line to the green at its far end.
+  const numbered=greens.filter(g=>refOf(g)!=null);
+  const picked={}; let method='';
+  if(numbered.length){
+    method='numbered greens';
+    numbered.forEach(g=>{const r=refOf(g); if(r>=1&&r<=N&&!picked[r]) picked[r]={green:g,origin:null,match:0};});
+  }
+  if(Object.keys(picked).length<N&&lines.length>=N){
+    method='numbered hole lines';
+    for(const L of lines){
+      const ref=refOf(L); if(ref<1||ref>N)continue;
+      const gm=L.geometry, ends=[gm[0],gm[gm.length-1]];
+      let best=null;
+      for(const e of ends) for(const g of greens){
+        const d=gpDist(e,cent(g.geometry));
+        if(!best||d<best.d) best={d,green:g,teeEnd:(e===ends[0]?gm[gm.length-1]:gm[0])};
+      }
+      if(best&&(!picked[ref]||best.d<picked[ref].match)) picked[ref]={green:best.green,origin:best.teeEnd,match:best.d};
+    }
+  }
+
+  // ── strict validation: every hole present, a DISTINCT green each, all matches tight ──
+  const missing=[], usedIds={}, dupes=[], loose=[];
+  for(let hn=1;hn<=N;hn++){
+    const p=picked[hn];
+    if(!p){missing.push(hn);continue;}
+    if(p.match>MATCH_LIMIT){loose.push(hn);continue;}
+    if(usedIds[p.green.id]){dupes.push(hn);continue;}
+    usedIds[p.green.id]=hn;
+  }
+  const bad=[...new Set([...missing,...dupes,...loose])].sort((a,b)=>a-b);
+  const good=N-bad.length;
+
+  // Greens whose hole number OSM does not record. Rather than guess, keep their exact
+  // outlines aside so they can be identified with a single tap while standing on them.
+  const pool=greens.filter(g=>!usedIds[g.id]).map(g=>{
+    const pts=g.geometry.map(x=>({lat:x.lat,lon:x.lon}));
+    return {c:cent(pts),poly:pts.map(x=>[Math.round(x.lat*1e6)/1e6,Math.round(x.lon*1e6)/1e6])};
+  });
+
+  if(bad.length){
+    const why = pool.length
+      ? `OpenStreetMap has ${greens.length} green outlines here but does not record which hole ${pool.length===1?'one of them belongs':'they belong'} to, so ${bad.length} hole${bad.length>1?'s':''} cannot be numbered automatically.`
+      : (greens.length<N
+        ? `OpenStreetMap only has ${greens.length} green${greens.length===1?'':'s'} mapped for this course, so ${bad.length} hole${bad.length>1?'s':''} cannot be placed at all.`
+        : `${bad.length} hole${bad.length>1?'s':''} could not be matched to a distinct green with confidence.`);
+    GPBUSY=false;
+    const route = pool.length
+      ? `\n\nThe ${pool.length} unnumbered outline${pool.length>1?'s are':' is'} exact — while standing on each green you can tap "This green is hole N" once and it is done, with full front and back accuracy.`
+      : `\n\nThose holes will need their front, centre and back tapped on the course.`;
+    const ok=confirm(`Not a complete map yet.\n\n${why}\n\nNumbered automatically: ${good} of ${N}\nStill to identify: hole${bad.length>1?'s':''} ${bad.join(', ')}${route}\n\nSave what is verified and continue on the course? Nothing has been written yet.`);
+    if(!ok){GPMSG='Import cancelled — nothing saved.';render();return;}
+  }
+
+  // build records only for holes that passed validation
+  const out={};
+  Object.keys(usedIds).forEach(id=>{
+    const hn=usedIds[id], p=picked[hn], pts=p.green.geometry.map(x=>({lat:x.lat,lon:x.lon}));
+    const c=cent(pts);
+    let origin=p.origin;
+    if(!origin){ const t=tees.find(t=>refOf(t)===hn); if(t) origin=cent(t.geometry); }
+    let f=null,b=null;
+    if(origin){ let lo=Infinity,hi=-Infinity;
+      for(const q2 of pts){const d=gpDist(origin,q2); if(d<lo){lo=d;f=q2;} if(d>hi){hi=d;b=q2;}} }
+    out[String(hn)]={c,...(f?{f}:{}),...(b?{b}:{}),
+      poly:pts.map(x=>[Math.round(x.lat*1e6)/1e6,Math.round(x.lon*1e6)/1e6]),src:'osm'};
+  });
+
+  // never overwrite a position your group captured by hand
+  GPGEO=GPGEO||{};
+  Object.keys(GPGEO).forEach(k=>{ if(GPGEO[k]&&GPGEO[k].src==='capture') delete out[k]; });
+  if(pool.length) out._pool=pool;
+  if(!Object.keys(out).length){GPBUSY=false;GPMSG='OpenStreetMap has nothing usable for this course. Tap the front, centre and back of each green as you play — a one-off job, then it is permanent.';render();return;}
+  try{ await fetch(`${GEO_URL}/${geoKey(LR.course)}.json`,{method:'PATCH',body:JSON.stringify(out)}); }
+  catch(e){ GPBUSY=false;GPMSG='Could not save to the shared database — check your connection and try again.';render();return; }
+  GPGEO={...GPGEO,...out};
+  GPBUSY=false;
+  const n=Object.keys(out).filter(k=>k!=='_pool').length;
+  GPMSG=bad.length
+    ? `Numbered ${n} of ${N} hole${N>1?'s':''} automatically${pool.length?` · ${pool.length} exact green outline${pool.length>1?'s':''} ready to identify — stand on a green and tap the button`:''}.`
+    : `Complete — all ${N} holes mapped from OpenStreetMap (${method}), saved for your whole group. ✓`;
+  render();
+};
+
 window.LP_NEW=()=>{LPV='setup';LRMSG=null;LRSEL={course:null,tee:null,players:{},guests:[]};render();};
-window.LP_BACK=()=>{LPV='list';HISTOPEN=null;LRMSG=null;lpPull();render();};
+window.LP_BACK=()=>{LPV='list';HISTOPEN=null;LRMSG=null;GPON=false;gpStop();lpPull();render();};
 window.LP_C=n=>{LRSEL.course=n;LRSEL.tee=null;render();};
 window.LP_T=t=>{LRSEL.tee=t;render();};
 window.LP_P=id=>{LRSEL.players[id]=!LRSEL.players[id];render();};
@@ -2576,7 +2981,7 @@ window.LP_START=async()=>{
   LRHOLE=1;LRMSG=null;LPV='round';render();
   try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'PUT',body:JSON.stringify(LR)});}catch(e){}
 };
-window.LP_JOIN=id=>{LRID=id;LR=ROUNDS[id];LRHOLE=1;
+window.LP_JOIN=id=>{LRID=id;LR=ROUNDS[id];LRHOLE=1;GPGEO=null;LPQ=[];lpLoadLocal(id);if(LR)LR.scores=lpApplyQ(LR.scores);lpFlush();
   // jump to first incomplete hole
   if(LR){for(let x=1;x<=LR.holes;x++){if(!LR.players.every(p=>lpHasScore(LR.scores,x,p.id))){LRHOLE=x;break;}LRHOLE=LR.holes;}}
   LPV='round';LRMSG=null;render();};
@@ -2588,8 +2993,9 @@ async function lpWrite(pid,v){
   LR.scores[h][pid]=v;
   LPLASTW=Date.now();
   if(navigator.vibrate)try{navigator.vibrate(8)}catch(e){}
+  lpQueue(h,pid,v);      // recorded locally before any network attempt
   render();
-  try{await fetch(`${LRS_URL}/${LRID}/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[pid]:v})});}catch(e){}
+  await lpFlush();       // send it now if we can; otherwise it waits safely in the queue
 }
 window.LP_INC=(pid,d)=>{
   const par=LR.parArr[LRHOLE-1];
@@ -2605,9 +3011,15 @@ window.LP_X=async()=>{
   if(!confirm('Discard this round for EVERYONE?\n\nNo scores will be posted and the round will be deleted.'))return;
   if(!confirm('Are you absolutely sure?\n\nThis cannot be undone. Press OK to permanently delete the round.'))return;
   try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'DELETE'});}catch(e){}
+  LPQ=[];lpSaveLocal();
   LR=null;LRID=null;LPV='list';LRMSG='Round discarded.';lpPull();render();
 };
+window.LP_RETRY=async()=>{ LRMSG=null; await lpFlush(); if(!LPQ.length){LRMSG='All scores synced. ✓';} render(); };
 window.LP_F=async()=>{
+  if(LPQ.length){
+    await lpFlush();
+    if(LPQ.length){ alert(`${LPQ.length} score${LPQ.length>1?'s are':' is'} still saved only on this phone.\n\nFind signal and tap "retry now" before finishing, so nothing is lost from the card.`); render(); return; }
+  }
   const B=lpBoard(LR);
   const lines=B.map(p=>`${p.name}${p.guest?' (guest — not posted)':''}: ${p.gross} gross`).join('\n');
   if(!confirm(`Finish this round?\n\n${lines}\n\nCourse: ${LR.course} (${LR.tee}) · ${LR.date}\n\nMember scores post to handicaps. Guests appear in history only.`))return;
@@ -2623,6 +3035,7 @@ window.LP_F=async()=>{
   upd(ns);
   // 3 · remove from live lobby
   try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'DELETE'});}catch(e){}
+  LPQ=[];lpSaveLocal();
   SUMMARY=rec;LR=null;LRID=null;HIST=null;LPV='summary';render();
 };
 window.LP_DONE=()=>{SUMMARY=null;LPV='list';LRMSG='Round saved to history — handicaps updated. ⛳';lpPull();render();};
@@ -2641,6 +3054,7 @@ async function lpPull(){
         if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was closed on another phone.';if(V==='play'&&!MOD)render();}
       }else{
         if(Date.now()-LPLASTW<6000){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score, generous window
+        d.scores=lpApplyQ(d.scores);   // anything not yet synced stays visible
         const changed=JSON.stringify(d)!==JSON.stringify(LR);
         LR=d;
         if(changed&&V==='play'&&!MOD)render();   // stable screen: no change → no rebuild
@@ -2654,6 +3068,8 @@ async function lpPull(){
   }catch(e){}
 }
 setInterval(()=>{if(V==='play')lpPull();},2500);
+setInterval(()=>{if(LPQ.length&&LRID)lpFlush();},6000);
+window.addEventListener('online',()=>{if(LPQ.length&&LRID)lpFlush();});
 
 
 // Download a JSON snapshot of all club data — useful as a safety backup
