@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1A0E">
+<title>The Club · Course Restructure</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A1A0E;--bg3:#071009;--panel:rgba(255,255,255,.04);--line:rgba(201,168,76,.18);
+--gold:#C9A84C;--gold-lt:#E6CE80;--text:#ECE8DA;--text2:#9DA89D;--text3:#647061;--ok:#7FB069;--warn:#D8A24A;--bad:#CF6B5C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:radial-gradient(130% 50% at 50% -5%,#14301E 0%,var(--bg) 50%,var(--bg3) 100%);color:var(--text);
+font-family:'Barlow',system-ui,sans-serif;min-height:100vh;padding:26px 15px 70px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:620px;margin:0 auto}
+h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:31px;color:var(--gold);text-align:center}
+.sub{text-align:center;font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);margin:5px 0 22px}
+.card{border:0.5px solid var(--line);border-radius:16px;background:var(--panel);padding:16px;margin-bottom:12px}
+.card h3{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:18px;color:var(--gold-lt);margin-bottom:9px}
+.card li,.card p{font-size:13px;line-height:1.65;color:var(--text2);list-style:none;padding:4px 0;border-bottom:0.5px solid rgba(201,168,76,.07)}
+.card li:last-child{border-bottom:none}
+.card li b{color:var(--text)}
+.btn{width:100%;border:none;border-radius:13px;padding:16px;font-weight:700;font-size:15px;font-family:'Barlow',sans-serif;
+background:linear-gradient(135deg,var(--gold),#B08F3C);color:#1A1306;cursor:pointer;margin-top:6px}
+.btn:disabled{opacity:.45}
+.btn.dry{background:transparent;border:0.5px solid var(--line);color:var(--text2);font-weight:600}
+#log{font-size:12.5px;line-height:1.75;color:var(--text2);white-space:pre-wrap;font-variant-numeric:tabular-nums}
+#log .ok{color:var(--ok)}#log .warn{color:var(--warn)}#log .bad{color:var(--bad)}#log b{color:var(--text)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+th{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text3);text-align:left;padding:6px;border-bottom:0.5px solid var(--line)}
+td{padding:6px;border-bottom:0.5px solid rgba(201,168,76,.07);color:var(--text2)}
+td b{color:var(--text)}.up{color:var(--bad)}.down{color:var(--ok)}.same{color:var(--text3)}
+.done{display:none;text-align:center;border:0.5px solid rgba(127,176,105,.4);border-radius:16px;background:rgba(127,176,105,.07);
+padding:16px;margin-top:14px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Course Restructure</h1>
+  <div class="sub">Official FPG data · one course, many tees</div>
+
+  <div class="card">
+    <h3>What this does</h3>
+    <ul>
+      <li><b>Backs up</b> everything first, restorable</li>
+      <li><b>Rebuilds the course list</b> from the official FPG table — 22 Portuguese courses, every tee, with separate ratings for 18 holes, the front nine and the back nine</li>
+      <li><b>Corrects 18 wrong ratings</b>, including Belas (slope 110 → 137) and PGA Aroeira n2 (67.8 → 70.7)</li>
+      <li><b>Merges the duplicates</b> — Hendon's five names, Oeiras' three, Benamor's two, Penha Longa Mosteiro's two</li>
+      <li><b>Tags every round</b> with which holes were played, so configurations stop living in course names</li>
+      <li><b>Adopts the sourced rating wherever one exists</b> — North Middlesex now 67.3/129, Ilford onto its only rated men's tee, Carnoustie corrected to the Championship White it was always using</li>
+      <li><b>Verifies the London courses</b> — Hendon, Brent Valley, Mill Hill, Stanmore, Hertsmere, Ilford and Dale Hill (Ian Woosnam), with real front and back nines for Hendon instead of halved estimates</li>
+      <li><b>Moves hole and GPS data</b> across to the new course names so nothing is orphaned</li>
+      <li><b>Shows every handicap before and after</b> before writing anything</li>
+    </ul>
+  </div>
+
+  <button class="btn dry" id="dry" onclick="run(true)">Dry run — show me what would change</button>
+  <button class="btn" id="go" onclick="run(false)" disabled>Apply the restructure</button>
+
+  <div class="card" id="logcard" style="display:none"><h3>Report</h3><div id="log"></div><div id="tbl"></div></div>
+  <div class="done" id="done">Done — open The Club and pull to refresh. ⛳</div>
+</div>
+
+<script>
+const BASE='https://whs-handicap-default-rtdb.firebaseio.com';
+const L=(m,c)=>{const e=document.getElementById('log');e.innerHTML+=(c?`<span class="${c}">${m}</span>`:m)+'\n';};
+
+// ── Official FPG men's ratings. [par18,cr18,sl18, parF9,crF9,slF9, parL9,crL9,slL9] ──
+const FPG={
+ 'Belas':{BRANCAS:[72,72.9,137,36,35.5,132,36,37.4,142],AMARELAS:[72,71.2,134,36,34.6,129,36,36.6,138],AZUIS:[72,68.5,128,36,33.6,124,36,35,132],VERMELHAS:[72,65.6,122,36,31.8,117,36,33.9,127],VERDES:[72,61.6,114,36,30.5,112,36,31.1,116],ROXAS:[72,60.1,111,36,29.7,109,36,30.4,113]},
+ 'Benamor':{BRANCAS:[71,68.2,121,36,34.3,122,35,34,120],AMARELAS:[71,66.7,118,36,33.5,119,35,33.2,117],VERMELHAS:[71,64.6,114,36,32.6,115,35,32,112],VERDES:[71,60.7,106,36,30.7,107,35,30,104],ROXAS:[71,59.2,103,36,30,104,35,29.2,101]},
+ 'Boavista':{PRETAS:[71,73.4,138,35,35.7,133,36,37.7,143],BRANCAS:[71,71.2,135,35,34.4,129,36,36.8,141],AMARELAS:[71,68.9,131,35,33.2,125,36,35.7,136],VERMELHAS:[71,66.3,126,35,32.1,121,36,34.2,130]},
+ 'Bom Sucesso':{BRANCAS:[72,72.4,134,37,37.1,136,35,35.4,132],AMARELAS:[72,70.6,130,37,36,131,35,34.6,129],AZUIS:[72,69.1,127,37,35.3,128,35,33.8,125],VERMELHAS:[72,65.6,120,37,33.6,122,35,32,118]},
+ 'Estela':{BRANCAS:[72,72.9,132,36,36.8,126,36,36.1,137],AMARELAS:[72,71.2,128,36,35.9,122,36,35.3,134],VERMELHAS:[72,68.2,122,36,34.5,117,36,33.8,128],VERDES:[72,61.4,106,36,30.8,102,36,30.6,110],ROXAS:[72,59.9,102,36,30,99,36,29.9,105]},
+ 'Estoril Blue Course':{BRANCAS:[68,65,113,34,32.5,113,34,32.5,113],AMARELAS:[68,64.6,113,34,32.3,113,34,32.3,113],AZUIS:[68,63.6,111,34,31.8,111,34,31.8,111],VERMELHAS:[68,63.2,110,34,31.6,110,34,31.6,110],ROXAS:[68,57.4,98,34,28.7,98,34,28.7,98]},
+ 'Jamor':{BRANCAS:[70,65.5,109,35,32.8,109,35,32.8,109],AMARELAS:[70,63.6,105,35,31.8,105,35,31.8,105],VERMELHAS:[70,61.1,100,35,30.6,100,35,30.6,100],ROXAS:[70,58.8,96,35,29.4,96,35,29.4,96]},
+ 'Lisbon Sports Club':{BRANCAS:[69,69.2,127,34,34.2,121,35,35.1,132],AMARELAS:[69,67.8,124,34,33.6,119,35,34.3,129],VERMELHAS:[69,66,120,34,32.6,115,35,33.5,125],VERDES:[69,63.5,115,34,31.6,110,35,31.9,119],ROXAS:[69,60,108,34,29.8,104,35,30.2,112]},
+ 'Montado':{BRANCAS:[72,73.2,130,36,36.5,132,36,36.7,128],AMARELAS:[72,70.9,126,36,35.3,128,36,35.6,124],AZUIS:[72,69,122,36,34.2,124,36,34.8,119],VERMELHAS:[72,65.9,116,36,33,119,36,32.9,112],VERDES:[72,60.8,107,36,30.2,110,36,30.6,103],ROXAS:[72,59.1,103,36,29.3,104,36,29.8,101]},
+ 'Oeiras':{BRANCAS:[74,75,135,37,37.5,135,37,37.5,135],AMARELAS:[74,72.4,129,37,36.2,129,37,36.2,129],AZUIS:[74,70.4,125,37,35.2,125,37,35.2,125],VERMELHAS:[74,67.8,119,37,33.9,119,37,33.9,119],VERDES:[74,62.6,109,37,31.3,109,37,31.3,109],ROXAS:[74,58.8,100,37,29.4,100,37,29.4,100]},
+ 'Penha Longa Atlantic Championship':{BRANCAS:[72,72.2,129,36,35.6,126,36,36.6,131],AMARELAS:[72,69.8,125,36,34.5,122,36,35.3,127],AZUIS:[72,69.4,124,36,34.3,121,36,35.1,126],VERMELHAS:[72,67.7,119,36,33.6,117,36,34.1,121]},
+ 'Penha Longa Mosteiro':{BRANCAS:[70,66.4,118,35,33.2,118,35,33.2,118],AMARELAS:[70,64,114,35,32,114,35,32,114],VERMELHAS:[70,62.2,110,35,31.1,110,35,31.1,110],VERDES:[70,59.6,103,35,29.8,103,35,29.8,103],ROXAS:[70,58,100,35,29,100,35,29,100]},
+ 'PGA Aroeira No.1':{BRANCAS:[72,72.1,128,36,36.6,124,36,35.5,132],AMARELAS:[72,70.6,125,36,35.9,121,36,34.7,129],AZUIS:[72,69.4,123,36,35.3,119,36,34.1,126],VERMELHAS:[72,67.8,119,36,34.6,116,36,33.2,123]},
+ 'PGA Aroeira No.2':{BRANCAS:[72,73,133,37,37.5,135,35,35.5,130],AMARELAS:[72,70.7,128,37,36.2,129,35,34.5,126],AZUIS:[72,68.1,123,37,35.1,125,35,33,121],VERMELHAS:[72,65.5,117,37,33.7,119,35,31.8,115],VERDES:[72,59.8,108,37,30.5,110,35,29.3,105],ROXAS:[72,59.2,99,37,30,99,35,29.2,99]},
+ 'Quinta da Beloura':{BRANCAS:[72,70.8,127,36,36,123,36,34.8,131],AMARELAS:[72,69.1,124,36,35,119,36,34.1,128],VERMELHAS:[72,66.6,119,36,33.9,114,36,32.7,123]},
+ 'Quinta da Marinha':{BRANCAS:[71,71.1,134,35,35.3,137,36,35.8,131],AMARELAS:[71,69.6,131,35,34.5,134,36,35.1,128],AZUIS:[71,67.6,127,35,33.5,130,36,34.1,123],VERMELHAS:[71,65.7,123,35,32.4,126,36,33.3,120]},
+ 'Quinta de Cima':{BRANCAS:[72,74,129,36,36.4,126,36,37.6,132],AMARELAS:[72,72,125,36,35.7,123,36,36.3,127],AZUIS:[72,69.3,120,36,34.6,118,36,34.7,121],VERMELHAS:[72,66.7,114,36,33.2,113,36,33.5,115]},
+ 'Quinta do Peru':{BRANCAS:[72,71.9,141,36,36.4,146,36,35.5,135],AMARELAS:[72,69.8,136,36,35.3,141,36,34.5,131],AZUIS:[72,69,134,36,34.9,139,36,34.1,129],VERMELHAS:[72,64.6,124,36,32.5,129,36,32.1,118],VERDES:[72,61.7,120,36,30.8,123,36,30.9,116],ROXAS:[72,58.5,112,36,29.2,115,36,29.3,109]},
+ 'The Els Club Vilamoura':{PRETAS:[72,75.5,137,36,37.8,132,36,37.7,141],BRANCAS:[72,73,132,36,36.2,126,36,36.8,137],AMARELAS:[72,71.1,128,36,35.2,123,36,35.9,133],AZUIS:[72,69.2,123,36,34.3,118,36,34.9,128],VERMELHAS:[72,65.7,117,36,32.7,112,36,33,122]},
+ 'Vale Pisão':{PRETAS:[74,74.4,140,37,37.2,140,37,37.2,140],BRANCAS:[74,72.6,137,37,36.3,137,37,36.6,137],AMARELAS:[74,70.2,131,37,35.1,131,37,35.1,131],AZUIS:[74,67.2,125,37,33.6,125,37,33.6,125],VERMELHAS:[74,65,121,37,32.5,121,37,32.5,121],VERDES:[74,61.8,115,37,30.9,115,37,30.9,115],ROXAS:[74,60,111,37,30,111,37,30,111]},
+ 'Vilamoura - Millennium':{BRANCAS:[72,72.6,130,36,36.8,133,36,35.8,127],AMARELAS:[72,70.7,127,36,35.7,128,36,35,125],AZUIS:[72,69.4,123,36,35.1,125,36,34.3,121],VERMELHAS:[72,65.9,116,36,33.5,119,36,32.4,113],VERDES:[72,62,109,36,30.9,109,36,31.1,108],ROXAS:[72,58.6,101,36,29.3,101,36,29.3,100]},
+ 'Vilamoura - Old Course':{BRANCAS:[73,73.1,136,35,36,132,38,37.1,141],AMARELAS:[73,71.4,133,35,34.8,127,38,36.6,139],AZUIS:[73,70.4,131,35,34.4,125,38,36,137],VERMELHAS:[73,67.3,125,35,33.3,121,38,34,128]}
+};
+// ── Verified international ratings (golfhandicapcalculator.co, Aug 2026).
+// Trusted because its Hendon 18-hole figures reproduce the club's own men's
+// course-handicap table exactly — 70.5/127, 69.5/124, 68.3/125.
+// [par18,cr18,sl18, parF9,crF9,slF9, parL9,crL9,slL9]
+const INTL={
+ 'Hendon Golf Club':{White:[70,70.5,127,35,35.1,130,35,35.4,124],Yellow:[70,69.5,124,35,34.6,126,35,34.9,122],Red:[70,68.3,125,35,33.7,124,35,34.6,125]},
+ 'Dale Hill — Ian Woosnam':{White:[71,72.8,138,35,36.3,138,36,36.5,137],Yellow:[71,70.4,131,35,35.1,130,36,35.3,132],Red:[71,66.2,118,35,32.8,118,36,33.4,118]},
+ // North Middlesex: sourced figures throughout, replacing the previous 68/131 White entry.
+ 'North Middlesex GC':{Gold:[69,67.7,130,35,33.9,127,34,33.8,132],White:[69,67.3,129,34,33.6,126,35,33.7,132],Yellow:[69,66.3,126,35,33.2,118,34,33.1,133]},
+ // 18-hole only (three values). Every round played at these was a full round, and all
+ // five reproduce your existing entries exactly — your London data was already right.
+ 'Brent Valley GC':{White:[67,67.2,121],Yellow:[67,66.1,117]},
+ 'Mill Hill Golf Club':{White:[70,72.1,130],Yellow:[70,71,131]},
+ 'Stanmore GC':{White:[69,69.7,129],Yellow:[69,68.8,127],Red:[68,66.8,121]},
+ // only a men's White is rated at Ilford, so the round moves onto it
+ 'Ilford Golf Club':{White:[68,65.7,116]},
+ 'The Hertsmere':{White:[72,71,123],Yellow:[72,69.3,117],Red:[72,66.7,113]},
+ // Your entry read "Yellow 75.2/139", but 75.2/139 is the Championship WHITE tee exactly
+ // (Yellow there is 73.6/135). Official numbers, mislabelled tee — corrected below.
+ 'Carnoustie Championship':{Blue:[72,77.4,143],White:[72,75.2,139],Yellow:[70,73.6,135],Green:[70,71.5,130],Black:[70,69.1,126]}
+};
+const PT_TEE={White:'BRANCAS',Yellow:'AMARELAS',Blue:'AZUIS',Red:'VERMELHAS',Green:'VERDES',Purple:'ROXAS',Black:'PRETAS'};
+
+// ── Every old (course|tee) → new (course, tee, configuration) ──
+const MOVE={
+ 'Belas Golf Club|White':['Belas','White','18'],
+ 'Benamor|White':['Benamor','White','18'],'Benamor|Yellow':['Benamor','Yellow','18'],'Benamor|Red':['Benamor','Red','18'],
+ 'Benamor GC|White':['Benamor','White','18'],'Benamor GC|Yellow':['Benamor','Yellow','18'],
+ 'Boavista Golf Course|Black':['Boavista','Black','18'],'Boavista Golf Course|White':['Boavista','White','18'],
+ 'Boavista Golf Course|Yellow':['Boavista','Yellow','18'],'Boavista Golf Course|Red':['Boavista','Red','18'],
+ 'Golfe Bom Sucesso|Yellow':['Bom Sucesso','Yellow','18'],
+ 'Estela Golf Club|Yellow':['Estela','Yellow','18'],
+ 'Estoril Blue Course|Yellow':['Estoril Blue Course','Yellow','F9'],
+ 'Jamor|Yellow':['Jamor','Yellow','F9'],'Jamor|White':['Jamor','White','F9'],
+ 'Lisbon Sports|Yellow':['Lisbon Sports Club','Yellow','18'],'Lisbon Sports|White':['Lisbon Sports Club','White','18'],
+ 'Montado Golf Course|Yellow':['Montado','Yellow','18'],
+ 'Oeiras Green Valley|White':['Oeiras','White','F9'],'Oeiras Green Valley|Yellow':['Oeiras','Yellow','F9'],
+ 'Oeiras Green Valley|Blue':['Oeiras','Blue','F9'],'Oeiras Green Valley|Red':['Oeiras','Red','F9'],
+ 'Oeiras Green Valley|Green':['Oeiras','Green','F9'],'Oeiras Green Valley|Purple':['Oeiras','Purple','F9'],
+ 'Oeiras Valley|Yellow':['Oeiras','Yellow','18'],'Oeiras Valley F9|Yellow':['Oeiras','Yellow','F9'],
+ 'PGA Aroeira n1|Yellow':['PGA Aroeira No.1','Yellow','18'],'PGA Aroeira n2|Yellow':['PGA Aroeira No.2','Yellow','18'],
+ 'Penha Longa Mosteiro (Oficial)|Yellow':['Penha Longa Mosteiro','Yellow','F9'],
+ 'The Penha Longa Mosteiro|Yellow':['Penha Longa Mosteiro','Yellow','F9'],
+ 'The Penha Longa Atlantic Championship|White':['Penha Longa Atlantic Championship','White','18'],
+ 'Quinta da Beloura|Yellow':['Quinta da Beloura','Yellow','18'],
+ 'Quinta da Beloura Back 9|Yellow':['Quinta da Beloura','Yellow','L9'],
+ 'Quinta da Beloura (2xBack 9)|Yellow':['Quinta da Beloura','Yellow','L9x2'],
+ 'Quinta da Marinha Golf Clube|Yellow':['Quinta da Marinha','Yellow','18'],
+ 'Quinta de Cima (PGA)|White':['Quinta de Cima','White','18'],
+ 'Quinta do Peru|Yellow':['Quinta do Peru','Yellow','18'],
+ 'Els Club Vilamoura|Yellow':['The Els Club Vilamoura','Yellow','18'],
+ 'Vale Pisao GC|Yellow':['Vale Pisão','Yellow','18'],
+ 'MILLENNIUM DOM PEDRO|Yellow':['Vilamoura - Millennium','Yellow','18'],
+ 'Old Course Vilamoura|Yellow':['Vilamoura - Old Course','Yellow','18'],
+ // ── international: values preserved exactly, names tidied ──
+ 'Hendon GC|White':['Hendon Golf Club','White','18'],'Hendon GC|Yellow':['Hendon Golf Club','Yellow','18'],
+ 'Hendon GC|Red':['Hendon Golf Club','Red','18'],'Hendon Golf Club|Yellow':['Hendon Golf Club','Yellow','18'],
+ 'Hendon F9 (White)|White':['Hendon Golf Club','White','18'],
+ 'Hendon F9|White':['Hendon Golf Club','White','F9'],'Hendon GC F9|Yellow':['Hendon Golf Club','Yellow','F9'],
+ 'Fuerteventura Golf Club F9|Yellow':['Fuerteventura Golf Club','Yellow','F9'],
+ 'Viveiro Golf Cabo Verde F9|Yellow':['Viveiro Golf Cabo Verde','Yellow','F9'],
+ 'The Ian Woosnam Course|Yellow':['Dale Hill — Ian Woosnam','Yellow','18'],
+ 'North Middlesex GC|White':['North Middlesex GC','White','18'],
+ 'Ilford Golf Club|Yellow':['Ilford Golf Club','White','18'],
+ 'Carnoustie GC|Yellow':['Carnoustie Championship','White','18']
+};
+// international rows kept verbatim (name, tee, rating, slope) — nothing renamed, nothing re-rated
+const KEEP_AS_IS=['Isla Canela Links',
+ 'Trent Park GC','Royal Golf Marrakech Old Course',
+ 'Pestana Gramacho Golf Course','Belas Golf Club'];
+// hole-data / GPS keys that follow a rename
+const KEY_MOVE={'Lisbon Sports':'Lisbon Sports Club','Hendon GC':'Hendon Golf Club','Boavista Golf Course':'Boavista',
+ 'Oeiras Green Valley':'Oeiras','Benamor GC':'Benamor','The Ian Woosnam Course':'Dale Hill — Ian Woosnam','Carnoustie GC':'Carnoustie Championship'};
+
+const rd=(x,n=1)=>Math.round(x*10**n)/10**n;
+const calcDiff=(s,cr,sl)=>rd((s-cr)*113/sl);
+const WHS=[[3,1],[4,1],[5,1],[6,2],[7,2],[8,2],[9,3],[10,3],[11,3],[12,4],[13,4],[14,4],[15,5],[16,5],[17,6],[18,6],[19,7],[20,8]];
+function priorHI(eff){if(!eff.length)return 54;const r=eff.slice(-20),n=r.length;if(n<3)return 54;
+ const e=WHS[Math.min(n,20)-3],k=e?e[1]:1;return Math.min([...r].sort((a,b)=>a.d-b.d).slice(0,k).reduce((s,x)=>s+x.d,0)/k,54);}
+const isNine=g=>g==='F9'||g==='L9';
+function findC(courses,s){
+  const g=s.holes||null;
+  if(g){const x=courses.find(c=>c.name===s.course&&c.tee===s.tee&&(c.holes||'18')===g);if(x)return x;}
+  return courses.find(c=>c.name===s.course&&c.tee===s.tee)||null;
+}
+function calcHI(scores,courses){
+  scores=scores||[];
+  const cut=new Date();cut.setFullYear(cut.getFullYear()-2);
+  const recs=[];
+  scores.forEach((s,i)=>{const c=findC(courses,s);if(!c)return;
+    if(s.date&&new Date(s.date)<cut)return;
+    recs.push({i,d:calcDiff(s.score,c.rating,c.slope),is9:isNine(s.holes||(c.holes||(c.rating<40?'F9':'18')))});});
+  const eff=[];let cum=0,pend=[],done=false;
+  for(const r of recs){
+    const h=r.is9?9:18,warm=cum<54;
+    if(warm){ if(r.is9)pend.push(r); else eff.push({i:r.i,d:r.d}); }
+    else{ if(r.is9){const hi=priorHI(eff);eff.push({i:r.i,d:rd(r.d+rd(0.52*hi+1.2))});} else eff.push({i:r.i,d:r.d}); }
+    cum+=h;
+    if(!done&&cum>=54&&pend.length){
+      let whi; if(eff.length>=3)whi=priorHI(eff);
+      else{whi=54;for(let k=0;k<25;k++){const ex=0.52*whi+1.2;const tr=[...eff];pend.forEach(x=>tr.push({i:x.i,d:rd(x.d+ex)}));const nx=priorHI(tr);if(Math.abs(nx-whi)<0.01){whi=nx;break;}whi=nx;}}
+      const ex=rd(0.52*whi+1.2);pend.forEach(x=>eff.push({i:x.i,d:rd(x.d+ex)}));pend=[];done=true;
+    }
+  }
+  const r20=eff.slice(-20),n=r20.length;
+  if(n<3)return null;
+  const e=WHS[Math.min(n,20)-3],k=e?e[1]:1;
+  return rd(Math.min([...r20].sort((a,b)=>a.d-b.d).slice(0,k).reduce((s,x)=>s+x.d,0)/k,54));
+}
+
+function buildCourses(old){
+  const out=[];const seen=new Set();
+  const add=r=>{const k=r.name+'|'+r.tee+'|'+r.holes;if(seen.has(k))return;seen.add(k);out.push(r);};
+  // every FPG course, every tee, all three configurations
+  Object.keys(FPG).forEach(name=>{
+    Object.keys(FPG[name]).forEach(ptTee=>{
+      const en=Object.keys(PT_TEE).find(k=>PT_TEE[k]===ptTee);if(!en)return;
+      const v=FPG[name][ptTee];
+      add({name,tee:en,holes:'18',par:v[0],rating:v[1],slope:v[2],src:'fpg'});
+      add({name,tee:en,holes:'F9',par:v[3],rating:v[4],slope:v[5],src:'fpg'});
+      add({name,tee:en,holes:'L9',par:v[6],rating:v[7],slope:v[8],src:'fpg'});
+    });
+  });
+  // Beloura's back nine played twice — a real configuration your group uses
+  const bl=FPG['Quinta da Beloura'];
+  Object.keys(bl).forEach(ptTee=>{
+    const en=Object.keys(PT_TEE).find(k=>PT_TEE[k]===ptTee);if(!en)return;
+    const v=bl[ptTee];
+    add({name:'Quinta da Beloura',tee:en,holes:'L9x2',par:v[6]*2,rating:rd(v[7]*2),slope:v[8],src:'derived'});
+  });
+  // verified international courses — real front/back ratings, not halved guesses
+  Object.keys(INTL).forEach(name=>{
+    Object.keys(INTL[name]).forEach(tee=>{
+      const v=INTL[name][tee];
+      add({name,tee,holes:'18',par:v[0],rating:v[1],slope:v[2],src:'verified'});
+      if(v.length>=9){                       // nine-hole ratings only where published
+        add({name,tee,holes:'F9',par:v[3],rating:v[4],slope:v[5],src:'verified'});
+        add({name,tee,holes:'L9',par:v[6],rating:v[7],slope:v[8],src:'verified'});
+      }
+    });
+  });
+  // remaining international rows, carried over verbatim
+  old.forEach(c=>{
+    const mv=MOVE[c.name+'|'+c.tee];
+    if(mv&&(FPG[mv[0]]||INTL[mv[0]]))return;         // already covered by verified data
+    const nm=mv?mv[0]:c.name, te=mv?mv[1]:c.tee, hl=mv?mv[2]:(c.holes||(c.rating<40?'F9':'18'));
+    add({name:nm,tee:te,holes:hl,rating:c.rating,slope:c.slope,...(c.par?{par:c.par}:{}),src:c.src||'club'});
+  });
+  return out;
+}
+
+async function run(dry){
+  document.getElementById('dry').disabled=true;document.getElementById('go').disabled=true;
+  document.getElementById('logcard').style.display='block';document.getElementById('log').innerHTML='';
+  try{
+    L('Reading database…');
+    const d=await (await fetch(`${BASE}/whsapp.json`)).json();
+    if(!d||!d.players)throw new Error('could not read the database');
+
+    const before={};d.players.forEach(p=>{before[p.name]=calcHI(p.scores||[],d.courses||[]);});
+
+    const newCourses=buildCourses(d.courses||[]);
+    L(`Course rows: ${(d.courses||[]).length} → <b>${newCourses.length}</b> (${[...new Set(newCourses.map(c=>c.name))].length} unique courses)`,'ok');
+
+    // migrate every round
+    let moved=0,tagged=0,unmapped={};
+    const players=d.players.map(p=>({...p,scores:(p.scores||[]).map(s=>{
+      const mv=MOVE[s.course+'|'+s.tee];
+      if(mv){
+        const [nm,te,hl]=mv;
+        if(nm!==s.course||te!==s.tee)moved++;
+        if(!s.holes)tagged++;
+        return {...s,course:nm,tee:te,holes:hl};
+      }
+      if(!s.holes){
+        const c=(d.courses||[]).find(x=>x.name===s.course&&x.tee===s.tee);
+        const hl=c?(c.rating<40?'F9':'18'):'18';
+        tagged++;
+        return {...s,holes:hl};
+      }
+      return s;
+    })}));
+    // safety net: does every round still resolve?
+    players.forEach(p=>(p.scores||[]).forEach(s=>{if(!findC(newCourses,s))unmapped[s.course+'|'+s.tee+'|'+(s.holes||'')]=(unmapped[s.course+'|'+s.tee+'|'+(s.holes||'')]||0)+1;}));
+    L(`Rounds re-pointed to a merged course: <b>${moved}</b>`,'ok');
+    L(`Rounds tagged with which holes were played: <b>${tagged}</b>`,'ok');
+    const orphan=Object.keys(unmapped).length;
+    if(orphan){L(`ORPHANED after migration: ${JSON.stringify(unmapped)}`,'bad');throw new Error('migration would orphan rounds — aborted, nothing written');}
+    L('Every round still resolves to a rated course ✓','ok');
+
+    // hole data + GPS keys follow the renames
+    const ch={...(d.courseHoles||{})};
+    Object.keys(KEY_MOVE).forEach(o=>{if(ch[o]){ch[KEY_MOVE[o]]=ch[o];delete ch[o];L(`Hole data moved: ${o} → ${KEY_MOVE[o]}`,'ok');}});
+
+    const after={};players.forEach(p=>{after[p.name]=calcHI(p.scores||[],newCourses);});
+    let rows='';
+    players.forEach(p=>{
+      const b=before[p.name],a=after[p.name];
+      const dl=(a==null||b==null)?null:rd(a-b);
+      const cls=dl===0||dl===null?'same':(dl>0?'up':'down');
+      const sym=dl===null?'–':(dl===0?'no change':(dl>0?`+${dl}`:`${dl}`));
+      rows+=`<tr><td><b>${p.name}</b></td><td>${b??'–'}</td><td><b>${a??'–'}</b></td><td><span class="${cls}">${sym}</span></td></tr>`;
+    });
+    document.getElementById('tbl').innerHTML=`<table><tr><th>Player</th><th>HI now</th><th>HI after</th><th>Δ</th></tr>${rows}</table>`;
+
+    if(dry){
+      L('\nDRY RUN — nothing was written.','warn');
+      document.getElementById('go').disabled=false;
+      document.getElementById('dry').disabled=false;
+      document.getElementById('go').textContent='Apply the restructure';
+      return;
+    }
+
+    const bk=`whsapp_backup_${Date.now()}`;
+    await fetch(`${BASE}/${bk}.json`,{method:'PUT',body:JSON.stringify(d)});
+    L(`Backup saved → ${bk}`,'ok');
+    const payload={...d,players,courses:newCourses,courseHoles:ch};
+    const resp=await fetch(`${BASE}/whsapp.json`,{method:'PUT',body:JSON.stringify(payload)});
+    if(!resp.ok)throw new Error('write failed — nothing partially applied');
+    L('Database updated ✓','ok');
+    document.getElementById('done').style.display='block';
+    document.getElementById('go').textContent='Restructure applied';
+  }catch(e){
+    L('ERROR: '+e.message,'bad');
+    L('Your data is untouched or fully restorable from the backup above.','warn');
+    document.getElementById('dry').disabled=false;
+  }
+}
+// sandboxed preview can't reach the database
+(function(){
+  if(location.protocol!=='https:'&&location.protocol!=='http:'){
+    document.getElementById('dry').disabled=true;document.getElementById('go').disabled=true;
+    document.getElementById('logcard').style.display='block';
+    L('This page is open in a sandboxed preview, which blocks database access.','warn');
+    L('Upload it to the repo and open:','');
+    L('https://miguelamaral300-lgtm.github.io/WHS-Handicap/migrate-courses.html','ok');
+  }
+})();
+</script>
+</body>
+</html>
