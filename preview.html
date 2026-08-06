@@ -1280,14 +1280,47 @@ function calcHI(scores,courses){
 
   // ─── Take the most recent 20 effective differentials ───
   const r20=eff.slice(-20),cnt=r20.length;
-  if(cnt<3)return{hi:null,count:cnt,n:0,countingIdx:new Set(),meta};
+  if(cnt<3)return{hi:null,count:cnt,n:0,countingIdx:new Set(),meta,window:r20};
   const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
   const sorted=[...r20].sort((a,b)=>a.d-b.d);
   const counting=sorted.slice(0,n);
   const countingIdx=new Set(counting.map(x=>x.i));
   const avg=counting.reduce((s,x)=>s+x.d,0)/n;
 
-  return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),countingIdx,meta};
+  // `window` = the effective differentials in scoring order, oldest first. The oldest is
+  // the one that drops out when the next round is posted.
+  return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),countingIdx,meta,window:r20};
+}
+
+// ── THE COUNTING WINDOW ───────────────────────────────────────────────────────
+// A golfer wants to know three things: which rounds are counting, which one falls out
+// of the window next, and what they need to shoot to move the number.
+function windowInsight(p,courses){
+  const r=calcHI(p.scores||[],courses);
+  if(!r||r.hi===null||!r.window||!r.window.length)return null;
+  const win=r.window;                 // oldest → newest, max 20
+  const n=r.n;                        // how many of them count
+  const diffs=win.map(x=>x.d);
+  const best=[...diffs].sort((a,b)=>a-b).slice(0,n);
+  const cutoff=best[best.length-1];   // worst differential that still counts
+  const dropping=win[0];              // leaves the window on the next post
+  const droppingCounts=[...diffs].sort((a,b)=>a-b).slice(0,n).includes(dropping.d);
+
+  // Post one more round and the window becomes win[1..] plus the new differential.
+  const rest=diffs.slice(1);
+  const hiWith=d=>{
+    const set=[...rest,d];
+    const k=WHS[Math.min(set.length,20)-3];
+    const take=k?k[1]:1;
+    const s2=[...set].sort((a,b)=>a-b).slice(0,take);
+    return rd(Math.min(s2.reduce((a,b)=>a+b,0)/take,54));
+  };
+  // the differential you must beat for the index to actually come down
+  let need=null;
+  for(let d=-10;d<=60;d=rd(d+0.1)){ if(hiWith(d)<r.hi){ need=d; } else break; }
+  const ceiling=hiWith(60);           // a blow-up round: the worst it can get
+  return {hi:r.hi,count:r.count,n,win,cutoff:rd(cutoff),dropping,droppingCounts,
+          need,noChange:hiWith(cutoff+0.1),ceiling};
 }
 
 // ── LIFETIME STATS ────────────────────────────────────────────────────────────
@@ -1317,9 +1350,11 @@ function calcPlayerStats(p,courses){
     }
   }
 
-  // Most-played course
-  let favCourse=null, favCount=0;
-  Object.entries(counts).forEach(([k,v])=>{if(v>favCount){favCount=v; favCourse=k;}});
+  // Most-played course. Count against the resolved course row, so the same club recorded
+  // under different spellings still tallies as one place.
+  const topCourses=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>({name:k,n:v}));
+  const favCourse=topCourses.length?topCourses[0].name:null;
+  const favCount=topCourses.length?topCourses[0].n:0;
 
   // Recent form — avg differential over last 5 valid 18-hole rounds
   const valid=[];
@@ -1331,7 +1366,7 @@ function calcPlayerStats(p,courses){
     ? rd(valid.slice(-5).reduce((a,b)=>a+b,0)/Math.min(5,valid.length),1)
     : null;
 
-  return {bestGross,bestDiff,lowestHI,lowestHIAt,favCourse,favCount,recentForm};
+  return {bestGross,bestDiff,lowestHI,lowestHIAt,favCourse,favCount,topCourses,recentForm};
 }
 
 // ── HANDICAP TREND CHART (hand-drawn SVG, matches the gold/forest palette) ──
@@ -1414,7 +1449,7 @@ function daysUntil(dateStr){
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let S={players:IP,courses:IC,tournaments:[],upcoming:[],contests:[],purse:[],courseHoles:null};
-let V='rankings',PID=null,TID=null,MOD=null,SYNC='wait',INIT=false,EDIT_COURSE=null;
+let V='rankings',PID=null,TID=null,MOD=null,SYNC='wait',INIT=false,EDIT_COURSE=null,COURSES_ALL=false;
 let OPEN_COURSE=null,OPEN_SCORE=null,CTAB='drive',PURSE_TID=null,PRED_ID=null,TRN_ROUNDS=1,PURSE_OPEN=null;
 let EDIT_IDX=null; // when set (score index), the score modal is in edit mode
 
@@ -1611,13 +1646,55 @@ async function lpFlush(){
   LPFLUSH=false;
   if(V==='play'&&LPV==='round'&&!MOD)render();
 }
-let LRSEL={course:null,tee:null,players:{},guests:[]};
+let LRSEL={course:null,tee:null,cfg:null,players:{},guests:[]};
 
 function lpBases(){ if(!S.courseHoles)return[]; return Object.keys(S.courseHoles).filter(n=>S.courses.some(c=>c.name===n)); }
-function lpTees(name){ return S.courses.filter(c=>c.name===name); }
+function lpTees(name){
+  // one entry per tee COLOUR — the 18/front/back rows are configurations, not tees
+  const seen=new Set(),out=[];
+  S.courses.filter(c=>c.name===name).forEach(c=>{ if(!seen.has(c.tee)){seen.add(c.tee);out.push(c);} });
+  return out;
+}
+const LPCFG={'18':['18 holes','holes 1–18'],'F9':['Front 9','holes 1–9'],'L9':['Back 9','holes 10–18'],
+             'F9x2':['Front 9 twice','9 holes played twice'],'L9x2':['Back 9 twice','holes 10–18, twice']};
+// Configurations that are BOTH rated in the course table and supported by our hole data.
+function lpConfigs(name,tee){
+  const ch=S.courseHoles&&S.courseHoles[name]; if(!ch)return [];
+  const rated=[...new Set(S.courses.filter(c=>c.name===name&&c.tee===tee).map(c=>c.holes||(c.rating<40?'F9':'18')))];
+  const possible = ch.holes===9 ? ['F9','F9x2','18'] : ['18','F9','L9','L9x2'];
+  return ['18','F9','L9','F9x2','L9x2'].filter(g=>possible.includes(g)&&rated.includes(g));
+}
+// The holes actually being scored, each with par and an index valid over that many holes.
+function lpHoleSet(name,cfg,tee){
+  const ch=S.courseHoles&&S.courseHoles[name]; if(!ch)return null;
+  const par=(tee==='Red'&&ch.parRed)?ch.parRed:ch.par;
+  if(ch.holes===9){
+    const nine=par.map((p,i)=>({h:i+1,par:p,si:ch.si9?ch.si9[i]:i+1}));
+    if(cfg==='F9')return nine;
+    const fr=ch.si18Front||ch.si9||[], bk=ch.si18Back||[];
+    return nine.map((x,i)=>({...x,si:fr[i]||x.si}))
+      .concat(nine.map((x,i)=>({h:i+10,par:x.par,si:bk[i]||(x.si+9)})));
+  }
+  const full=par.map((p,i)=>({h:i+1,par:p,si:ch.si[i]}));
+  if(cfg==='18')return full;
+  const off=(cfg==='L9'||cfg==='L9x2')?9:0;
+  const slice=full.slice(off,off+9).map(x=>({...x}));
+  [...slice].sort((a,b)=>a.si-b.si).forEach((x,i)=>{x.si9=i+1;});
+  const nine=slice.map(x=>({h:x.h,par:x.par,si:x.si9}));
+  if(cfg==='F9'||cfg==='L9')return nine;
+  return nine.concat(nine.map(x=>({h:x.h,par:x.par,si:x.si})));
+}
 function lpParArr(name,tee){ const ch=S.courseHoles&&S.courseHoles[name]; if(!ch)return null; return (tee==='Red'&&ch.parRed)?ch.parRed:ch.par; }
 function lpSiArr(name){ const ch=S.courseHoles[name]; return ch.holes===9?ch.si9:ch.si; }
-function lpCH(hi,c,nHoles,roundPar){ if(hi==null)return null; const h=nHoles===9?hi/2:hi; return Math.round(h*c.slope/113+(c.rating-roundPar)); }
+// The course table already rates each configuration, so no halving guesswork.
+function lpRow(name,tee,cfg){
+  return S.courses.find(c=>c.name===name&&c.tee===tee&&(c.holes||(c.rating<40?'F9':'18'))===cfg)||null;
+}
+function lpCH(hi,row,nScored,roundPar){
+  if(hi==null||!row)return null;
+  const h=(nScored===9)?hi/2:hi;
+  return Math.round(h*row.slope/113+(row.rating-roundPar));
+}
 function lpStrokes(ch,si,n){ if(ch==null)return 0; const base=Math.floor(ch/n),rem=((ch%n)+n)%n; return base+(si<=rem?1:0); }
 function lpNote(g,par){ if(g==null)return''; const d=g-par; if(d<=-2)return'b2'; if(d===-1)return'b1'; if(d===1)return'o1'; if(d>=2)return'o2'; return''; }
 function lpHasScore(sc,h,pid){ return sc&&sc[h]&&(sc[h][pid]===0||sc[h][pid])?true:false; }
@@ -1863,7 +1940,7 @@ function renderPlay(){
       const t=lpThru(r);
       return `<div class="lp-rcard" onclick="LP_JOIN('${id}')">
         <div><div class="rc-course">${r.course} · ${r.tee}</div>
-        <div class="rc-sub">${r.players.map(p=>p.name.split(' ')[0]).join(' · ')}</div></div>
+        <div class="rc-sub">${r.cfg&&LPCFG[r.cfg]?LPCFG[r.cfg][0]+' · ':''}${r.players.map(p=>p.name.split(' ')[0]).join(' · ')}</div></div>
         <div class="rc-thru"><b>${t}</b><small>/${r.holes} thru</small><span class="rc-live">● LIVE</span></div>
       </div>`;
     }).join('');
@@ -1879,32 +1956,50 @@ function renderPlay(){
     h+=`<div class="lp-step"><span class="n">1</span>Course</div>`;
     h+=`<div class="lp-cgrid">${bases.map(n=>{
       const c9=S.courseHoles[n].holes===9;
-      return `<div class="lp-ccard${LRSEL.course===n?' on':''}" onclick="LP_C('${n.replace(/'/g,"\\'")}')"><div class="cc-nm">${n}</div><div class="cc-sub">${c9?'9 holes':'18 holes'} · par ${(lpParArr(n,'')||[]).reduce((a,b)=>a+b,0)}</div></div>`;
+      return `<div class="lp-ccard${LRSEL.course===n?' on':''}" onclick="LP_C('${n.replace(/'/g,"\\'")}')"><div class="cc-nm">${n}</div><div class="cc-sub"><b style="color:var(--gold,#C9A84C)">${c9?'9-hole course':'18-hole course'}</b> · par ${(lpParArr(n,'')||[]).reduce((a,b)=>a+b,0)}</div></div>`;
     }).join('')}</div>`;
     if(LRSEL.course){
       const tees=lpTees(LRSEL.course);
       if(LRSEL.tee&&!tees.some(t=>t.tee===LRSEL.tee))LRSEL.tee=null;
-      h+=`<div class="lp-step"><span class="n">2</span>Tee</div><div class="lp-chips">${tees.map(t=>`<button class="lp-chip${LRSEL.tee===t.tee?' on':''}" onclick="LP_T('${t.tee}')">${t.tee}<small> ${t.rating}/${t.slope}</small></button>`).join('')}</div>`;
+      h+=`<div class="lp-step"><span class="n">2</span>Tee colour</div><div class="lp-chips">${tees.map(t=>`<button class="lp-chip${LRSEL.tee===t.tee?' on':''}" onclick="LP_T('${t.tee}')"><span class="pk-sw" style="background:${(typeof TEECOL!=='undefined'&&TEECOL[t.tee])||'#BBB'}"></span>${t.tee}</button>`).join('')}</div>`;
     }
+    let cfgs=[];
     if(LRSEL.course&&LRSEL.tee){
-      const cEnt=lpTees(LRSEL.course).find(t=>t.tee===LRSEL.tee);
-      const nH=S.courseHoles[LRSEL.course].holes;
-      const rPar=lpParArr(LRSEL.course,LRSEL.tee).reduce((a,b)=>a+b,0);
+      cfgs=lpConfigs(LRSEL.course,LRSEL.tee);
+      if(LRSEL.cfg&&!cfgs.includes(LRSEL.cfg))LRSEL.cfg=null;
+      if(!LRSEL.cfg&&cfgs.length===1)LRSEL.cfg=cfgs[0];
+      h+=`<div class="lp-step"><span class="n">3</span>How many holes</div>`;
+      if(!cfgs.length) h+=`<div class="lp-empty">No rated configuration for this tee. Add one on the Courses screen.</div>`;
+      else h+=`<div class="lp-cgrid">${cfgs.map(g=>{
+        const hs=lpHoleSet(LRSEL.course,g,LRSEL.tee)||[];
+        const pr=hs.reduce((a,x)=>a+x.par,0);
+        const row=lpRow(LRSEL.course,LRSEL.tee,g);
+        return `<div class="lp-ccard${LRSEL.cfg===g?' on':''}" onclick="LP_H('${g}')">
+          <div class="cc-nm">${LPCFG[g]?LPCFG[g][0]:g}</div>
+          <div class="cc-sub"><b style="color:var(--gold,#C9A84C)">${hs.length} holes to score</b> · par ${pr}<br>${LPCFG[g]?LPCFG[g][1]:''}${row?`<br>CR ${row.rating} / ${row.slope}`:''}</div></div>`;
+      }).join('')}</div>`;
+    }
+    if(LRSEL.course&&LRSEL.tee&&LRSEL.cfg){
+      const cfg=LRSEL.cfg;
+      const holeSet=lpHoleSet(LRSEL.course,cfg,LRSEL.tee)||[];
+      const nScored=holeSet.length;
+      const cEnt=lpRow(LRSEL.course,LRSEL.tee,cfg);
+      const rPar=holeSet.reduce((a,x)=>a+x.par,0);
       const R=ranked();
-      h+=`<div class="lp-step"><span class="n">3</span>Who's playing</div>`;
+      h+=`<div class="lp-step"><span class="n">4</span>Who's playing</div>`;
       h+=R.map(p=>{
-        const ch=lpCH(p.hi,cEnt,nH,rPar);
+        const ch=lpCH(p.hi,cEnt,nScored,rPar);
         const on=!!LRSEL.players[p.id];
         if(ch==null)return `<div class="lp-prow dis"><div><div class="nm">${p.name}</div><div class="hi">no Handicap Index yet</div></div></div>`;
         return `<div class="lp-prow${on?' on':''}" onclick="LP_P('${p.id}')"><div class="tick">${on?'✓':''}</div><div style="flex:1"><div class="nm">${p.name}</div><div class="hi">HI ${p.hi}</div></div><div class="ch">${ch}<small>plays off</small></div></div>`;
       }).join('');
       h+=LRSEL.guests.map((g,i)=>{
-        const ch=lpCH(g.hi,cEnt,nH,rPar);
+        const ch=lpCH(g.hi,cEnt,nScored,rPar);
         return `<div class="lp-prow on guest"><div class="tick">✓</div><div style="flex:1"><div class="nm">${g.name} <span class="gtag">guest</span></div><div class="hi">HI ${g.hi}</div></div><div class="ch">${ch}<small>plays off</small></div><div class="gdel" onclick="event.stopPropagation();LP_GDEL(${i})">✕</div></div>`;
       }).join('');
       h+=`<button class="lp-ghost sm" onclick="LP_GADD()">+ Add a guest</button>`;
       const cnt=Object.keys(LRSEL.players).filter(k=>LRSEL.players[k]).length+LRSEL.guests.length;
-      h+=`<button class="lp-start" ${cnt<1?'disabled':''} onclick="LP_START()">Tee off — ${LRSEL.course} · ${nH} holes</button>`;
+      h+=`<button class="lp-start" ${cnt<1?'disabled':''} onclick="LP_START()">Tee off — ${LRSEL.tee} · ${LPCFG[cfg]?LPCFG[cfg][0]:cfg} · ${nScored} holes</button>`;
     }
   }
 
@@ -1913,8 +2008,10 @@ function renderPlay(){
     if(LRHOLE>n)LRHOLE=n;
     const par=LR.parArr[LRHOLE-1],si=LR.siArr[LRHOLE-1];
     const done=h2=>LR.players.every(p=>lpHasScore(LR.scores,h2,p.id));
-    h+=`<div class="lp-strip">${Array.from({length:n},(_,i)=>i+1).map(x=>`<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${x}</div>`).join('')}</div>`;
-    h+=`<div class="lp-hole"><div class="lp-hh"><div><div class="lbl">${LR.course} · ${LR.tee}</div><div class="big">Hole ${LRHOLE}</div></div><div class="meta">Par <b>${par}</b><br>S.I. <b>${si}</b></div></div>`;
+    h+=`<div class="lp-strip">${Array.from({length:n},(_,i)=>i+1).map(x=>`<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${(LR.holeNums&&LR.holeNums[x-1])||x}</div>`).join('')}</div>`;
+    const realH=(LR.holeNums&&LR.holeNums[LRHOLE-1])||LRHOLE;
+    const cfgLbl=LR.cfg&&LPCFG[LR.cfg]?LPCFG[LR.cfg][0]:`${n} holes`;
+    h+=`<div class="lp-hole"><div class="lp-hh"><div><div class="lbl">${LR.course} · ${LR.tee} · ${cfgLbl}</div><div class="big">Hole ${realH}</div><div class="lbl" style="letter-spacing:1px">${LRHOLE} of ${n}</div></div><div class="meta">Par <b>${par}</b><br>S.I. <b>${si}</b></div></div>`;
     h+=LR.players.map(p=>{
       const g=lpHasScore(LR.scores,LRHOLE,p.id)?LR.scores[LRHOLE][p.id]:null;
       const stk=lpStrokes(p.ch,si,n);
@@ -2115,6 +2212,43 @@ function renderPlayerDetail(p){
     <div class="scard normal"><div class="s-lbl">Avg Diff</div><div class="s-val" style="font-size:18px">${s.avg!=null?s.avg.toFixed(2):'—'}</div></div>
   </div>`;
 
+  // ── COUNTING WINDOW ──
+  const wi=windowInsight(p,S.courses);
+  if(wi){
+    const idxOf=new Map();
+    // walk the record in playing order so the window lines up with real rounds
+    const ord=orderScores(p.scores).map(x=>x.i);
+    const sortedD=[...wi.win.map(x=>x.d)].sort((a,b)=>a-b).slice(0,wi.n);
+    const used=[...sortedD];
+    const isCounting=d=>{const k=used.indexOf(d);if(k>-1){used.splice(k,1);return true;}return false;};
+    const flags=wi.win.map(x=>isCounting(x.d));
+    h+=`<div class="sec-h" style="margin-top:22px">Counting Window</div>
+    <div class="ccard" style="padding:14px">
+      <div style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:12px">
+        Your index is the average of the best <b>${wi.n}</b> differentials from your last <b>${wi.win.length}</b> rounds.
+        The worst one currently counting is <b>${wi.cutoff.toFixed(1)}</b>.
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
+        ${wi.win.map((x,i)=>`<span title="${flags[i]?'counting':'in the window, not counting'}" style="font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:13px;padding:5px 8px;border-radius:7px;${flags[i]?'background:rgba(201,168,76,.18);color:#8A6A22;border:1px solid rgba(201,168,76,.45)':'background:rgba(11,30,18,.04);color:var(--text3);border:1px solid rgba(11,30,18,.08)'}${i===0?';box-shadow:0 0 0 2px rgba(207,107,92,.35)':''}">${x.d.toFixed(1)}</span>`).join('')}
+      </div>
+      <div style="display:grid;gap:9px">
+        <div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:9px 11px;background:rgba(207,107,92,.07);border:0.5px solid rgba(207,107,92,.28);border-radius:var(--r)">
+          <span style="color:#B4564B">Drops out on your next round</span>
+          <span style="font-weight:700;color:#B4564B">${wi.dropping.d.toFixed(1)}${wi.droppingCounts?' · counting':' · not counting'}</span>
+        </div>
+        ${wi.need!=null?`<div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:9px 11px;background:rgba(127,176,105,.08);border:0.5px solid rgba(127,176,105,.3);border-radius:var(--r)">
+          <span style="color:#4E7A3C">To lower your index, beat a differential of</span>
+          <span style="font-weight:700;color:#4E7A3C">${wi.need.toFixed(1)}</span>
+        </div>`:`<div style="font-size:12px;color:var(--text3);padding:9px 11px">Your next round cannot lower the index — the round dropping out is already better than anything you could replace it with.</div>`}
+        <div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:9px 11px;background:rgba(11,30,18,.03);border:0.5px solid rgba(11,30,18,.09);border-radius:var(--r)">
+          <span style="color:var(--text2)">Worst case, however badly you play</span>
+          <span style="font-weight:700;color:var(--text)">${wi.ceiling.toFixed(1)}</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:11px;line-height:1.5">Gold = counting toward your index. Red outline = leaves the window next.</div>
+    </div>`;
+  }
+
   // ── LIFETIME STATS ──
   if(ls){
     const bestG = ls.bestGross
@@ -2127,7 +2261,7 @@ function renderPlayerDetail(p){
       ? `<div class="ls-val">${ls.lowestHI.toFixed(1)}</div><div class="ls-sub">Round ${ls.lowestHIAt}</div>`
       : `<div class="ls-val ls-empty">—</div><div class="ls-sub">Need 3+ rounds</div>`;
     const fav = ls.favCourse
-      ? `<div class="ls-val" style="font-size:14px;font-family:'Cormorant Garamond',serif;font-style:italic;line-height:1.15;display:flex;align-items:center;min-height:24px">${ls.favCourse}</div><div class="ls-sub">${ls.favCount} round${ls.favCount!==1?'s':''} played</div>`
+      ? `<div class="ls-val" style="font-size:14px;font-family:'Cormorant Garamond',serif;font-style:italic;line-height:1.15;display:flex;align-items:center;min-height:24px">${ls.favCourse}</div><div class="ls-sub">${ls.favCount} round${ls.favCount!==1?'s':''}${(ls.topCourses||[]).length>1?` · then ${ls.topCourses.slice(1).map(x=>`${x.name.split(' ').slice(0,2).join(' ')} ${x.n}`).join(', ')}`:''}</div>`
       : `<div class="ls-val ls-empty">—</div><div class="ls-sub">—</div>`;
 
     h+=`<div class="subsec">Lifetime</div>
@@ -2539,12 +2673,25 @@ function renderWinners(){
 // ── COURSES ───────────────────────────────────────────────────────────────────
 function renderCourses(){
   const q=(document.getElementById('csr')?.value||'').toLowerCase();
-  const filtered=S.courses.map((c,i)=>({...c,i})).filter(c=>c.name.toLowerCase().includes(q));
+  const all=S.courses.map((c,i)=>({...c,i}));
+  // With the whole federation catalogue loaded this runs to thousands of rows, so
+  // unsearched we show only courses actually played. Searching reaches everything.
+  const playedNames=new Set();
+  (S.players||[]).forEach(p=>(p.scores||[]).forEach(x=>playedNames.add(x.course)));
+  const matched=all.filter(c=>c.name.toLowerCase().includes(q));
+  let filtered=(q||COURSES_ALL)?matched:matched.filter(c=>playedNames.has(c.name));
+  const CAP=140, capped=filtered.length>CAP;
+  if(capped)filtered=filtered.slice(0,CAP);
   let h=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
     <input type="search" placeholder="Search courses…" id="csr" oninput="render()" style="flex:1">
     <button class="btn-p" onclick="OM('course')">+ Add</button>
   </div>
-  <p style="font-size:11px;color:var(--text3);margin-bottom:14px">Tap ⓘ to expand course details</p>
+  <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Tap ⓘ for details · ✎ to edit · ✕ to remove</p>
+  ${!q?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+    <button class="lp-chip${!COURSES_ALL?' on':''}" onclick="COURSES_ALL=false;render()">Courses you play</button>
+    <button class="lp-chip${COURSES_ALL?' on':''}" onclick="COURSES_ALL=true;render()">All ${[...new Set(S.courses.map(c=>c.name))].length} courses</button>
+  </div>`:''}
+  ${capped?`<div style="font-size:11.5px;color:#8A6A22;background:rgba(216,162,74,.08);border:0.5px solid rgba(216,162,74,.3);border-radius:var(--r);padding:9px 12px;margin-bottom:12px">Showing the first ${CAP} of ${matched.length} matching rows — type more to narrow it.</div>`:''}
   <div class="ccard">
     <div class="crow" style="font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:var(--text3);border-bottom:0.5px solid rgba(11,30,18,.1)">
       <span>Course</span><span style="text-align:center">Tee</span>
@@ -2579,7 +2726,9 @@ function renderScoreModal(p){
   <div class="mo">
     <div class="mo-title">${isEdit?'Edit Round':'Add Round'} — ${p.name}</div>
     <div class="fr"><label class="fl">Course</label>
-      <select id="mc" onchange="PICK_TEE=null;PICK_CFG=null;UM()"><option value="">Select a course…</option>${un.map(n=>`<option${existing&&existing.course===n?' selected':''}>${n}</option>`).join('')}</select>
+      <input type="text" id="mc" list="mccl" autocomplete="off" placeholder="Type to find a course…" value="${existing?existing.course.replace(/"/g,'&quot;'):''}" oninput="PICK_TEE=null;PICK_CFG=null;UM()" onchange="PICK_TEE=null;PICK_CFG=null;UM()">
+      <datalist id="mccl">${un.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('')}</datalist>
+      <div class="pk-hint" id="mchint"></div>
     </div>
     <div class="fr" id="mtr" style="display:none"><label class="fl">Tee colour</label><div id="mtc" class="pk"></div></div>
     <div class="fr" id="mhr" style="display:none"><label class="fl">Holes played</label><div id="mhc" class="pk"></div></div>
@@ -3041,10 +3190,11 @@ out geom;`;
   render();
 };
 
-window.LP_NEW=()=>{LPV='setup';LRMSG=null;LRSEL={course:null,tee:null,players:{},guests:[]};render();};
+window.LP_NEW=()=>{LPV='setup';LRMSG=null;LRSEL={course:null,tee:null,cfg:null,players:{},guests:[]};render();};
 window.LP_BACK=()=>{LPV='list';HISTOPEN=null;LRMSG=null;GPON=false;gpStop();lpPull();render();};
-window.LP_C=n=>{LRSEL.course=n;LRSEL.tee=null;render();};
-window.LP_T=t=>{LRSEL.tee=t;render();};
+window.LP_C=n=>{LRSEL.course=n;LRSEL.tee=null;LRSEL.cfg=null;render();};
+window.LP_T=t=>{LRSEL.tee=t;LRSEL.cfg=null;render();};
+window.LP_H=g=>{LRSEL.cfg=g;render();};
 window.LP_P=id=>{LRSEL.players[id]=!LRSEL.players[id];render();};
 window.LP_GADD=()=>{
   const name=prompt('Guest name?');if(!name)return;
@@ -3054,16 +3204,19 @@ window.LP_GADD=()=>{
 };
 window.LP_GDEL=i=>{LRSEL.guests.splice(i,1);render();};
 window.LP_START=async()=>{
-  const cEnt=lpTees(LRSEL.course).find(t=>t.tee===LRSEL.tee);
-  const nH=S.courseHoles[LRSEL.course].holes;
-  const parArr=lpParArr(LRSEL.course,LRSEL.tee);
+  const cfg=LRSEL.cfg||'18';
+  const holeSet=lpHoleSet(LRSEL.course,cfg,LRSEL.tee)||[];
+  if(!holeSet.length)return;
+  const cEnt=lpRow(LRSEL.course,LRSEL.tee,cfg);
+  const nScored=holeSet.length;
+  const parArr=holeSet.map(x=>x.par), siArr=holeSet.map(x=>x.si), holeNums=holeSet.map(x=>x.h);
   const rPar=parArr.reduce((a,b)=>a+b,0);
   const players=ranked().filter(p=>LRSEL.players[p.id]&&p.hi!=null)
-    .map(p=>({id:p.id,name:p.name,hi:p.hi,ch:lpCH(p.hi,cEnt,nH,rPar)}));
-  LRSEL.guests.forEach((g,i)=>players.push({id:'g'+i+'_'+Date.now(),name:g.name,hi:g.hi,ch:lpCH(g.hi,cEnt,nH,rPar),guest:true}));
+    .map(p=>({id:p.id,name:p.name,hi:p.hi,ch:lpCH(p.hi,cEnt,nScored,rPar)}));
+  LRSEL.guests.forEach((g,i)=>players.push({id:'g'+i+'_'+Date.now(),name:g.name,hi:g.hi,ch:lpCH(g.hi,cEnt,nScored,rPar),guest:true}));
   if(!players.length)return;
   LRID='r'+Date.now();
-  LR={active:true,course:LRSEL.course,tee:LRSEL.tee,holes:nH,parArr,siArr:lpSiArr(LRSEL.course),
+  LR={active:true,course:LRSEL.course,tee:LRSEL.tee,cfg,holes:nScored,parArr,siArr,holeNums,
       players,scores:{},startedAt:Date.now(),date:new Date().toISOString().slice(0,10)};
   LRHOLE=1;LRMSG=null;LPV='round';render();
   try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'PUT',body:JSON.stringify(LR)});}catch(e){}
@@ -3367,12 +3520,27 @@ let PICK_TEE=null,PICK_CFG=null;
 window.PT=t=>{PICK_TEE=t;PICK_CFG=null;UM();};
 window.PH=g=>{PICK_CFG=g;UM();};
 window.UM=()=>{
-  const cn=document.getElementById('mc')?.value;
+  const cn=(document.getElementById('mc')?.value||'').trim();
   const sv=document.getElementById('msc')?.value;
   const tr=document.getElementById('mtr'),tc=document.getElementById('mtc');
   const ci=document.getElementById('mci'),dp=document.getElementById('mdp');
   if(!tr||!tc||!ci||!dp)return;
-  if(!cn){tr.style.display='none';ci.style.display='none';dp.style.display='none';return;}
+  const hint=document.getElementById('mchint'),cfgRowEl=document.getElementById('mhr');
+  const allNames=[...new Set(S.courses.map(c=>c.name))];
+  const known=allNames.includes(cn);
+  if(!cn||!known){
+    tr.style.display='none';ci.style.display='none';dp.style.display='none';
+    if(cfgRowEl)cfgRowEl.style.display='none';
+    if(hint){
+      const m=cn?allNames.filter(n=>n.toLowerCase().includes(cn.toLowerCase())):[];
+      hint.textContent = !cn ? `${allNames.length} courses available — type a few letters`
+        : m.length ? `${m.length} match${m.length>1?'es':''}: ${m.slice(0,4).join(', ')}${m.length>4?'…':''}`
+        : `No course called “${cn}”. Check the spelling, or add it on the Courses screen.`;
+      hint.style.color = (cn&&!m.length)?'#B4564B':'';
+    }
+    return;
+  }
+  if(hint){hint.textContent='';hint.style.color='';}
   const cfgN=g=>g==='18'?'18 holes':g==='F9'?'Front 9':g==='L9'?'Back 9':g==='L9x2'?'Back 9 twice':g==='F9x2'?'Front 9 twice':g;
   const TEECOL={White:'#F2EFE4',Yellow:'#E8C544',Blue:'#5C97B8',Red:'#C4544B',Green:'#6E9E5C',Purple:'#8E6BA8',Black:'#2A2A2A',Gold:'#C9A84C',Orange:'#D98A3C'};
   const tees=[...new Set(S.courses.filter(c=>c.name===cn).map(c=>c.tee))];
@@ -3420,7 +3588,7 @@ window.UM=()=>{
 };
 
 window.SS=pid=>{
-  const cn=document.getElementById('mc')?.value;
+  const cn=(document.getElementById('mc')?.value||'').trim();
   const ts=document.getElementById('mts');
   const tees=[...new Set(S.courses.filter(c=>c.name===cn).map(c=>c.tee))];
   const tee=(PICK_TEE&&tees.includes(PICK_TEE))?PICK_TEE:(tees[0]||'');
@@ -3431,7 +3599,9 @@ window.SS=pid=>{
   const dateVal=document.getElementById('msdate')?.value||'';
   const er=document.getElementById('mer');
   if(!er)return;
-  if(!cn||!tee){er.textContent='Please select a course.';er.style.display='block';return;}
+  if(!cn){er.textContent='Please choose a course.';er.style.display='block';return;}
+  if(!S.courses.some(c=>c.name===cn)){er.textContent=`No course called “${cn}”. Pick one from the list, or add it on the Courses screen.`;er.style.display='block';return;}
+  if(!tee){er.textContent='Please choose a tee.';er.style.display='block';return;}
   const s=parseInt(sv);
   if(!s||s<1||s>250){er.textContent='Enter a valid score (1–250).';er.style.display='block';return;}
   const entry={course:cn,tee,holes,score:s};

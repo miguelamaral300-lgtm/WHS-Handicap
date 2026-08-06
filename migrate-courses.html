@@ -43,7 +43,7 @@ padding:16px;margin-top:14px;font-family:'Cormorant Garamond',serif;font-style:i
     <h3>What this does</h3>
     <ul>
       <li><b>Backs up</b> everything first, restorable</li>
-      <li><b>Rebuilds the course list</b> from the official FPG table — 22 Portuguese courses, every tee, with separate ratings for 18 holes, the front nine and the back nine</li>
+      <li><b>Loads every classified Portuguese course</b> — all 103 from the federation table, each tee, with separate ratings for 18 holes, the front nine and the back nine. No rating ever typed by hand again</li>
       <li><b>Corrects 18 wrong ratings</b>, including Belas (slope 110 → 137) and PGA Aroeira n2 (67.8 → 70.7)</li>
       <li><b>Merges the duplicates</b> — Hendon's five names, Oeiras' three, Benamor's two, Penha Longa Mosteiro's two</li>
       <li><b>Tags every round</b> with which holes were played, so configurations stop living in course names</li>
@@ -200,10 +200,16 @@ function calcHI(scores,courses){
   return rd(Math.min([...r20].sort((a,b)=>a.d-b.d).slice(0,k).reduce((s,x)=>s+x.d,0)/k,54));
 }
 
-function buildCourses(old){
+function buildCourses(old,catalog){
   const out=[];const seen=new Set();
   const add=r=>{const k=r.name+'|'+r.tee+'|'+r.holes;if(seen.has(k))return;seen.add(k);out.push(r);};
-  // every FPG course, every tee, all three configurations
+  // ── the whole federation catalogue, if it has been imported ──
+  // Every classified Portuguese course, every men's tee, 18 / front nine / back nine.
+  // Nobody ever has to type a rating again.
+  if(catalog&&catalog.length){
+    catalog.forEach(x=>add({name:x.n,tee:x.t,holes:x.h,par:x.p,rating:x.r,slope:x.s,src:'fpg'}));
+  }
+  // the 22 courses embedded here act as a fallback if the catalogue is absent
   Object.keys(FPG).forEach(name=>{
     Object.keys(FPG[name]).forEach(ptTee=>{
       const en=Object.keys(PT_TEE).find(k=>PT_TEE[k]===ptTee);if(!en)return;
@@ -251,7 +257,15 @@ async function run(dry){
 
     const before={};d.players.forEach(p=>{before[p.name]=calcHI(p.scores||[],d.courses||[]);});
 
-    const newCourses=buildCourses(d.courses||[]);
+    let catalog=[];
+    try{
+      const cat=await (await fetch(`${BASE}/fpgcatalog.json`)).json();
+      catalog=(cat&&cat.rows)||[];
+      if(catalog.length)L(`Federation catalogue found: <b>${catalog.length}</b> rated tees across ${new Set(catalog.map(x=>x.n)).size} Portuguese courses`,'ok');
+      else L('No federation catalogue in the database — falling back to the 22 embedded courses.','warn');
+    }catch(e){ L('Could not read the catalogue — using the 22 embedded courses.','warn'); }
+
+    const newCourses=buildCourses(d.courses||[],catalog);
     L(`Course rows: ${(d.courses||[]).length} → <b>${newCourses.length}</b> (${[...new Set(newCourses.map(c=>c.name))].length} unique courses)`,'ok');
 
     // migrate every round
