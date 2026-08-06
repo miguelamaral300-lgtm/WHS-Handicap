@@ -862,6 +862,8 @@ textarea{resize:vertical;min-height:70px}
 .cbtns{display:flex;gap:5px;justify-content:center}
 .mini-btn{border:1px solid rgba(11,30,18,.18);background:#fff;border-radius:8px;width:27px;height:27px;font-size:12px;cursor:pointer;color:#42513f}
 .mini-btn.del{color:#B4564B;border-color:rgba(180,86,75,.3)}
+.wpos{display:inline-block;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:9.5px;
+  color:var(--gold);opacity:.85;margin-right:6px;min-width:12px;text-align:right;vertical-align:1px;letter-spacing:.2px}
 /* GPS distances */
 .lp-offline{text-align:center;font-size:11px;color:#D8A24A;background:rgba(216,162,74,.09);border:0.5px solid rgba(216,162,74,.3);border-radius:11px;padding:9px;margin-top:11px;line-height:1.5}
 .lp-offline b{color:#E6CE80;text-decoration:underline;cursor:pointer}
@@ -1148,6 +1150,27 @@ function cfgOf(s,c){
   return (c&&c.rating<40)?'F9':'18';
 }
 function isNineCfg(cfg){ return cfg==='F9'||cfg==='L9'; }
+function cfgLabelOf(g){ return g==='18'?'a full round':g==='F9'?'a front nine':g==='L9'?'a back nine':g==='F9x2'?'a front nine played twice':g==='L9x2'?'a back nine played twice':g; }
+// How many holes were actually scored in a configuration.
+function holesScored(cfg){ return isNineCfg(cfg)?9:18; }
+// A score has to be possible for the number of holes it claims. A 46 cannot be a full
+// round and a 95 cannot be nine holes — that mismatch means the round is tagged wrong,
+// and left alone it produces a nonsense differential that corrupts the whole record.
+// Returns null when the round is sound, or a plain-English reason when it is not.
+function roundIssue(s,c){
+  if(!c)return 'course, tee or hole configuration no longer exists';
+  const cfg=cfgOf(s,c), n=holesScored(cfg);
+  const g=Number(s.score);
+  if(!isFinite(g)||g<=0)return 'score is missing or not a number';
+  if(n===18&&g<55)return `${g} is too low for a full round — this looks like a nine-hole score`;
+  if(n===18&&g>200)return `${g} is impossibly high for 18 holes`;
+  if(n===9&&g>95)return `${g} is too high for nine holes — this looks like an 18-hole score`;
+  if(n===9&&g<25)return `${g} is impossibly low for nine holes`;
+  const d=calcDiff(g,c.rating,c.slope);
+  if(d<-5)return `differential ${d.toFixed(1)} is impossible — the score and the rating do not match`;
+  if(d>60)return `differential ${d.toFixed(1)} is beyond the WHS range`;
+  return null;
+}
 // Resolve a round to its rated course row. Prefers an exact course|tee|configuration
 // match; falls back to course|tee so nothing recorded under the old model is lost.
 function findCourse(courses,s){
@@ -1178,8 +1201,13 @@ function calcHI(scores,courses){
 
   // ─── Build records in playing order, filtered to last 2 years ───
   const records=[];
+  const issues={};
   orderScores(scores).forEach(({s,i})=>{
-    const c=findCourse(courses,s);if(!c)return;
+    const c=findCourse(courses,s);
+    // A round that cannot be right is never allowed into the calculation. Silently using
+    // it would distort every later nine-hole conversion as well as the index itself.
+    const bad=roundIssue(s,c);
+    if(bad){issues[i]=bad;return;}
     if(s.date){const sd=new Date(s.date);if(sd<twoYearsAgo)return;}
     const d=calcDiff(s.score,c.rating,c.slope);
     const is9=isNineCfg(cfgOf(s,c));
@@ -1280,7 +1308,7 @@ function calcHI(scores,courses){
 
   // ─── Take the most recent 20 effective differentials ───
   const r20=eff.slice(-20),cnt=r20.length;
-  if(cnt<3)return{hi:null,count:cnt,n:0,countingIdx:new Set(),meta,window:r20};
+  if(cnt<3)return{hi:null,count:cnt,n:0,countingIdx:new Set(),meta,window:r20,issues};
   const e=WHS[Math.min(cnt,20)-3],n=e?e[1]:1;
   const sorted=[...r20].sort((a,b)=>a.d-b.d);
   const counting=sorted.slice(0,n);
@@ -1289,38 +1317,7 @@ function calcHI(scores,courses){
 
   // `window` = the effective differentials in scoring order, oldest first. The oldest is
   // the one that drops out when the next round is posted.
-  return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),countingIdx,meta,window:r20};
-}
-
-// ── THE COUNTING WINDOW ───────────────────────────────────────────────────────
-// A golfer wants to know three things: which rounds are counting, which one falls out
-// of the window next, and what they need to shoot to move the number.
-function windowInsight(p,courses){
-  const r=calcHI(p.scores||[],courses);
-  if(!r||r.hi===null||!r.window||!r.window.length)return null;
-  const win=r.window;                 // oldest → newest, max 20
-  const n=r.n;                        // how many of them count
-  const diffs=win.map(x=>x.d);
-  const best=[...diffs].sort((a,b)=>a-b).slice(0,n);
-  const cutoff=best[best.length-1];   // worst differential that still counts
-  const dropping=win[0];              // leaves the window on the next post
-  const droppingCounts=[...diffs].sort((a,b)=>a-b).slice(0,n).includes(dropping.d);
-
-  // Post one more round and the window becomes win[1..] plus the new differential.
-  const rest=diffs.slice(1);
-  const hiWith=d=>{
-    const set=[...rest,d];
-    const k=WHS[Math.min(set.length,20)-3];
-    const take=k?k[1]:1;
-    const s2=[...set].sort((a,b)=>a-b).slice(0,take);
-    return rd(Math.min(s2.reduce((a,b)=>a+b,0)/take,54));
-  };
-  // the differential you must beat for the index to actually come down
-  let need=null;
-  for(let d=-10;d<=60;d=rd(d+0.1)){ if(hiWith(d)<r.hi){ need=d; } else break; }
-  const ceiling=hiWith(60);           // a blow-up round: the worst it can get
-  return {hi:r.hi,count:r.count,n,win,cutoff:rd(cutoff),dropping,droppingCounts,
-          need,noChange:hiWith(cutoff+0.1),ceiling};
+  return{hi:rd(Math.min(avg,54)),count:cnt,n,avg:rd(avg,2),countingIdx,meta,window:r20,issues};
 }
 
 // ── LIFETIME STATS ────────────────────────────────────────────────────────────
@@ -2212,43 +2209,6 @@ function renderPlayerDetail(p){
     <div class="scard normal"><div class="s-lbl">Avg Diff</div><div class="s-val" style="font-size:18px">${s.avg!=null?s.avg.toFixed(2):'—'}</div></div>
   </div>`;
 
-  // ── COUNTING WINDOW ──
-  const wi=windowInsight(p,S.courses);
-  if(wi){
-    const idxOf=new Map();
-    // walk the record in playing order so the window lines up with real rounds
-    const ord=orderScores(p.scores).map(x=>x.i);
-    const sortedD=[...wi.win.map(x=>x.d)].sort((a,b)=>a-b).slice(0,wi.n);
-    const used=[...sortedD];
-    const isCounting=d=>{const k=used.indexOf(d);if(k>-1){used.splice(k,1);return true;}return false;};
-    const flags=wi.win.map(x=>isCounting(x.d));
-    h+=`<div class="sec-h" style="margin-top:22px">Counting Window</div>
-    <div class="ccard" style="padding:14px">
-      <div style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:12px">
-        Your index is the average of the best <b>${wi.n}</b> differentials from your last <b>${wi.win.length}</b> rounds.
-        The worst one currently counting is <b>${wi.cutoff.toFixed(1)}</b>.
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">
-        ${wi.win.map((x,i)=>`<span title="${flags[i]?'counting':'in the window, not counting'}" style="font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:13px;padding:5px 8px;border-radius:7px;${flags[i]?'background:rgba(201,168,76,.18);color:#8A6A22;border:1px solid rgba(201,168,76,.45)':'background:rgba(11,30,18,.04);color:var(--text3);border:1px solid rgba(11,30,18,.08)'}${i===0?';box-shadow:0 0 0 2px rgba(207,107,92,.35)':''}">${x.d.toFixed(1)}</span>`).join('')}
-      </div>
-      <div style="display:grid;gap:9px">
-        <div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:9px 11px;background:rgba(207,107,92,.07);border:0.5px solid rgba(207,107,92,.28);border-radius:var(--r)">
-          <span style="color:#B4564B">Drops out on your next round</span>
-          <span style="font-weight:700;color:#B4564B">${wi.dropping.d.toFixed(1)}${wi.droppingCounts?' · counting':' · not counting'}</span>
-        </div>
-        ${wi.need!=null?`<div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:9px 11px;background:rgba(127,176,105,.08);border:0.5px solid rgba(127,176,105,.3);border-radius:var(--r)">
-          <span style="color:#4E7A3C">To lower your index, beat a differential of</span>
-          <span style="font-weight:700;color:#4E7A3C">${wi.need.toFixed(1)}</span>
-        </div>`:`<div style="font-size:12px;color:var(--text3);padding:9px 11px">Your next round cannot lower the index — the round dropping out is already better than anything you could replace it with.</div>`}
-        <div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:9px 11px;background:rgba(11,30,18,.03);border:0.5px solid rgba(11,30,18,.09);border-radius:var(--r)">
-          <span style="color:var(--text2)">Worst case, however badly you play</span>
-          <span style="font-weight:700;color:var(--text)">${wi.ceiling.toFixed(1)}</span>
-        </div>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:11px;line-height:1.5">Gold = counting toward your index. Red outline = leaves the window next.</div>
-    </div>`;
-  }
-
   // ── LIFETIME STATS ──
   if(ls){
     const bestG = ls.bestGross
@@ -2283,8 +2243,17 @@ function renderPlayerDetail(p){
   </div>
   <p style="font-size:11px;color:var(--text3);margin-bottom:12px">🟡 Gold = counting toward Handicap Index &nbsp;·&nbsp; Tap row to expand &middot; Edit from there</p>`;
   if(!p.scores||!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
-  const orphaned=p.scores.filter(x=>!findCourse(S.courses,x)).length;
-  if(orphaned)h+=`<div style="border:0.5px solid rgba(207,107,92,.35);background:rgba(207,107,92,.07);border-radius:var(--r);padding:10px 13px;margin-bottom:10px;font-size:12px;color:#B4564B;line-height:1.55"><b>${orphaned} round${orphaned>1?'s':''} not counting.</b> The course, tee or hole configuration no longer exists — tap the round to point it at a current one. It is safe: nothing was deleted.</div>`;
+  const hiRes=calcHI(p.scores,S.courses);
+  const issues=hiRes.issues||{};
+  // Position in the counting window: 1 = your most recent round, 20 = the one that
+  // falls out next. Rounds outside the window carry no number.
+  const winPos={};
+  if(hiRes.window)hiRes.window.forEach((x,k)=>{winPos[x.i]=hiRes.window.length-k;});
+  const issueIdx=Object.keys(issues).map(Number);
+  if(issueIdx.length)h+=`<div style="border:0.5px solid rgba(207,107,92,.4);background:rgba(207,107,92,.08);border-radius:var(--r);padding:12px 13px;margin-bottom:10px;font-size:12px;color:#B4564B;line-height:1.6">
+    <b>${issueIdx.length} round${issueIdx.length>1?'s':''} excluded from your handicap.</b> Each one cannot be correct as recorded, so it is being left out rather than distorting your index. Tap it to fix the hole configuration.
+    <div style="margin-top:8px;display:grid;gap:5px">${issueIdx.map(i=>{const x=p.scores[i];return `<div style="font-size:11.5px;padding:6px 9px;background:rgba(255,255,255,.5);border-radius:6px"><b>${x.course} · ${x.tee} · ${x.holes||'?'} · ${x.score}</b><br>${issues[i]}</div>`;}).join('')}</div>
+  </div>`;
   if(p.scores.length&&!scoresAllDated(p.scores)){
     const nd=p.scores.filter(x=>!x.date||isNaN(new Date(x.date).getTime())).length;
     h+=`<div style="border:0.5px solid rgba(216,162,74,.32);background:rgba(216,162,74,.07);border-radius:var(--r);padding:10px 13px;margin-bottom:10px;font-size:12px;color:#8A6A22;line-height:1.55"><b>${nd} round${nd>1?'s':''} without a date.</b> Rounds are being sequenced in the order they were entered. Add the missing dates and the handicap will follow true playing order instead.</div>`;
@@ -2301,7 +2270,7 @@ function renderPlayerDetail(p){
       : '';
     const textColor = isCounting ? 'var(--gold-lt)' : 'var(--text)';
     h+=`<div class="srow" onclick="TSC('${p.id}',${oi})" style="${rowStyle}">
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${isCounting?600:500};color:${textColor}">${s2.course}${cfg!=='18'?` <span class="pill p9" style="font-size:9px;padding:1px 5px">${cfg==='F9'?'Front 9':cfg==='L9'?'Back 9':cfg==='L9x2'?'Back 9 ×2':cfg==='F9x2'?'Front 9 ×2':cfg}</span>`:''}${!c?` <span class="pill" style="font-size:9px;padding:1px 5px;background:rgba(207,107,92,.18);color:#B4564B">not counting</span>`:''}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${isCounting?600:500};color:${textColor}">${winPos[oi]?`<span class="wpos">${winPos[oi]}</span>`:''}${s2.course}${cfg!=='18'?` <span class="pill p9" style="font-size:9px;padding:1px 5px">${cfg==='F9'?'Front 9':cfg==='L9'?'Back 9':cfg==='L9x2'?'Back 9 ×2':cfg==='F9x2'?'Front 9 ×2':cfg}</span>`:''}${(!c||issues[oi])?` <span class="pill" style="font-size:9px;padding:1px 5px;background:rgba(207,107,92,.18);color:#B4564B">${issues[oi]?'excluded':'not counting'}</span>`:''}</span>
       <span style="text-align:center;font-size:11px;color:var(--text3)">${s2.date?fmtDate(s2.date):'—'}</span>
       <span style="text-align:center;font-weight:600;color:${textColor}">${s2.score}</span>
       <span style="text-align:center" class="${d!==null&&d<0?'under':''}${d!==null&&isCounting?' counting-diff':''}">${d!==null?d.toFixed(1):'—'}</span>
@@ -3602,6 +3571,20 @@ window.SS=pid=>{
   if(!cn){er.textContent='Please choose a course.';er.style.display='block';return;}
   if(!S.courses.some(c=>c.name===cn)){er.textContent=`No course called “${cn}”. Pick one from the list, or add it on the Courses screen.`;er.style.display='block';return;}
   if(!tee){er.textContent='Please choose a tee.';er.style.display='block';return;}
+  // Catch the mistake that caused this: a nine-hole score filed as a full round.
+  {
+    const nine=(holes==='F9'||holes==='L9');
+    const g=parseInt(sv,10);
+    if(isFinite(g)){
+      if(!nine&&g<55){er.textContent=`${g} is too low for ${cfgLabelOf(holes)}. If you played nine holes, choose Front 9 or Back 9 above.`;er.style.display='block';return;}
+      if(nine&&g>95){er.textContent=`${g} is too high for nine holes. If you played the full round, choose 18 holes above.`;er.style.display='block';return;}
+      const row=S.courses.find(c=>c.name===cn&&c.tee===tee&&(c.holes||'18')===holes);
+      if(row){
+        const dd=calcDiff(g,row.rating,row.slope);
+        if(dd<-5){er.textContent=`That gives a differential of ${dd.toFixed(1)}, which is not possible. Check the score and the number of holes.`;er.style.display='block';return;}
+      }
+    }
+  }
   const s=parseInt(sv);
   if(!s||s<1||s>250){er.textContent='Enter a valid score (1–250).';er.style.display='block';return;}
   const entry={course:cn,tee,holes,score:s};
