@@ -864,6 +864,31 @@ textarea{resize:vertical;min-height:70px}
 .mini-btn.del{color:#B4564B;border-color:rgba(180,86,75,.3)}
 .wpos{display:inline-block;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:9.5px;
   color:var(--gold);opacity:.85;margin-right:6px;min-width:12px;text-align:right;vertical-align:1px;letter-spacing:.2px}
+.mc-lbl{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--text3);font-weight:600;margin:9px 0 6px}
+.mc-list{max-height:230px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:0.5px solid rgba(11,30,18,.12);border-radius:var(--r);background:#fff}
+.mc-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;
+  background:none;border:none;border-bottom:0.5px solid rgba(11,30,18,.07);padding:12px 13px;cursor:pointer;font-family:'Barlow',sans-serif}
+.mc-item:last-child{border-bottom:none}
+.mc-item:active{background:rgba(201,168,76,.1)}
+.mc-nm{font-weight:600;font-size:14px;color:#22301F;line-height:1.25}
+.mc-meta{font-size:10.5px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+.mc-none{font-size:12.5px;color:#B4564B;padding:12px 4px;line-height:1.55}
+.mc-chosen{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid rgba(201,168,76,.5);background:rgba(201,168,76,.08);border-radius:var(--r);padding:11px 13px}
+.mc-change{background:none;border:0.5px solid rgba(11,30,18,.2);border-radius:8px;padding:7px 12px;
+  font-family:'Barlow',sans-serif;font-weight:600;font-size:12px;color:var(--text2);cursor:pointer;flex-shrink:0}
+/* course tab grouped by club */
+.cg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;
+  background:none;border:none;border-bottom:0.5px solid rgba(11,30,18,.07);padding:13px 4px;cursor:pointer;font-family:'Barlow',sans-serif}
+.cg-row:last-child{border-bottom:none}
+.cg-nm{font-weight:600;font-size:14.5px;color:#22301F}
+.cg-sub{font-size:10.5px;color:var(--text3);margin-top:2px}
+.cg-caret{color:var(--gold);font-size:12px;flex-shrink:0}
+.cg-detail{background:rgba(13,43,31,.04);border:0.5px solid rgba(13,43,31,.1);border-radius:var(--r);padding:4px 0;margin:2px 0 8px}
+.cg-tee{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:9px 12px;font-size:12.5px;border-bottom:0.5px solid rgba(11,30,18,.06)}
+.cg-tee:last-child{border-bottom:none}
+.cg-tee .t1{display:flex;align-items:center;gap:7px;font-weight:600;color:#22301F}
+.cg-tee .t2{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--text2);white-space:nowrap}
 /* GPS distances */
 .lp-offline{text-align:center;font-size:11px;color:#D8A24A;background:rgba(216,162,74,.09);border:0.5px solid rgba(216,162,74,.3);border-radius:11px;padding:9px;margin-top:11px;line-height:1.5}
 .lp-offline b{color:#E6CE80;text-decoration:underline;cursor:pointer}
@@ -2158,10 +2183,14 @@ function render(){
 
   root.innerHTML=h;
 
-  // If the score modal is open with a pre-selected course (edit mode or
-  // course already known), kick off UM() so tee / rating / differential populate.
-  if(MOD==='score' && document.getElementById('mc')?.value){
-    setTimeout(()=>{ try{ UM(); }catch(e){} }, 0);
+  // Whenever the score modal is open, paint the course picker and let UM() fill in tee,
+  // hole configuration and the live differential. (The old check looked for an input that
+  // no longer exists, which left the picker blank.)
+  if(MOD==='score'){
+    setTimeout(()=>{ try{ mcPaint(); UM(); }catch(e){} }, 0);
+  }
+  if(MOD==='course'){
+    setTimeout(()=>{ try{ AN_TYPE(document.getElementById('an')?.value||''); }catch(e){} }, 0);
   }
 }
 
@@ -2641,48 +2670,60 @@ function renderWinners(){
 
 // ── COURSES ───────────────────────────────────────────────────────────────────
 function renderCourses(){
-  const q=(document.getElementById('csr')?.value||'').toLowerCase();
-  const all=S.courses.map((c,i)=>({...c,i}));
-  // With the whole federation catalogue loaded this runs to thousands of rows, so
-  // unsearched we show only courses actually played. Searching reaches everything.
-  const playedNames=new Set();
-  (S.players||[]).forEach(p=>(p.scores||[]).forEach(x=>playedNames.add(x.course)));
-  const matched=all.filter(c=>c.name.toLowerCase().includes(q));
-  let filtered=(q||COURSES_ALL)?matched:matched.filter(c=>playedNames.has(c.name));
-  const CAP=140, capped=filtered.length>CAP;
-  if(capped)filtered=filtered.slice(0,CAP);
-  let h=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-    <input type="search" placeholder="Search courses…" id="csr" oninput="render()" style="flex:1">
+  const q=(document.getElementById('csr')?.value||'').trim().toLowerCase();
+  const played=playedNameSet();
+  // One entry per CLUB, not per tee — a course with six tees and three configurations was
+  // filling ten rows and drowning the list. Tap a club to see what it offers.
+  const groups={};
+  S.courses.forEach((c,i)=>{ (groups[c.name]=groups[c.name]||[]).push({...c,i}); });
+  let names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+  const totalClubs=names.length;
+  if(q) names=names.filter(n=>n.toLowerCase().includes(q));
+  else if(!COURSES_ALL) names=names.filter(n=>played.has(n));
+
+  const CFGL={'18':'18 holes','F9':'Front 9','L9':'Back 9','F9x2':'Front 9 ×2','L9x2':'Back 9 ×2'};
+  const TEEC={White:'#F2EFE4',Yellow:'#E8C544',Blue:'#5C97B8',Red:'#C4544B',Green:'#6E9E5C',Purple:'#8E6BA8',Black:'#2A2A2A',Gold:'#C9A84C',Orange:'#D98A3C'};
+
+  let h=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+    <input type="search" placeholder="Search all ${totalClubs} courses…" id="csr" value="${(document.getElementById('csr')?.value||'').replace(/"/g,'&quot;')}" oninput="CSR_TYPE()" style="flex:1">
     <button class="btn-p" onclick="OM('course')">+ Add</button>
   </div>
-  <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Tap ⓘ for details · ✎ to edit · ✕ to remove</p>
   ${!q?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
     <button class="lp-chip${!COURSES_ALL?' on':''}" onclick="COURSES_ALL=false;render()">Courses you play</button>
-    <button class="lp-chip${COURSES_ALL?' on':''}" onclick="COURSES_ALL=true;render()">All ${[...new Set(S.courses.map(c=>c.name))].length} courses</button>
-  </div>`:''}
-  ${capped?`<div style="font-size:11.5px;color:#8A6A22;background:rgba(216,162,74,.08);border:0.5px solid rgba(216,162,74,.3);border-radius:var(--r);padding:9px 12px;margin-bottom:12px">Showing the first ${CAP} of ${matched.length} matching rows — type more to narrow it.</div>`:''}
-  <div class="ccard">
-    <div class="crow" style="font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:var(--text3);border-bottom:0.5px solid rgba(11,30,18,.1)">
-      <span>Course</span><span style="text-align:center">Tee</span>
-      <span style="text-align:center">Rating</span><span style="text-align:center">Slope</span><span></span>
-    </div>`;
-  filtered.forEach(c=>{
-    const cfg=c.holes||(c.rating<40?'F9':'18'),is9=isNineCfg(cfg),isO=OPEN_COURSE===c.i;
-    const cfgLbl=cfg==='18'?'':cfg==='F9'?'Front 9':cfg==='L9'?'Back 9':cfg==='L9x2'?'Back 9 ×2':cfg==='F9x2'?'Front 9 ×2':cfg;
-    h+=`<div class="crow">
-      <span style="font-weight:500;display:flex;align-items:center;gap:6px">${c.name}${cfgLbl?`<span class="pill p9">${cfgLbl}</span>`:''}${c.src==='fpg'?`<span class="pill" style="background:rgba(127,176,105,.16);color:#5E8B4C;font-size:8.5px">FPG</span>`:''}</span>
-      <span style="text-align:center;color:var(--text3)">${c.tee}</span>
-      <span style="text-align:center">${c.rating.toFixed(2)}</span>
-      <span style="text-align:center">${c.slope}</span>
-      <span class="cbtns"><button class="info-btn${isO?' active':''}" onclick="TC(${c.i})">ⓘ</button><button class="mini-btn" title="Edit" onclick="EC(${c.i})">✎</button><button class="mini-btn del" title="Delete" onclick="XC(${c.i})">✕</button></span>
-    </div>`;
-    if(isO)h+=`<div style="background:rgba(13,43,31,.05);border:0.5px solid rgba(13,43,31,.15);border-radius:var(--r);padding:12px;margin:2px 0 4px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-      <div><div class="ie-lbl">Rating</div><div class="ie-val">${c.rating.toFixed(2)}</div></div>
-      <div><div class="ie-lbl">Slope</div><div class="ie-val">${c.slope}</div></div>
-      <div><div class="ie-lbl">Holes</div><div class="ie-val">${is9?'9-hole':'18-hole'}</div></div>
-    </div>`;
+    <button class="lp-chip${COURSES_ALL?' on':''}" onclick="COURSES_ALL=true;render()">All ${totalClubs}</button>
+  </div>`:`<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${names.length} club${names.length===1?'':'s'} matching</div>`}
+  <div class="ccard" id="cglist">`;
+
+  names.slice(0,120).forEach(n=>{
+    const rows=groups[n];
+    const tees=[...new Set(rows.map(r=>r.tee))];
+    const isFpg=rows.some(r=>r.src==='fpg');
+    const isVer=rows.some(r=>r.src==='verified');
+    const open=OPEN_COURSE===n;
+    const nRounds=(S.players||[]).reduce((a,p)=>a+(p.scores||[]).filter(x=>x.course===n).length,0);
+    h+=`<button class="cg-row" onclick="TC('${n.replace(/'/g,"\\'")}')">
+      <span><span class="cg-nm">${n}</span>
+        <span class="cg-sub">${tees.length} tee${tees.length>1?'s':''} · ${rows.length} rated setup${rows.length>1?'s':''}${nRounds?` · ${nRounds} round${nRounds>1?'s':''} played`:''}${isFpg?' · FPG official':isVer?' · verified':''}</span></span>
+      <span class="cg-caret">${open?'▲':'▼'}</span></button>`;
+    if(open){
+      h+=`<div class="cg-detail">`;
+      tees.forEach(te=>{
+        rows.filter(r=>r.tee===te)
+          .sort((a,b)=>['18','F9','L9','F9x2','L9x2'].indexOf(a.holes||'18')-['18','F9','L9','F9x2','L9x2'].indexOf(b.holes||'18'))
+          .forEach(r=>{
+            const cfg=r.holes||(r.rating<40?'F9':'18');
+            h+=`<div class="cg-tee">
+              <span class="t1"><span class="pk-sw" style="background:${TEEC[te]||'#BBB'}"></span>${te}<span style="font-weight:500;color:var(--text3);font-size:11px">${CFGL[cfg]||cfg}</span></span>
+              <span class="t2">${r.rating}</span><span class="t2">${r.slope}</span>
+              <span style="display:flex;gap:4px"><button class="mini-btn" title="Edit" onclick="event.stopPropagation();EC(${r.i})">✎</button><button class="mini-btn del" title="Delete" onclick="event.stopPropagation();XC(${r.i})">✕</button></span>
+            </div>`;
+          });
+      });
+      h+=`<div style="font-size:10px;color:var(--text3);padding:8px 12px 4px;letter-spacing:.5px">RATING · SLOPE shown for each setup</div></div>`;
+    }
   });
-  if(!filtered.length)h+=`<div style="padding:30px;text-align:center;color:var(--text3);font-size:13px">No courses match</div>`;
+  if(!names.length)h+=`<div style="padding:30px;text-align:center;color:var(--text3);font-size:13px">${q?`No club matches “${document.getElementById('csr')?.value||''}”`:'No courses played yet'}</div>`;
+  if(names.length>120)h+=`<div style="padding:12px;text-align:center;color:var(--text3);font-size:11.5px">Showing 120 of ${names.length} — keep typing to narrow it.</div>`;
   return h+`</div>`;
 }
 
@@ -2694,11 +2735,7 @@ function renderScoreModal(p){
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
     <div class="mo-title">${isEdit?'Edit Round':'Add Round'} — ${p.name}</div>
-    <div class="fr"><label class="fl">Course</label>
-      <input type="text" id="mc" list="mccl" autocomplete="off" placeholder="Type to find a course…" value="${existing?existing.course.replace(/"/g,'&quot;'):''}" oninput="PICK_TEE=null;PICK_CFG=null;UM()" onchange="PICK_TEE=null;PICK_CFG=null;UM()">
-      <datalist id="mccl">${un.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('')}</datalist>
-      <div class="pk-hint" id="mchint"></div>
-    </div>
+    <div class="fr"><label class="fl">Course</label><div id="mcbox"></div></div>
     <div class="fr" id="mtr" style="display:none"><label class="fl">Tee colour</label><div id="mtc" class="pk"></div></div>
     <div class="fr" id="mhr" style="display:none"><label class="fl">Holes played</label><div id="mhc" class="pk"></div></div>
     <div id="mci" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"></div>
@@ -2726,8 +2763,8 @@ function renderCourseModal(){
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
     <div class="mo-title">${e?'Edit Tee':'Add Course / Tee'}</div>
-    <div class="fr"><label class="fl">Course Name</label><input type="text" id="an" placeholder="e.g. Royal Portrush" value="${e?e.name.replace(/"/g,'&quot;'):''}" list="ancl">
-      <datalist id="ancl">${[...new Set(S.courses.map(c=>c.name))].sort().map(n=>`<option>${n}</option>`).join('')}</datalist>
+    <div class="fr"><label class="fl">Course Name</label><input type="text" id="an" placeholder="e.g. Royal Portrush" value="${e?e.name.replace(/"/g,'&quot;'):''}" oninput="AN_TYPE(this.value)" autocomplete="off">
+      <div id="anmatch" class="pk-hint"></div>
       <div class="pk-hint">Reuse an existing name to add another tee to that course rather than creating a duplicate.</div>
     </div>
     <div class="fr"><label class="fl">Tee Colour</label>
@@ -3323,7 +3360,7 @@ window.CP=()=>{PID=null;MOD=null;OPEN_SCORE=null;render();};
 window.OT=id=>{TID=id;render();};
 window.CT=()=>{TID=null;render();};
 window.OM=m=>{if(m==='score')EDIT_IDX=null; MOD=m;render();};
-window.CM=()=>{EDIT_COURSE=null;PICK_TEE=null;PICK_CFG=null;MOD=null;TRN_ROUNDS=1;EDIT_IDX=null;render();};
+window.CM=()=>{EDIT_COURSE=null;PICK_TEE=null;PICK_CFG=null;PICK_COURSE=null;PICK_Q='';MOD=null;TRN_ROUNDS=1;EDIT_IDX=null;render();};
 window.TC=i=>{OPEN_COURSE=OPEN_COURSE===i?null:i;render();};
 window.TSC=(pid,idx)=>{OPEN_SCORE=(OPEN_SCORE&&OPEN_SCORE.pid===pid&&OPEN_SCORE.idx===idx)?null:{pid,idx};render();};
 
@@ -3485,31 +3522,75 @@ window.ATP=()=>{
   else{el.style.background='rgba(42,96,64,.08)';el.style.color='var(--success)';el.textContent='18-hole course';}
 };
 
-let PICK_TEE=null,PICK_CFG=null;
+let PICK_TEE=null,PICK_CFG=null,PICK_COURSE=null,PICK_Q='';
+// A hand-built course picker. `<datalist>` is unreliable on iOS Safari, so we render the
+// matching list ourselves — identical behaviour on every phone, and we can show how many
+// tees each course has. Only the list is redrawn as you type, so focus is never lost.
+function courseNames(){ return [...new Set(S.courses.map(c=>c.name))].sort((a,b)=>a.localeCompare(b)); }
+function playedNameSet(){
+  const s2=new Set();(S.players||[]).forEach(p=>(p.scores||[]).forEach(x=>s2.add(x.course)));return s2;
+}
+function mcResultsHTML(){
+  const q=PICK_Q.trim().toLowerCase();
+  const played=playedNameSet();
+  let list=courseNames();
+  // no search yet → offer the courses you actually play, most useful first
+  if(!q) list=list.filter(n=>played.has(n));
+  else list=list.filter(n=>n.toLowerCase().includes(q));
+  const total=list.length;
+  list=list.slice(0,40);
+  if(!total) return `<div class="mc-none">No course matches “${PICK_Q}”. Check the spelling, or add it on the Courses screen.</div>`;
+  return `${!q?`<div class="mc-lbl">Courses you play — or type to search all ${courseNames().length}</div>`:`<div class="mc-lbl">${total} match${total>1?'es':''}</div>`}
+    <div class="mc-list">${list.map(n=>{
+      const tees=[...new Set(S.courses.filter(c=>c.name===n).map(c=>c.tee))];
+      const isFpg=S.courses.some(c=>c.name===n&&c.src==='fpg');
+      return `<button class="mc-item" onclick="MC_PICK('${n.replace(/'/g,"\\'")}')">
+        <span class="mc-nm">${n}</span>
+        <span class="mc-meta">${tees.length} tee${tees.length>1?'s':''}${isFpg?' · FPG':''}</span></button>`;
+    }).join('')}${total>40?`<div class="mc-lbl">…and ${total-40} more — keep typing</div>`:''}</div>`;
+}
+function mcBoxHTML(){
+  if(PICK_COURSE){
+    const tees=[...new Set(S.courses.filter(c=>c.name===PICK_COURSE).map(c=>c.tee))];
+    return `<div class="mc-chosen"><div><div class="mc-nm">${PICK_COURSE}</div>
+      <div class="mc-meta">${tees.length} tee${tees.length>1?'s':''} available</div></div>
+      <button class="mc-change" onclick="MC_CLEAR()">Change</button></div>`;
+  }
+  return `<input type="search" id="mcq" autocomplete="off" placeholder="Search all courses…" value="${PICK_Q.replace(/"/g,'&quot;')}" oninput="MC_TYPE(this.value)">
+    <div id="mcres">${mcResultsHTML()}</div>`;
+}
+function mcPaint(){ const b=document.getElementById('mcbox'); if(b)b.innerHTML=mcBoxHTML(); }
+// Adding a tee: show existing clubs that match as you type, so a second tee attaches to
+// the club instead of spawning a near-duplicate. Tap one to reuse its exact name.
+window.AN_TYPE=v=>{
+  const box=document.getElementById('anmatch'); if(!box)return;
+  const q=(v||'').trim().toLowerCase();
+  if(!q){box.innerHTML='Reuse an existing name to add another tee rather than creating a duplicate.';return;}
+  const m=[...new Set(S.courses.map(c=>c.name))].filter(n=>n.toLowerCase().includes(q)).slice(0,6);
+  box.innerHTML = m.length
+    ? `Existing: ${m.map(n=>`<button type="button" class="mc-change" style="padding:4px 9px;font-size:11px;margin:3px 3px 0 0" onclick="AN_USE('${n.replace(/'/g,"\\'")}')">${n}</button>`).join('')}`
+    : `New club — no existing course matches “${v}”.`;
+};
+window.AN_USE=n=>{ const i=document.getElementById('an'); if(i){i.value=n;AN_TYPE(n);} };
+window.CSR_TYPE=()=>{ OPEN_COURSE=null; render();
+  const el=document.getElementById('csr'); if(el){const v=el.value;el.focus();el.setSelectionRange(v.length,v.length);} };
+window.MC_TYPE=v=>{ PICK_Q=v; const r=document.getElementById('mcres'); if(r)r.innerHTML=mcResultsHTML(); };
+window.MC_PICK=n=>{ PICK_COURSE=n; PICK_Q=''; PICK_TEE=null; PICK_CFG=null; mcPaint(); UM(); };
+window.MC_CLEAR=()=>{ PICK_COURSE=null; PICK_TEE=null; PICK_CFG=null; mcPaint(); UM(); };
 window.PT=t=>{PICK_TEE=t;PICK_CFG=null;UM();};
 window.PH=g=>{PICK_CFG=g;UM();};
 window.UM=()=>{
-  const cn=(document.getElementById('mc')?.value||'').trim();
+  const cn=PICK_COURSE||'';
   const sv=document.getElementById('msc')?.value;
   const tr=document.getElementById('mtr'),tc=document.getElementById('mtc');
   const ci=document.getElementById('mci'),dp=document.getElementById('mdp');
   if(!tr||!tc||!ci||!dp)return;
-  const hint=document.getElementById('mchint'),cfgRowEl=document.getElementById('mhr');
-  const allNames=[...new Set(S.courses.map(c=>c.name))];
-  const known=allNames.includes(cn);
-  if(!cn||!known){
+  const cfgRowEl=document.getElementById('mhr');
+  if(!cn||!S.courses.some(c=>c.name===cn)){
     tr.style.display='none';ci.style.display='none';dp.style.display='none';
     if(cfgRowEl)cfgRowEl.style.display='none';
-    if(hint){
-      const m=cn?allNames.filter(n=>n.toLowerCase().includes(cn.toLowerCase())):[];
-      hint.textContent = !cn ? `${allNames.length} courses available — type a few letters`
-        : m.length ? `${m.length} match${m.length>1?'es':''}: ${m.slice(0,4).join(', ')}${m.length>4?'…':''}`
-        : `No course called “${cn}”. Check the spelling, or add it on the Courses screen.`;
-      hint.style.color = (cn&&!m.length)?'#B4564B':'';
-    }
     return;
   }
-  if(hint){hint.textContent='';hint.style.color='';}
   const cfgN=g=>g==='18'?'18 holes':g==='F9'?'Front 9':g==='L9'?'Back 9':g==='L9x2'?'Back 9 twice':g==='F9x2'?'Front 9 twice':g;
   const TEECOL={White:'#F2EFE4',Yellow:'#E8C544',Blue:'#5C97B8',Red:'#C4544B',Green:'#6E9E5C',Purple:'#8E6BA8',Black:'#2A2A2A',Gold:'#C9A84C',Orange:'#D98A3C'};
   const tees=[...new Set(S.courses.filter(c=>c.name===cn).map(c=>c.tee))];
@@ -3557,7 +3638,7 @@ window.UM=()=>{
 };
 
 window.SS=pid=>{
-  const cn=(document.getElementById('mc')?.value||'').trim();
+  const cn=PICK_COURSE||'';
   const ts=document.getElementById('mts');
   const tees=[...new Set(S.courses.filter(c=>c.name===cn).map(c=>c.tee))];
   const tee=(PICK_TEE&&tees.includes(PICK_TEE))?PICK_TEE:(tees[0]||'');
@@ -3602,8 +3683,11 @@ window.SS=pid=>{
 
 window.ES=(pid,idx)=>{
   // Open the score modal in edit mode for a specific round.
-  // Clear picker state so one edit cannot inherit the previous round's tee.
-  PICK_TEE=null; PICK_CFG=null;
+  // Reset picker state so one edit cannot inherit the previous round's selection.
+  PICK_TEE=null; PICK_CFG=null; PICK_Q='';
+  const pl=S.players.find(x=>x.id===pid), sc=pl&&pl.scores?pl.scores[idx]:null;
+  PICK_COURSE=sc?sc.course:null;
+  if(sc){PICK_TEE=sc.tee||null;PICK_CFG=sc.holes||null;}
   PID=pid; EDIT_IDX=idx; MOD='score'; render();
 };
 
