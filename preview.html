@@ -1187,13 +1187,18 @@ function roundIssue(s,c){
   const cfg=cfgOf(s,c), n=holesScored(cfg);
   const g=Number(s.score);
   if(!isFinite(g)||g<=0)return 'score is missing or not a number';
-  if(n===18&&g<55)return `${g} is too low for a full round — this looks like a nine-hole score`;
-  if(n===18&&g>200)return `${g} is impossibly high for 18 holes`;
-  if(n===9&&g>95)return `${g} is too high for nine holes — this looks like an 18-hole score`;
-  if(n===9&&g<25)return `${g} is impossibly low for nine holes`;
+  // There is NO upper limit on a score. A bad day is a bad day and it belongs in the
+  // record — an earlier version capped the differential at 60 and wrongly rejected a
+  // legitimate 132. The gate exists only to catch rounds that cannot be true at all:
+  // a nine filed as a full round, or vice versa.
+  const par=c.par||(n===9?36:72);
+  if(n===18&&g<par-10)return `${g} is too low for a full round at par ${par} — this looks like a nine-hole score`;
+  if(n===9&&g>100)return `${g} is too high for nine holes — this looks like an 18-hole score`;
+  if(n===9&&g<par-8)return `${g} is too low for nine holes at par ${par}`;
   const d=calcDiff(g,c.rating,c.slope);
-  if(d<-5)return `differential ${d.toFixed(1)} is impossible — the score and the rating do not match`;
-  if(d>60)return `differential ${d.toFixed(1)} is beyond the WHS range`;
+  // Beating the course rating by five shots would make you a plus-five handicap; combined
+  // with the checks above this reliably identifies a wrongly tagged round.
+  if(d<-5)return `differential ${d.toFixed(1)} is impossible — the score and the number of holes do not match`;
   return null;
 }
 // Resolve a round to its rated course row. Prefers an exact course|tee|configuration
@@ -3657,8 +3662,10 @@ window.SS=pid=>{
     const nine=(holes==='F9'||holes==='L9');
     const g=parseInt(sv,10);
     if(isFinite(g)){
-      if(!nine&&g<55){er.textContent=`${g} is too low for ${cfgLabelOf(holes)}. If you played nine holes, choose Front 9 or Back 9 above.`;er.style.display='block';return;}
-      if(nine&&g>95){er.textContent=`${g} is too high for nine holes. If you played the full round, choose 18 holes above.`;er.style.display='block';return;}
+      const rowP=S.courses.find(c=>c.name===cn&&c.tee===tee&&(c.holes||'18')===holes);
+      const parP=(rowP&&rowP.par)||(nine?36:72);
+      if(!nine&&g<parP-10){er.textContent=`${g} is too low for ${cfgLabelOf(holes)} at par ${parP}. If you played nine holes, choose Front 9 or Back 9 above.`;er.style.display='block';return;}
+      if(nine&&g>100){er.textContent=`${g} is too high for nine holes. If you played the full round, choose 18 holes above.`;er.style.display='block';return;}
       const row=S.courses.find(c=>c.name===cn&&c.tee===tee&&(c.holes||'18')===holes);
       if(row){
         const dd=calcDiff(g,row.rating,row.slope);

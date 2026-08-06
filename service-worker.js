@@ -1,6 +1,6 @@
 // The Club — Service Worker
 // Bump CACHE_VERSION when you ship app updates and want users to get them.
-const CACHE_VERSION = 'whs-club-v34';
+const CACHE_VERSION = 'whs-club-v35';
 
 const APP_SHELL = [
   './',
