@@ -2279,10 +2279,19 @@ function renderPlayerDetail(p){
   if(!p.scores||!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
   const hiRes=calcHI(p.scores,S.courses);
   const issues=hiRes.issues||{};
-  // Position in the counting window: 1 = your most recent round, 20 = the one that
-  // falls out next. Rounds outside the window carry no number.
+  // Position in the counting window: 1 = your most recent round, 20 = the one that falls
+  // out next. Rounds outside the window carry no number.
+  // Derived from PLAYING order, not from the engine's internal list. The engine holds
+  // nine-hole rounds back during the warm-up and appends them at the 54-hole crossover,
+  // so its ordering can differ from the order you actually played — which made these
+  // numbers appear shuffled. Numbering the window by playing order is monotonic by
+  // construction: 1 at the top of the list, counting down without gaps.
   const winPos={};
-  if(hiRes.window)hiRes.window.forEach((x,k)=>{winPos[x.i]=hiRes.window.length-k;});
+  if(hiRes.window&&hiRes.window.length){
+    const inWindow=new Set(hiRes.window.map(x=>x.i));
+    const played=orderScores(p.scores).map(x=>x.i).filter(i=>inWindow.has(i)); // oldest → newest
+    played.forEach((i,k)=>{ winPos[i]=played.length-k; });
+  }
   const issueIdx=Object.keys(issues).map(Number);
   if(issueIdx.length)h+=`<div style="border:0.5px solid rgba(207,107,92,.4);background:rgba(207,107,92,.08);border-radius:var(--r);padding:12px 13px;margin-bottom:10px;font-size:12px;color:#B4564B;line-height:1.6">
     <b>${issueIdx.length} round${issueIdx.length>1?'s':''} excluded from your handicap.</b> Each one cannot be correct as recorded, so it is being left out rather than distorting your index. Tap it to fix the hole configuration.
@@ -2293,8 +2302,11 @@ function renderPlayerDetail(p){
     h+=`<div style="border:0.5px solid rgba(216,162,74,.32);background:rgba(216,162,74,.07);border-radius:var(--r);padding:10px 13px;margin-bottom:10px;font-size:12px;color:#8A6A22;line-height:1.55"><b>${nd} round${nd>1?'s':''} without a date.</b> Rounds are being sequenced in the order they were entered. Add the missing dates and the handicap will follow true playing order instead.</div>`;
   }
   h+=`<div class="ccard"><div class="sthead"><span>Course</span><span style="text-align:center">Date</span><span style="text-align:center">Score</span><span style="text-align:center">Diff</span><span></span></div>`;
-  [...p.scores].reverse().forEach((s2,ri)=>{
-    const oi=p.scores.length-1-ri,c=findCourse(S.courses,s2);
+  // Show the rounds in the SAME order the handicap engine uses — by date when every round
+  // has one, otherwise by entry order. Listing by entry order while calculating by date
+  // made a fully-dated record look shuffled and put the window numbers out of sequence.
+  [...orderScores(p.scores)].reverse().forEach(entry=>{
+    const s2=entry.s, oi=entry.i, c=findCourse(S.courses,s2);
     const d=c?calcDiff(s2.score,c.rating,c.slope):null;
     const cfg=cfgOf(s2,c),is9=isNineCfg(cfg),isO=OPEN_SCORE&&OPEN_SCORE.pid===p.id&&OPEN_SCORE.idx===oi;
     const isCounting=s.countingIdx&&s.countingIdx.has(oi);
