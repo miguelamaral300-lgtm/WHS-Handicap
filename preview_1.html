@@ -2279,10 +2279,19 @@ function renderPlayerDetail(p){
   if(!p.scores||!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
   const hiRes=calcHI(p.scores,S.courses);
   const issues=hiRes.issues||{};
-  // Position in the counting window: 1 = your most recent round, 20 = the one that
-  // falls out next. Rounds outside the window carry no number.
+  // Position in the counting window: 1 = your most recent round, 20 = the one that falls
+  // out next. Rounds outside the window carry no number.
+  // Derived from PLAYING order, not from the engine's internal list. The engine holds
+  // nine-hole rounds back during the warm-up and appends them at the 54-hole crossover,
+  // so its ordering can differ from the order you actually played — which made these
+  // numbers appear shuffled. Numbering the window by playing order is monotonic by
+  // construction: 1 at the top of the list, counting down without gaps.
   const winPos={};
-  if(hiRes.window)hiRes.window.forEach((x,k)=>{winPos[x.i]=hiRes.window.length-k;});
+  if(hiRes.window&&hiRes.window.length){
+    const inWindow=new Set(hiRes.window.map(x=>x.i));
+    const played=orderScores(p.scores).map(x=>x.i).filter(i=>inWindow.has(i)); // oldest → newest
+    played.forEach((i,k)=>{ winPos[i]=played.length-k; });
+  }
   const issueIdx=Object.keys(issues).map(Number);
   if(issueIdx.length)h+=`<div style="border:0.5px solid rgba(207,107,92,.4);background:rgba(207,107,92,.08);border-radius:var(--r);padding:12px 13px;margin-bottom:10px;font-size:12px;color:#B4564B;line-height:1.6">
     <b>${issueIdx.length} round${issueIdx.length>1?'s':''} excluded from your handicap.</b> Each one cannot be correct as recorded, so it is being left out rather than distorting your index. Tap it to fix the hole configuration.
