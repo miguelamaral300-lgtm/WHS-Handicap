@@ -890,6 +890,23 @@ textarea{resize:vertical;min-height:70px}
 .cg-tee .t1{display:flex;align-items:center;gap:7px;font-weight:600;color:#22301F}
 .cg-tee .t2{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--text2);white-space:nowrap}
 /* ═══ CROWN — player of the month ═══ */
+.cr-entrybox{border:0.5px solid var(--line);background:var(--panel);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
+.cr-erow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:0.5px solid rgba(11,30,18,.06)}
+.cr-erow:last-child{border-bottom:none}
+.cr-enm{font-size:13.5px;font-weight:600;color:#22301F}
+.cr-etog{border:1px solid rgba(11,30,18,.18);background:#fff;border-radius:20px;padding:6px 14px;
+  font-family:'Barlow',sans-serif;font-weight:700;font-size:11.5px;color:var(--text3);cursor:pointer;min-width:74px}
+.cr-etog.on{background:rgba(201,168,76,.16);border-color:var(--gold);color:#8A6A22}
+.cr-etog.fixed{opacity:.75;cursor:default}
+.cr-money{border:0.5px solid rgba(201,168,76,.35);background:rgba(201,168,76,.06);border-radius:var(--r);padding:13px 14px;margin-bottom:14px}
+.cr-money.trial{border-color:rgba(11,30,18,.15);background:rgba(11,30,18,.03)}
+.cr-money-h{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:17px;color:#8A6A22}
+.cr-money.trial .cr-money-h{color:var(--text2)}
+.cr-money-n{font-size:11.5px;color:var(--text3);line-height:1.55;margin-top:3px}
+.cr-owed{margin-top:10px;display:grid;gap:6px}
+.cr-owe{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:0.5px solid rgba(11,30,18,.1);border-radius:9px;padding:9px 11px;font-size:12.5px;color:#22301F}
+.cr-amt{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--gold)}
+.cr-settled{margin-top:10px;font-size:12px;color:#4E7A3C;font-weight:600}
 .cr-wrap{max-width:560px;margin:0 auto;padding:2px 0 24px}
 .cr-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .cr-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:25px;color:#22301F;text-align:center}
@@ -1410,6 +1427,10 @@ const POTM_DEFAULTS={
   minRounds:3,          // rounds needed in the month to be ranked
   dropWorst:true,       // ignore your worst round once you've played 4+
   spoonBasis:'last',    // 'last' = bottom qualifier · 'fewest' = fewest rounds
+  stake:5,              // the sum at stake each month
+  currency:'€',
+  stakeMode:'spoon',    // 'spoon' = spoon pays the winner · 'pot' = everyone buys in
+  trial:true,           // trial month: everything computed, nothing owed
   floorShare:0.15,      // last place in a category still scores this share, never zero
   h2hMinShared:2,       // shared rounds needed before head-to-head is scored
   settleDays:3          // days after month end before results lock
@@ -1439,6 +1460,23 @@ function potmEnteredIn(pid,ym){
   if(pe&&pe[pid]!==undefined)return !!pe[pid];
   return false;
 }
+// Can entries still be changed for this month?
+//   A future month is always open.
+//   The CURRENT month is open only while the competition is in trial mode — otherwise a
+//   player could see how the month was going before deciding to join, which is exactly
+//   what the lock exists to prevent. During a trial there is nothing at stake, and the
+//   feature itself arrives mid-month, so joining has to be possible or nobody can start.
+//   Past months are closed.
+function potmEntryOpen(ym){
+  const now=potmThisYM();
+  if(ym>now)return {open:true,reason:'future'};
+  if(ym===now)return potmSettings().trial?{open:true,reason:'trial'}:{open:false,reason:'locked'};
+  return {open:false,reason:'past'};
+}
+// Leaving a month already under way is never allowed, trial or not. Otherwise someone has
+// a bad fortnight, quietly withdraws, and never loses.
+function potmCanLeave(ym){ return ym>potmThisYM(); }
+
 // Handicap Index as it stood immediately before a given date. Rounds dated on or after
 // that date are withheld; undated rounds are historical so they always count. This is
 // computed on demand rather than snapshotted, so a month can be settled retrospectively.
@@ -1558,6 +1596,43 @@ function potmRank(vals,lowerBetter){
   }
   return ranks;
 }
+// What is owed for a month, and by whom.
+//   'spoon' — the bottom qualifier pays the winner. One transaction, both ends matter.
+//   'pot'   — every qualifier buys in, the winner takes the pot.
+// A void month (too few qualifiers) pays nobody and rolls its pot into the next month.
+function potmPrevYM(ym){
+  const [y,m]=ym.split('-').map(Number);
+  return new Date(Date.UTC(y,m-2,1)).toISOString().slice(0,7);
+}
+function potmRollover(ym,depth){
+  // sum the stakes of consecutive void months immediately before this one
+  if((depth||0)>24)return 0;
+  const prev=potmPrevYM(ym);
+  const res=(S.potm&&S.potm.results&&S.potm.results[prev])||null;
+  if(res){ return res.void ? (res.pot||0)+potmRollover(prev,(depth||0)+1) : 0; }
+  return 0;
+}
+function potmMoney(r){
+  const st=r.settings;
+  const q=r.qualified.length;
+  const rolled=potmRollover(r.ym);
+  if(st.trial) return {trial:true,stake:st.stake,cur:st.currency,pot:0,rolled,owed:[],note:'Trial month — nothing is owed.'};
+  if(r.void)   return {trial:false,stake:st.stake,cur:st.currency,pot:st.stake*Math.max(q,0)+rolled,rolled,owed:[],
+                       note:'Month void — the pot rolls into next month.'};
+  if(st.stakeMode==='pot'){
+    const pot=st.stake*q+rolled;
+    return {trial:false,stake:st.stake,cur:st.currency,pot,rolled,
+      owed:r.qualified.map(e=>({from:e.name,fromId:e.pid,to:r.winner.name,toId:r.winner.pid,
+                                amount:e.pid===r.winner.pid?0:st.stake})).filter(x=>x.amount>0),
+      note:`Everyone in buys ${st.currency}${st.stake}. Winner takes ${st.currency}${pot}.`};
+  }
+  const amount=st.stake+rolled;
+  return {trial:false,stake:st.stake,cur:st.currency,pot:amount,rolled,
+    owed:(r.spoon&&r.winner&&r.spoon.pid!==r.winner.pid)?[{from:r.spoon.name,fromId:r.spoon.pid,
+          to:r.winner.name,toId:r.winner.pid,amount}]:[],
+    note:`Wooden spoon pays the winner ${st.currency}${amount}${rolled?` (includes ${st.currency}${rolled} rolled over)`:''}.`};
+}
+
 // The whole month, computed from scratch.
 function potmCompute(ym){
   const st=potmSettings(), courses=S.courses||[];
@@ -1620,11 +1695,15 @@ function potmCompute(ym){
   const settleFrom=new Date(potmMonthEnd(ym)+'T00:00:00Z');
   settleFrom.setUTCDate(settleFrom.getUTCDate()+st.settleDays);
   const locked=new Date()>settleFrom;
-  return {ym,settings:st,entrants,qualified:q,
+  const out={ym,settings:st,entrants,qualified:q,
           notQualified:entrants.filter(e=>!e.qualified),
           winner:q.length?q[0]:null,spoon,
-          void:q.length<Math.max(2,3)&&q.length<3, locked,
+          void:q.length<3, locked,
           settleDate:settleFrom.toISOString().slice(0,10)};
+  out.money=potmMoney(out);
+  out.settled=!!(S.potm&&S.potm.results&&S.potm.results[ym]);
+  out.record=(S.potm&&S.potm.results&&S.potm.results[ym])||null;
+  return out;
 }
 
 function renderCrown(){
@@ -1646,14 +1725,29 @@ function renderCrown(){
       <button class="cr-nav" ${ym>=potmThisYM()?'disabled':''} onclick="CROWN_STEP(1)">›</button>
     </div>`;
 
-  // entry state
-  const entered=me?potmEnteredIn(me.id,ym):false;
+  // ── entries ──
   const nextYM=(()=>{const [y,m]=potmThisYM().split('-').map(Number);return new Date(Date.UTC(y,m,1)).toISOString().slice(0,7);})();
-  if(ym===potmThisYM()){
-    h+=`<div class="cr-entry">
-      <div><b>${entered?'You are in this month':'You are not entered'}</b>
-      <div class="cr-note">Entry locks when the month begins. ${entered?'':'You can enter for '+potmMonthName(nextYM)+'.'}</div></div>
-      <button class="cr-btn" onclick="CROWN_TOGGLE('${nextYM}')">${potmEnteredIn(me?me.id:'',nextYM)?'Leave '+potmMonthName(nextYM).split(' ')[0]:'Enter '+potmMonthName(nextYM).split(' ')[0]}</button>
+  const gate=potmEntryOpen(ym);
+  if(ym>=potmThisYM()){
+    const target = gate.open ? ym : nextYM;
+    h+=`<div class="cr-sec">Entries — ${potmMonthName(target)}</div>
+    <div class="cr-entrybox">
+      <div class="cr-note" style="margin:0 0 10px">${
+        gate.reason==='trial'
+          ? `Trial month, so entries are still open. Once stakes are live, entry closes before the month begins.`
+          : gate.reason==='future'
+            ? `Set up ${potmMonthName(target)}. Choices carry forward month to month.`
+            : `${potmMonthName(ym)} is under way and locked — nobody can join or withdraw. Setting up ${potmMonthName(nextYM)} instead.`}
+        ${!potmCanLeave(target)?' Nobody can withdraw once the month has started.':''}
+      </div>
+      ${(S.players||[]).map(p=>{
+        const inIt=potmEnteredIn(p.id,target);
+        const locked=inIt&&!potmCanLeave(target);
+        return `<div class="cr-erow">
+          <span class="cr-enm">${p.name}</span>
+          <button class="cr-etog${inIt?' on':''}${locked?' fixed':''}" onclick="CROWN_TOGGLE('${target}','${p.id}')">${inIt?(locked?'In — locked':'In'):'Out'}</button>
+        </div>`;
+      }).join('')}
     </div>`;
   }
 
@@ -1671,9 +1765,21 @@ function renderCrown(){
       <div class="cr-crownicon">👑</div>
       <div class="cr-winner">${r.winner.name}</div>
       <div class="cr-score">${r.winner.total.toFixed(1)}<span>/100</span></div>
-      ${r.spoon&&r.spoon.pid!==r.winner.pid?`<div class="cr-spoon">🥄 Wooden spoon — <b>${r.spoon.name}</b>${st.spoonBasis==='fewest'?` (${r.spoon.rounds.length} rounds)`:''} · pays the winner</div>`:''}
+      ${r.spoon&&r.spoon.pid!==r.winner.pid?`<div class="cr-spoon">🥄 Wooden spoon — <b>${r.spoon.name}</b>${st.spoonBasis==='fewest'?` (${r.spoon.rounds.length} rounds)`:''}</div>`:''}
     </div>`;
   }
+
+  // ── the money ──
+  const M=r.money;
+  h+=`<div class="cr-money${M.trial?' trial':''}">
+    <div class="cr-money-h">${M.trial?'Trial month':(st.stakeMode==='pot'?`Pot — ${M.cur}${M.pot}`:`At stake — ${M.cur}${M.pot}`)}</div>
+    <div class="cr-money-n">${M.note}</div>
+    ${M.rolled?`<div class="cr-money-n" style="color:#8A6A22">${M.cur}${M.rolled} rolled over from a void month.</div>`:''}
+    ${M.owed.length?`<div class="cr-owed">${M.owed.map(o=>`<div class="cr-owe"><span><b>${o.from}</b> → ${o.to}</span><span class="cr-amt">${M.cur}${o.amount}</span></div>`).join('')}</div>`:''}
+    ${r.settled?`<div class="cr-settled">✓ Settled — recorded in the Purse</div>`
+      :(!M.trial&&r.locked&&M.owed.length?`<button class="cr-btn" style="width:100%;margin-top:10px" onclick="CROWN_SETTLE('${ym}')">Settle & record in the Purse</button>`
+      :(!M.trial&&!r.locked?`<div class="cr-money-n">Settles ${r.settleDate}, once the month is locked.</div>`:''))}
+  </div>`;
 
   // standings
   h+=`<div class="cr-sec">Standings</div><div class="cr-table">
@@ -1748,6 +1854,21 @@ function renderCrownSettings(){
     <div class="fr"><label class="fl">Wooden spoon goes to</label>
       <select id="cSpoon"><option value="last"${st.spoonBasis==='last'?' selected':''}>Bottom of the qualifiers</option><option value="fewest"${st.spoonBasis==='fewest'?' selected':''}>Fewest rounds played</option></select>
       <div class="pk-hint">Bottom-of-qualifiers is a competitive result. Fewest-rounds punishes a busy month and can never land on whoever plays most.</div></div>
+    <div class="fr"><label class="fl">Stakes</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label class="fl">Amount</label><input type="number" id="cStake" step="0.5" min="0" value="${st.stake}"></div>
+        <div><label class="fl">Currency</label><input type="text" id="cCur" maxlength="3" value="${st.currency}"></div>
+      </div>
+      <select id="cMode" style="margin-top:10px">
+        <option value="spoon"${st.stakeMode==='spoon'?' selected':''}>Wooden spoon pays the winner</option>
+        <option value="pot"${st.stakeMode==='pot'?' selected':''}>Everyone buys in, winner takes the pot</option>
+      </select>
+      <div class="pk-hint">Spoon-pays-winner is one transaction and makes both ends of the table matter. A pot is a bigger prize but more payments to chase.</div>
+    </div>
+    <div class="fr"><label class="fl">Trial mode</label>
+      <select id="cTrial"><option value="1"${st.trial?' selected':''}>Yes — compute everything, nobody owes anything</option><option value="0"${!st.trial?' selected':''}>No — stakes are live</option></select>
+      <div class="pk-hint">Run the first month as a trial. It costs nothing and tells you whether the winner feels right before money is involved.</div>
+    </div>
     <div id="cErr" class="err" style="display:none"></div>
     <button class="btn-p" onclick="CROWN_SAVE()">Save</button>
     <button class="btn-s" onclick="CM()">Cancel</button>
@@ -1977,6 +2098,24 @@ function calcPurse(){
     }
     if(t.winnerId&&earnings[t.winnerId])earnings[t.winnerId].wins+=1;
     t.entries.forEach(e=>{if(earnings[e.playerId])earnings[e.playerId].events+=1;});
+  });
+  // Player of the Month settlements feed the same ledger, so Crown money shows up in
+  // profit and loss alongside tournaments rather than living in a separate system.
+  const res=(S.potm&&S.potm.results)||{};
+  Object.keys(res).forEach(ym=>{
+    const r=res[ym];
+    if(!r||r.trial||r.void||!Array.isArray(r.owed))return;
+    r.owed.forEach(o=>{
+      if(earnings[o.toId]){
+        earnings[o.toId].totalEarned+=o.amount;
+        earnings[o.toId].history.push({tournament:'Crown — '+ym,date:ym+'-'+'28',earned:o.amount,buyin:0,pnl:o.amount});
+      }
+      if(earnings[o.fromId]){
+        earnings[o.fromId].totalBuyIn+=o.amount;
+        earnings[o.fromId].history.push({tournament:'Crown — '+ym,date:ym+'-'+'28',earned:0,buyin:o.amount,pnl:-o.amount});
+      }
+    });
+    if(r.winnerId&&earnings[r.winnerId])earnings[r.winnerId].wins+=1;
   });
   // Compute overall P&L
   Object.values(earnings).forEach(e=>{e.pnl=e.totalEarned-e.totalBuyIn;});
@@ -3438,13 +3577,43 @@ window.CROWN_STEP=d=>{
   CROWN_YM=nx;CROWN_OPEN=null;render();
 };
 window.CROWN_DETAIL=pid=>{CROWN_OPEN=CROWN_OPEN===pid?null:pid;render();};
-window.CROWN_TOGGLE=ym=>{
-  const me=(S.players||[])[0]; if(!me)return;
+// There is no login, so the app cannot know which player you are. With six friends on a
+// shared database the pragmatic answer is to let anyone set anyone's entry.
+window.CROWN_TOGGLE=(ym,pid)=>{
+  const p=(S.players||[]).find(x=>x.id===pid); if(!p)return;
+  const gate=potmEntryOpen(ym);
+  if(!gate.open){
+    alert(gate.reason==='past'?'That month is closed.'
+      :`${potmMonthName(ym)} is already under way, so entries are locked. You can set up ${potmMonthName((()=>{const [y,m]=potmThisYM().split('-').map(Number);return new Date(Date.UTC(y,m,1)).toISOString().slice(0,7);})())}.`);
+    return;
+  }
+  const inNow=potmEnteredIn(pid,ym);
+  if(inNow&&!potmCanLeave(ym)){
+    alert(`${p.name} is already in ${potmMonthName(ym)} and the month has started. Nobody can withdraw from a month in progress — that is the whole point of the lock.`);
+    return;
+  }
   const potm=S.potm||{};
   const entries={...(potm.entries||{})};
   entries[ym]={...(entries[ym]||{})};
-  entries[ym][me.id]=!potmEnteredIn(me.id,ym);
+  entries[ym][pid]=!inNow;
   upd({...S,potm:{...potm,entries}});
+};
+// Settling writes an immutable record for the month, which the Purse then reads. Once
+// written it is not recomputed, so a later score cannot rewrite settled history.
+window.CROWN_SETTLE=ym=>{
+  const r=potmCompute(ym);
+  if(!r.locked){alert('This month has not locked yet. It settles on '+r.settleDate+'.');return;}
+  if(r.settings.trial){alert('This is a trial month — nothing is owed.');return;}
+  if(!r.winner){alert('No winner to settle.');return;}
+  const M=r.money;
+  const lines=M.owed.map(o=>`${o.from} pays ${o.to} ${M.cur}${o.amount}`).join('\n');
+  if(!confirm(`Settle ${potmMonthName(ym)}?\n\n${lines||'Nothing owed'}\n\nThis records the result permanently and adds it to the Purse.`))return;
+  const record={ym,void:r.void,trial:false,pot:M.pot,currency:M.cur,
+    winner:r.winner.name,winnerId:r.winner.pid,total:r.winner.total,
+    spoon:r.spoon?r.spoon.name:null,spoonId:r.spoon?r.spoon.pid:null,
+    owed:M.owed,settledAt:new Date().toISOString().slice(0,10),
+    standings:r.qualified.map(e=>({name:e.name,id:e.pid,total:e.total,rounds:e.rounds.length}))};
+  upd({...S,potm:{...(S.potm||{}),results:{...((S.potm&&S.potm.results)||{}),[ym]:record}}});
 };
 window.CROWN_SAVE=()=>{
   const g=id=>parseFloat(document.getElementById(id)?.value);
@@ -3456,10 +3625,16 @@ window.CROWN_SAVE=()=>{
   if(Math.abs(total-100)>0.01)return fail(`Weights total ${total}. They must add up to 100.`);
   const minR=parseInt(document.getElementById('cMin')?.value,10);
   if(isNaN(minR)||minR<1||minR>20)return fail('Minimum rounds must be between 1 and 20.');
+  const stake=parseFloat(document.getElementById('cStake')?.value);
+  if(isNaN(stake)||stake<0)return fail('Stake must be zero or more.');
+  const cur=(document.getElementById('cCur')?.value||'€').trim()||'€';
   upd({...S,potm:{...(S.potm||{}),settings:{
     ...(S.potm&&S.potm.settings||{}),weights:w,minRounds:minR,
     dropWorst:document.getElementById('cDrop')?.value==='1',
-    spoonBasis:document.getElementById('cSpoon')?.value}}});
+    spoonBasis:document.getElementById('cSpoon')?.value,
+    stake,currency:cur,
+    stakeMode:document.getElementById('cMode')?.value,
+    trial:document.getElementById('cTrial')?.value==='1'}}});
   MOD=null;
 };
 window.SV=v=>{V=v;OPEN_COURSE=null;OPEN_SCORE=null;if(v!=='play'&&GPON){GPON=false;gpStop();}if(v==='play'){LRMSG=null;LPV=LR?'round':'list';lpPull();}render();};
