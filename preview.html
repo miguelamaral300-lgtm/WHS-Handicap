@@ -890,6 +890,27 @@ textarea{resize:vertical;min-height:70px}
 .cg-tee .t1{display:flex;align-items:center;gap:7px;font-weight:600;color:#22301F}
 .cg-tee .t2{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--text2);white-space:nowrap}
 /* ═══ CROWN — player of the month ═══ */
+.cr-strip{display:flex;align-items:center;gap:10px;border:0.5px solid rgba(201,168,76,.4);
+  background:linear-gradient(100deg,rgba(201,168,76,.12),rgba(201,168,76,.03));border-radius:var(--r);
+  padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#22301F;cursor:pointer;line-height:1.45}
+.cr-strip-k{font-size:18px;flex-shrink:0}
+.cr-strip-go{margin-left:auto;color:var(--gold);font-size:18px;flex-shrink:0}
+.cr-target{font-size:11.5px;color:#4E7A3C;background:rgba(127,176,105,.09);border:0.5px solid rgba(127,176,105,.28);
+  border-radius:9px;padding:9px 11px;margin-top:8px;line-height:1.55}
+.cr-h2h{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(52px,1fr);border-bottom:0.5px solid rgba(11,30,18,.06)}
+.cr-h2h:last-child{border-bottom:none}
+.cr-h2h-c{padding:9px 4px;text-align:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:12px;color:var(--text2)}
+.cr-h2h-hd{font-family:'Barlow',sans-serif;font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);background:rgba(11,30,18,.04)}
+.cr-h2h-nm{text-align:left;font-family:'Barlow',sans-serif;font-size:12px;color:#22301F;font-weight:600}
+.cr-h2h-c.win{color:#4E7A3C}.cr-h2h-c.loss{color:#B4564B}.cr-h2h-c.draw{color:var(--text2)}
+.cr-h2h-self{color:rgba(11,30,18,.2)}
+.bdg-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bdg{display:flex;align-items:center;gap:9px;border:0.5px solid rgba(201,168,76,.28);background:rgba(201,168,76,.06);
+  border-radius:11px;padding:10px 11px}
+.bdg-i{font-size:19px;flex-shrink:0}
+.bdg-t{display:flex;flex-direction:column;min-width:0}
+.bdg-t b{font-size:12.5px;color:#22301F;line-height:1.2}
+.bdg-n{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.3}
 .cr-rstate{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;border-radius:20px;padding:3px 9px;white-space:nowrap}
 .cr-rstate.awaiting{background:rgba(216,162,74,.16);color:#8A6A22}
 .cr-rstate.posted{background:rgba(127,176,105,.18);color:#4E7A3C}
@@ -1552,12 +1573,33 @@ function potmVsHcp(r,index){
   if(index==null)return null;
   return r.nine ? rd(2*r.diff-index,2) : rd(r.diff-index,2);
 }
-// SCORING — average of the month, worst round dropped once you have 4+. Lower is better.
+// SCORING — the month's rounds averaged, worst dropped once you have 4+. Lower is better.
+//
+// Nines count as HALF a round. Doubling a nine's deviation puts it on an 18-hole scale
+// but also doubles its noise: variance of a doubled nine is about twice that of a full
+// round. Inverse-variance weighting therefore gives it half the weight — which happens to
+// be the intuitive answer too. Without this, anyone playing a lot of nines (Jamor,
+// Estoril) gets a bouncier score than someone playing eighteens, for no good reason.
+function potmRoundWeight(r){ return r.nine?0.5:1; }
 function potmScoring(rounds,index,st){
   if(!rounds.length||index==null)return null;
-  let v=rounds.map(r=>potmVsHcp(r,index));
-  if(st.dropWorst&&v.length>=4){ v=[...v].sort((a,b)=>a-b).slice(0,v.length-1); }
-  return rd(v.reduce((a,b)=>a+b,0)/v.length,2);
+  let set=rounds.map(r=>({v:potmVsHcp(r,index),w:potmRoundWeight(r)})).filter(x=>x.v!=null);
+  if(!set.length)return null;
+  if(st.dropWorst&&set.length>=4){
+    set=[...set].sort((a,b)=>a.v-b.v).slice(0,set.length-1);   // drop the single worst
+  }
+  const sw=set.reduce((a,x)=>a+x.w,0);
+  if(!sw)return null;
+  return rd(set.reduce((a,x)=>a+x.v*x.w,0)/sw,2);
+}
+// What the next round must produce for this player to reach a target average.
+// Approximate by design — it assumes an 18-hole round and ignores the drop-worst rule.
+function potmTargetForAvg(rounds,index,targetAvg,st){
+  if(index==null)return null;
+  const set=rounds.map(r=>({v:potmVsHcp(r,index),w:potmRoundWeight(r)})).filter(x=>x.v!=null);
+  const sw=set.reduce((a,x)=>a+x.w,0), sv=set.reduce((a,x)=>a+x.v*x.w,0);
+  const x=targetAvg*(sw+1)-sv;          // solve for a new round of weight 1
+  return rd(x,2);
 }
 // FORM — percentage of index shed across the month. Deliberately only 10 points: it is
 // driven largely by which old round ages out of the 20-round window, not by this month.
@@ -1613,8 +1655,9 @@ function potmH2H(entrants,courses,ym,st){
           if(va<vb){data[A.pid].pts+=1;}
           else if(vb<va){data[B.pid].pts+=1;}
           else {data[A.pid].pts+=0.5;data[B.pid].pts+=0.5;}
-          data[A.pid].opponents[B.pid]=(data[A.pid].opponents[B.pid]||0)+1;
-          data[B.pid].opponents[A.pid]=(data[B.pid].opponents[A.pid]||0)+1;
+          const recA=data[A.pid].opponents[B.pid]||(data[A.pid].opponents[B.pid]={w:0,l:0,h:0});
+          const recB=data[B.pid].opponents[A.pid]||(data[B.pid].opponents[A.pid]={w:0,l:0,h:0});
+          if(va<vb){recA.w++;recB.l++;} else if(vb<va){recB.w++;recA.l++;} else {recA.h++;recB.h++;}
         });
       });
     }
@@ -1682,6 +1725,11 @@ function potmMoney(r){
     note:`Wooden spoon pays the winner ${st.currency}${amount}${rolled?` (includes ${st.currency}${rolled} rolled over)`:''}.`};
 }
 
+// Once a month has been settled its result is frozen. Recomputing it later would let an
+// edit to an old score silently change a result that has already been paid out.
+function potmSettledRecord(ym){
+  return (S.potm&&S.potm.results&&S.potm.results[ym])||null;
+}
 // The whole month, computed from scratch.
 function potmCompute(ym){
   const st=potmSettings(), courses=S.courses||[];
@@ -1755,9 +1803,64 @@ function potmCompute(ym){
   return out;
 }
 
+// A one-line nudge on the Rankings screen. The competition is invisible unless someone
+// goes looking for it, and that was the main reason to build this at all.
+function renderCrownStrip(){
+  const ym=potmThisYM();
+  const rec=potmSettledRecord(ym);
+  if(rec)return '';
+  let r;
+  try{ r=potmCompute(ym); }catch(e){ return ''; }
+  if(!r.entrants.length)return '';
+  if(!r.qualified.length){
+    const need=r.settings.minRounds;
+    return `<div class="cr-strip" onclick="SV('crown')">
+      <span class="cr-strip-k">👑</span>
+      <span><b>${potmMonthName(ym).split(' ')[0]} Crown</b> — ${r.entrants.length} entered, nobody has reached ${need} rounds yet</span>
+      <span class="cr-strip-go">›</span></div>`;
+  }
+  const lead=r.qualified[0];
+  const second=r.qualified[1];
+  const gap=second?rd(lead.total-second.total,1):null;
+  return `<div class="cr-strip" onclick="SV('crown')">
+    <span class="cr-strip-k">👑</span>
+    <span><b>${potmMonthName(ym).split(' ')[0]} Crown</b> — ${lead.name} leads on ${lead.total.toFixed(1)}${second?`, ${gap} clear of ${second.name}`:''}</span>
+    <span class="cr-strip-go">›</span></div>`;
+}
+
 function renderCrown(){
   const st=potmSettings();
   const ym=CROWN_YM||potmThisYM();
+  const frozen=potmSettledRecord(ym);
+  // A settled month shows exactly what was settled. Recomputing it would let a later
+  // edit to an old score change a result that has already been paid.
+  if(frozen&&ym<potmThisYM()){
+    let fh=`<div class="cr-wrap">
+      <div class="cr-head">
+        <button class="cr-nav" onclick="CROWN_STEP(-1)">‹</button>
+        <div><div class="cr-title">${potmMonthName(ym)}</div><div class="cr-sub">Final · settled ${frozen.settledAt||''}</div></div>
+        <button class="cr-nav" ${ym>=potmThisYM()?'disabled':''} onclick="CROWN_STEP(1)">›</button>
+      </div>`;
+    if(frozen.void){
+      fh+=`<div class="cr-void"><b>${potmMonthName(ym)} was void.</b> Too few players reached the minimum, so nobody was paid and the pot rolled forward.</div>`;
+    }else{
+      fh+=`<div class="cr-podium"><div class="cr-crownicon">👑</div>
+        <div class="cr-winner">${frozen.winner}</div>
+        <div class="cr-score">${(frozen.total||0).toFixed(1)}<span>/100</span></div>
+        ${frozen.spoon?`<div class="cr-spoon">🥄 Wooden spoon — <b>${frozen.spoon}</b></div>`:''}</div>`;
+      if((frozen.owed||[]).length)fh+=`<div class="cr-money"><div class="cr-money-h">Settled — ${frozen.currency||''}${frozen.pot||0}</div>
+        <div class="cr-owed">${frozen.owed.map(o=>`<div class="cr-owe"><span><b>${o.from}</b> → ${o.to}</span><span class="cr-amt">${frozen.currency||''}${o.amount}</span></div>`).join('')}</div>
+        <div class="cr-settled">✓ Recorded in the Purse</div></div>`;
+      fh+=`<div class="cr-sec">Final standings</div><div class="cr-table">
+        <div class="cr-row cr-hd"><div>#</div><div>Player</div><div>Rds</div><div style="grid-column:span 4"></div><div>Total</div></div>
+        ${(frozen.standings||[]).map((x,i)=>`<div class="cr-row${i===0?' cr-lead':''}"><div class="cr-pos">${i+1}</div>
+          <div class="cr-nm">${x.name}</div><div class="cr-n">${x.rounds}</div><div style="grid-column:span 4"></div>
+          <div class="cr-tot">${x.total.toFixed(1)}</div></div>`).join('')}</div>`;
+      fh+=`<button class="cr-ghost" onclick="CROWN_SHARE('${ym}')">Share this result</button>`;
+    }
+    fh+=`<div class="cr-note" style="text-align:center;margin-top:12px">This month is closed. Editing an old score cannot change a settled result.</div>`;
+    return fh+`</div>`;
+  }
   const r=potmCompute(ym);
   const me=(S.players||[])[0];
   const CAT={scoring:['Scoring','average of the month, worst round dropped from 4+','shots vs your handicap',true],
@@ -1874,6 +1977,17 @@ function renderCrown(){
           <div class="cr-cat-v">${meta[2]}: <b>${fmt(k,c?c.value:null)}</b>${c&&c.rank?` · ranked ${c.rank===Math.floor(c.rank)?c.rank:c.rank.toFixed(1)} of ${c.of}`:''}</div>
         </div>`;
       });
+      // what would it take to climb one place?
+      const above=r.qualified[i-1];
+      if(above&&e.cat.scoring&&above.cat.scoring&&e.indexStart!=null){
+        const need=potmTargetForAvg(e.rounds,e.indexStart,above.cat.scoring.value,st);
+        if(need!=null){
+          const gross=rd(e.indexStart+need,1);
+          h+=`<div class="cr-target">To pass <b>${above.name}</b> on scoring, the next round needs to be about <b>${need>0?'+':''}${need.toFixed(1)}</b> against your handicap — a differential near <b>${gross.toFixed(1)}</b>.</div>`;
+        }
+      }else if(!above&&e.cat.scoring){
+        h+=`<div class="cr-target">Leading on scoring. Keep it there.</div>`;
+      }
       if(e.redistributed)h+=`<div class="cr-note">A category could not be scored for this player, so its weight was shared across the others. Nobody is penalised for missing data.</div>`;
       if(e.h2hMeta&&e.h2hMeta.played<st.h2hMinShared)h+=`<div class="cr-note">Head to head needs ${st.h2hMinShared} rounds played alongside another entrant. This player has ${e.h2hMeta.played}.</div>`;
       h+=`</div>`;
@@ -1890,10 +2004,51 @@ function renderCrown(){
     h+=`</div>`;
   }
 
+  // ── head-to-head matrix ──
+  const hasH2H=r.qualified.some(e=>e.h2hMeta&&Object.keys(e.h2hMeta.opponents||{}).length);
+  if(hasH2H){
+    h+=`<div class="cr-sec">Head to head</div><div class="cr-table" style="overflow-x:auto">
+      <div class="cr-h2h"><div class="cr-h2h-c cr-h2h-hd"></div>${r.qualified.map(o=>`<div class="cr-h2h-c cr-h2h-hd">${o.name.split(' ')[0].slice(0,5)}</div>`).join('')}</div>
+      ${r.qualified.map(e=>`<div class="cr-h2h">
+        <div class="cr-h2h-c cr-h2h-nm">${e.name.split(' ')[0]}</div>
+        ${r.qualified.map(o=>{
+          if(o.pid===e.pid)return `<div class="cr-h2h-c cr-h2h-self">—</div>`;
+          const rec=(e.h2hMeta.opponents||{})[o.pid];
+          if(!rec)return `<div class="cr-h2h-c" style="color:var(--text3)">·</div>`;
+          const cls=rec.w>rec.l?'win':rec.l>rec.w?'loss':'draw';
+          return `<div class="cr-h2h-c ${cls}">${rec.w}–${rec.l}${rec.h?'–'+rec.h:''}</div>`;
+        }).join('')}
+      </div>`).join('')}
+    </div><div class="cr-note">Read across: your record against each player, in rounds you both played. Wins–losses–halves.</div>`;
+  }
+
+  // ── roll of honour ──
+  const results=(S.potm&&S.potm.results)||{};
+  const past=Object.keys(results).filter(k=>!results[k].void).sort().reverse();
+  if(past.length){
+    const crowns={},spoons={};
+    past.forEach(k=>{const x=results[k];
+      if(x.winner)crowns[x.winner]=(crowns[x.winner]||0)+1;
+      if(x.spoon)spoons[x.spoon]=(spoons[x.spoon]||0)+1;});
+    h+=`<div class="cr-sec">Roll of honour</div><div class="cr-table">
+      ${Object.keys(crowns).sort((a,b)=>crowns[b]-crowns[a]).map(nm=>`<div class="cr-row" style="grid-template-columns:1fr auto auto;cursor:default">
+        <div class="cr-nm">${nm}</div>
+        <div class="cr-n">${'👑'.repeat(Math.min(crowns[nm],5))}${crowns[nm]>5?` ×${crowns[nm]}`:''}</div>
+        <div class="cr-n" style="min-width:52px">${spoons[nm]?'🥄'.repeat(Math.min(spoons[nm],3)):''}</div>
+      </div>`).join('')}
+      ${Object.keys(spoons).filter(nm=>!crowns[nm]).map(nm=>`<div class="cr-row" style="grid-template-columns:1fr auto auto;cursor:default">
+        <div class="cr-nm">${nm}</div><div class="cr-n"></div>
+        <div class="cr-n" style="min-width:52px">${'🥄'.repeat(Math.min(spoons[nm],3))}</div></div>`).join('')}
+    </div>
+    <div class="cr-note">${past.length} month${past.length>1?'s':''} settled.</div>`;
+  }
+
+  if(r.winner)h+=`<button class="cr-ghost" onclick="CROWN_SHARE('${ym}')">Share the standings</button>`;
+
   // how it works
   h+=`<div class="cr-sec">How it is scored</div>
   <div class="cr-how">
-    <div class="cr-w"><b>${st.weights.scoring}</b> Scoring — your month's rounds averaged, worst dropped from 4+, measured against your own handicap</div>
+    <div class="cr-w"><b>${st.weights.scoring}</b> Scoring — your month's rounds averaged, worst dropped from 4+, measured against your own handicap. A nine counts as half a round</div>
     <div class="cr-w"><b>${st.weights.h2h}</b> Head to head — win rate against entrants who played the same round</div>
     <div class="cr-w"><b>${st.weights.form}</b> Form — percentage your index came down</div>
     <div class="cr-w"><b>${st.weights.bonus}</b> Bonuses — proportion of rounds inside your handicap, plus personal bests</div>
@@ -2798,7 +2953,7 @@ function render(){
 
   if(AP) h+=renderPlayerDetail(AP);
   else if(AT) h+=renderTournamentDetail(AT);
-  else if(V==='rankings') h+=renderRanking(R);
+  else if(V==='rankings') h+=renderCrownStrip()+renderRanking(R);
   else if(V==='play') h+=renderPlay();
   else if(V==='crown') h+=renderCrown();
   else if(V==='tournaments') h+=renderTournaments();
@@ -2919,6 +3074,16 @@ function renderPlayerDetail(p){
 
     // Handicap trend chart
     h+=renderHITrendChart(p,S.courses);
+  }
+
+  // ── badges: non-competitive, so everyone collects at their own level ──
+  {
+    const badges=potmBadges(p,S.courses);
+    if(badges.length){
+      h+=`<div class="divider"></div>
+      <div class="sec-head"><span class="sec-title">Badges</span><span style="font-size:11px;color:var(--text3)">${badges.length}</span></div>
+      <div class="bdg-wrap">${badges.map(b=>`<div class="bdg"><span class="bdg-i">${b.icon}</span><span class="bdg-t"><b>${b.name}</b><span class="bdg-n">${b.note}</span></span></div>`).join('')}</div>`;
+    }
   }
 
   h+=`<div class="divider"></div>
@@ -3676,6 +3841,67 @@ let CROWN_YM=null,CROWN_OPEN=null;
 // here. Two buttons previously assigned to module-scoped variables and silently did
 // nothing — the Competition Settings button and the Courses scope toggle.
 window.COURSES_SCOPE=v=>{COURSES_ALL=!!v;render();};
+// Month summary straight into the group chat — the app then markets itself.
+window.CROWN_SHARE=ym=>{
+  const rec=potmSettledRecord(ym);
+  let txt;
+  if(rec&&!rec.void){
+    txt=`👑 The Club — ${potmMonthName(ym)}\n\n`
+      +(rec.standings||[]).map((x,i)=>`${i+1}. ${x.name} — ${x.total.toFixed(1)} (${x.rounds} rds)`).join('\n')
+      +`\n\n🏆 ${rec.winner}`+(rec.spoon?`\n🥄 ${rec.spoon}`:'')
+      +((rec.owed||[]).length?`\n\n${rec.owed.map(o=>`${o.from} owes ${o.to} ${rec.currency||''}${o.amount}`).join('\n')}`:'');
+  }else{
+    const r=potmCompute(ym);
+    if(!r.winner){alert('Nothing to share yet.');return;}
+    txt=`👑 The Club — ${potmMonthName(ym)} (live)\n\n`
+      +r.qualified.map((e,i)=>`${i+1}. ${e.name} — ${e.total.toFixed(1)} (${e.rounds.length} rds)`).join('\n')
+      +`\n\nLeading: ${r.winner.name}`
+      +(r.notQualified.length?`\n\nNot yet qualified: ${r.notQualified.map(e=>e.name+' ('+e.rounds.length+')').join(', ')}`:'');
+  }
+  const url='https://wa.me/?text='+encodeURIComponent(txt);
+  try{ window.open(url,'_blank'); }catch(e){ alert(txt); }
+};
+
+// ── BADGES ───────────────────────────────────────────────────────────────────
+// Deliberately non-competitive: everyone collects at their own level, so unfairness is
+// structurally impossible. This is the part that engages whoever will not win the crown.
+function potmBadges(p,courses){
+  const out=[];
+  const sc=(p.scores||[]).filter(x=>{const c=findCourse(courses,x);return c&&!roundIssue(x,c);});
+  if(!sc.length)return out;
+  const full=sc.filter(x=>{const c=findCourse(courses,x);return !isNineCfg(cfgOf(x,c));});
+  const grosses=full.map(x=>x.score);
+  const best=grosses.length?Math.min(...grosses):null;
+  [[100,'Under 100'],[90,'Under 90'],[80,'Under 80'],[75,'Under 75']].forEach(([n,lbl])=>{
+    if(best!=null&&best<n)out.push({icon:'⛳',name:lbl,note:`Best full round ${best}`});
+  });
+  // beat your handicap
+  const hi=calcHI(p.scores||[],courses);
+  if(hi&&hi.hi!=null){
+    let beat=0;
+    sc.forEach(x=>{const c=findCourse(courses,x);const d=calcDiff(x.score,c.rating,c.slope);
+      const nine=isNineCfg(cfgOf(x,c));
+      const v=nine?2*d-hi.hi:d-hi.hi;
+      if(v<=0)beat++;});
+    if(beat>=1)out.push({icon:'🎯',name:'Played to handicap',note:`${beat} round${beat>1?'s':''} at or inside your index`});
+    if(beat>=5)out.push({icon:'🎯',name:'Reliable',note:'Five or more inside your index'});
+  }
+  // volume
+  [[25,'Regular'],[50,'Committed'],[100,'Centurion']].forEach(([n,lbl])=>{
+    if(sc.length>=n)out.push({icon:'📋',name:lbl,note:`${sc.length} rounds posted`});
+  });
+  // breadth
+  const clubs=new Set(sc.map(x=>x.course));
+  if(clubs.size>=5)out.push({icon:'🧭',name:'Explorer',note:`${clubs.size} different courses`});
+  if(clubs.size>=10)out.push({icon:'🧭',name:'Well travelled',note:`${clubs.size} different courses`});
+  // crowns and spoons
+  const res=(S.potm&&S.potm.results)||{};
+  const cr=Object.values(res).filter(x=>x.winnerId===p.id).length;
+  const sp=Object.values(res).filter(x=>x.spoonId===p.id).length;
+  if(cr)out.push({icon:'👑',name:cr>1?`Crowned ×${cr}`:'Crowned',note:'Player of the Month'});
+  if(sp)out.push({icon:'🥄',name:sp>1?`Spooned ×${sp}`:'Spooned',note:'Worn with pride'});
+  return out;
+}
 // ── registration ──
 let REG_TEE=null,REG_HOLES=null;
 window.REG_COURSE=()=>{
