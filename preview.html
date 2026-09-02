@@ -890,6 +890,14 @@ textarea{resize:vertical;min-height:70px}
 .cg-tee .t1{display:flex;align-items:center;gap:7px;font-weight:600;color:#22301F}
 .cg-tee .t2{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--text2);white-space:nowrap}
 /* ═══ CROWN — player of the month ═══ */
+.cr-rstate{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;border-radius:20px;padding:3px 9px;white-space:nowrap}
+.cr-rstate.awaiting{background:rgba(216,162,74,.16);color:#8A6A22}
+.cr-rstate.posted{background:rgba(127,176,105,.18);color:#4E7A3C}
+.cr-rstate.outstanding{background:rgba(207,107,92,.16);color:#B4564B}
+.cr-rstate.cancelled{background:rgba(11,30,18,.07);color:var(--text3)}
+.cr-check{display:flex;align-items:center;gap:9px;padding:8px 2px;font-size:13.5px;color:#22301F;border-bottom:0.5px solid rgba(11,30,18,.06)}
+.cr-check:last-of-type{border-bottom:none}
+.cr-check input{width:18px;height:18px}
 .cr-entrybox{border:0.5px solid var(--line);background:var(--panel);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
 .cr-erow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:0.5px solid rgba(11,30,18,.06)}
 .cr-erow:last-child{border-bottom:none}
@@ -1460,6 +1468,42 @@ function potmEnteredIn(pid,ym){
   if(pe&&pe[pid]!==undefined)return !!pe[pid];
   return false;
 }
+// ── PRE-REGISTRATION ─────────────────────────────────────────────────────────
+// Declaring intent before you tee off, as real WHS requires. It matters here because the
+// Crown averages your month rather than taking your best rounds: that creates a reason
+// not to post a bad card, and registering first removes it. It also records who played
+// together, which is what head-to-head needs — inferring it from course-plus-date is
+// guesswork.
+//
+// Outstanding rounds are treated leniently on purpose. Phones die, thunderstorms happen,
+// people walk in after nine. A round left unfilled is shown publicly and blocks the
+// bonus rate, but it is never scored as a disaster — punishing that would just stop
+// people registering at all, which loses the mechanism entirely.
+function potmRegs(){ return (S.potm&&S.potm.regs)||{}; }
+function potmRegList(ym){
+  const r=potmRegs();
+  return Object.keys(r).map(id=>({id,...r[id]}))
+    .filter(x=>!ym||potmYM(x.date)===ym)
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0));
+}
+// Has a registration been fulfilled by a posted round?
+function potmRegMatched(reg,players){
+  const p=(players||S.players||[]).find(x=>x.id===reg.pid);
+  if(!p)return null;
+  const hit=(p.scores||[]).find(sc=>sc.date===reg.date&&sc.course===reg.course&&sc.tee===reg.tee&&(sc.holes||'18')===reg.holes);
+  return hit||null;
+}
+function potmRegState(reg,players){
+  if(reg.cancelled)return 'cancelled';
+  if(potmRegMatched(reg,players))return 'posted';
+  const days=(Date.now()-new Date(reg.date+'T00:00:00Z').getTime())/86400000;
+  return days>7?'outstanding':'awaiting';
+}
+// Rounds that were declared in advance, per player, for a month.
+function potmDeclared(pid,ym){
+  return potmRegList(ym).filter(r=>r.pid===pid&&!r.cancelled);
+}
+
 // Can entries still be changed for this month?
 //   A future month is always open.
 //   The CURRENT month is open only while the competition is in trial mode — otherwise a
@@ -1531,7 +1575,10 @@ function potmForm(p,courses,ym){
 function potmBonus(p,courses,ym,index,rounds){
   if(!rounds.length||index==null)return null;
   const inside=rounds.filter(r=>{const v=potmVsHcp(r,index);return v!=null&&v<=0;}).length;
-  const rate=inside/rounds.length;
+  // A declared round left unfilled counts against the rate as though it were outside your
+  // handicap. It costs something without wrecking the month.
+  const unfilled=potmDeclared(p.id,ym).filter(r=>potmRegState(r)==='outstanding').length;
+  const rate=inside/(rounds.length+unfilled);
   const full=rounds.filter(r=>!r.nine);
   let pb=0;
   if(full.length){
@@ -1555,6 +1602,8 @@ function potmH2H(entrants,courses,ym,st){
       const A=entrants[a],B=entrants[b];
       A.rounds.forEach(ra=>{
         B.rounds.forEach(rb=>{
+          // Same course, same day, same tee, same configuration. Where both players
+          // registered in advance this is a declared pairing rather than an inference.
           if(ra.s.date!==rb.s.date)return;
           if(ra.s.course!==rb.s.course||ra.s.tee!==rb.s.tee)return;
           if(ra.cfg!==rb.cfg)return;
@@ -1725,6 +1774,26 @@ function renderCrown(){
       <button class="cr-nav" ${ym>=potmThisYM()?'disabled':''} onclick="CROWN_STEP(1)">›</button>
     </div>`;
 
+  // ── declared rounds ──
+  const regs=potmRegList(ym);
+  const live=regs.filter(x=>!x.cancelled);
+  h+=`<div class="cr-sec">Declared rounds</div><div class="cr-entrybox">
+    <div class="cr-note" style="margin:0 0 10px">Register before you tee off. It keeps everyone honest once scores are averaged, and it records who played together for head to head.</div>
+    ${live.length?live.map(rg=>{
+      const st2=potmRegState(rg);
+      const pl=(S.players||[]).find(x=>x.id===rg.pid);
+      const lbl={awaiting:'awaiting score',posted:'posted',outstanding:'not filled in',cancelled:'cancelled'}[st2];
+      return `<div class="cr-erow">
+        <span><span class="cr-enm">${pl?pl.name:'—'}</span>
+          <div class="cr-note" style="margin:1px 0 0">${rg.course} · ${rg.tee} · ${({'18':'18 holes','F9':'Front 9','L9':'Back 9','F9x2':'Front 9 ×2','L9x2':'Back 9 ×2'})[rg.holes]||rg.holes} · ${rg.date.split('-').reverse().join('/')}</div></span>
+        <span style="display:flex;gap:6px;align-items:center">
+          <span class="cr-rstate ${st2}">${lbl}</span>
+          ${st2!=='posted'?`<button class="mini-btn del" title="Cancel" onclick="REG_CANCEL('${rg.id}')">✕</button>`:''}
+        </span></div>`;
+    }).join(''):`<div class="cr-note">Nothing declared for ${potmMonthName(ym)} yet.</div>`}
+    ${ym>=potmThisYM()?`<button class="cr-btn" style="width:100%;margin-top:11px" onclick="OM('register')">Declare a round</button>`:''}
+  </div>`;
+
   // ── entries ──
   const nextYM=(()=>{const [y,m]=potmThisYM().split('-').map(Number);return new Date(Date.UTC(y,m,1)).toISOString().slice(0,7);})();
   const gate=potmEntryOpen(ym);
@@ -1830,9 +1899,39 @@ function renderCrown(){
     <div class="cr-w"><b>${st.weights.bonus}</b> Bonuses — proportion of rounds inside your handicap, plus personal bests</div>
     <div class="cr-note" style="margin-top:10px">Each category is <b>ranked</b>, so a 6-handicap and a 37-handicap compete equally. Last place in a category still scores ${Math.round(st.floorShare*100)}%, never zero. Rounds are <b>averaged, not cherry-picked</b> — playing more cannot improve your score.</div>
   </div>
-  <button class="cr-ghost" onclick="MOD='crownset';render()">Competition settings</button>
+  <button class="cr-ghost" onclick="OM('crownset')">Competition settings</button>
   </div>`;
   return h;
+}
+
+function renderRegisterModal(){
+  const bases=[...new Set((S.courses||[]).map(c=>c.name))].sort((a,b)=>a.localeCompare(b));
+  const played=playedNameSet();
+  const list=bases.filter(n=>played.has(n));
+  const today=new Date().toISOString().slice(0,10);
+  return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
+    <div class="mo-title">Declare a Round</div>
+    <div class="cr-note" style="margin-bottom:12px">Say who is playing, where, and when — before you tee off. The score gets posted as usual afterwards.</div>
+    <div class="fr"><label class="fl">Players</label>
+      ${(S.players||[]).map(p=>`<label class="cr-check"><input type="checkbox" class="regp" value="${p.id}"> ${p.name}</label>`).join('')}
+      <div class="pk-hint">Tick everyone in the group. Registering together is what makes head to head reliable.</div>
+    </div>
+    <div class="fr"><label class="fl">Course</label>
+      <select id="regC" onchange="REG_COURSE()">
+        <option value="">Choose…</option>
+        ${(list.length?list:bases).map(n=>`<option>${n}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fr"><label class="fl">Tee</label><div id="regT" class="pk"></div></div>
+    <div class="fr"><label class="fl">Holes</label><div id="regH" class="pk"></div></div>
+    <div class="fr"><label class="fl">Date</label>
+      <input type="date" id="regD" value="${today}" max="${today}">
+      <div class="pk-hint">Today by default. Declare in advance or on the first tee — either is fine.</div>
+    </div>
+    <div id="regErr" class="err" style="display:none"></div>
+    <button class="btn-p" onclick="REG_SAVE()">Declare</button>
+    <button class="btn-s" onclick="CM()">Cancel</button>
+  </div></div>`;
 }
 
 function renderCrownSettings(){
@@ -2712,6 +2811,7 @@ function render(){
   if(MOD==='score'&&AP) h+=renderScoreModal(AP);
   if(MOD==='course') h+=renderCourseModal();
   if(MOD==='crownset') h+=renderCrownSettings();
+  if(MOD==='register') h+=renderRegisterModal();
   if(MOD==='tournament') h+=renderTournamentModal();
   if(MOD==='upcoming') h+=renderUpcomingModal();
   if(MOD==='contest') h+=renderContestModal();
@@ -2744,6 +2844,9 @@ function render(){
   }
   if(MOD==='course'){
     setTimeout(()=>{ try{ AN_TYPE(document.getElementById('an')?.value||''); }catch(e){} }, 0);
+  }
+  if(MOD==='register'){
+    setTimeout(()=>{ try{ REG_PAINT(); }catch(e){} }, 0);
   }
 }
 
@@ -3254,8 +3357,8 @@ function renderCourses(){
     <button class="btn-p" onclick="OM('course')">+ Add</button>
   </div>
   ${!q?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-    <button class="lp-chip${!COURSES_ALL?' on':''}" onclick="COURSES_ALL=false;render()">Courses you play</button>
-    <button class="lp-chip${COURSES_ALL?' on':''}" onclick="COURSES_ALL=true;render()">All ${totalClubs}</button>
+    <button class="lp-chip${!COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(0)">Courses you play</button>
+    <button class="lp-chip${COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(1)">All ${totalClubs}</button>
   </div>`:`<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${names.length} club${names.length===1?'':'s'} matching</div>`}
   <div class="ccard" id="cglist">`;
 
@@ -3569,6 +3672,63 @@ function renderPredictModal(){
 
 // ── HANDLERS ──────────────────────────────────────────────────────────────────
 let CROWN_YM=null,CROWN_OPEN=null;
+// Inline handlers run in the GLOBAL scope, so anything they reference must be exported
+// here. Two buttons previously assigned to module-scoped variables and silently did
+// nothing — the Competition Settings button and the Courses scope toggle.
+window.COURSES_SCOPE=v=>{COURSES_ALL=!!v;render();};
+// ── registration ──
+let REG_TEE=null,REG_HOLES=null;
+window.REG_COURSE=()=>{
+  REG_TEE=null;REG_HOLES=null;REG_PAINT();
+};
+window.REG_TEE_PICK=t=>{REG_TEE=t;REG_HOLES=null;REG_PAINT();};
+window.REG_HOLES_PICK=g=>{REG_HOLES=g;REG_PAINT();};
+window.REG_PAINT=()=>{
+  const cn=document.getElementById('regC')?.value||'';
+  const tBox=document.getElementById('regT'), hBox=document.getElementById('regH');
+  if(!tBox||!hBox)return;
+  if(!cn){tBox.innerHTML='<div class="pk-hint">Choose a course first.</div>';hBox.innerHTML='';return;}
+  const tees=[...new Set((S.courses||[]).filter(c=>c.name===cn).map(c=>c.tee))];
+  if(!REG_TEE||!tees.includes(REG_TEE))REG_TEE=tees[0]||null;
+  const COL={White:'#F2EFE4',Yellow:'#E8C544',Blue:'#5C97B8',Red:'#C4544B',Green:'#6E9E5C',Purple:'#8E6BA8',Black:'#2A2A2A',Gold:'#C9A84C',Orange:'#D98A3C'};
+  tBox.innerHTML=tees.map(t=>`<button type="button" class="pk-chip${t===REG_TEE?' on':''}" onclick="REG_TEE_PICK('${t}')"><span class="pk-sw" style="background:${COL[t]||'#BBB'}"></span>${t}</button>`).join('');
+  const cfgs=[...new Set((S.courses||[]).filter(c=>c.name===cn&&c.tee===REG_TEE).map(c=>c.holes||(c.rating<40?'F9':'18')))];
+  if(!REG_HOLES||!cfgs.includes(REG_HOLES))REG_HOLES=cfgs[0]||'18';
+  const L={'18':'18 holes','F9':'Front 9','L9':'Back 9','F9x2':'Front 9 twice','L9x2':'Back 9 twice'};
+  hBox.innerHTML=cfgs.map(g=>`<button type="button" class="pk-chip${g===REG_HOLES?' on':''}" onclick="REG_HOLES_PICK('${g}')">${L[g]||g}</button>`).join('');
+};
+window.REG_SAVE=()=>{
+  const er=document.getElementById('regErr');
+  const fail=m=>{if(er){er.textContent=m;er.style.display='block';}};
+  const pids=Array.from(document.querySelectorAll('.regp')).filter(x=>x.checked).map(x=>x.value);
+  const cn=document.getElementById('regC')?.value||'';
+  const date=document.getElementById('regD')?.value||'';
+  if(!pids.length)return fail('Tick at least one player.');
+  if(!cn)return fail('Choose a course.');
+  if(!REG_TEE)return fail('Choose a tee.');
+  if(!date)return fail('Set the date.');
+  if(date>new Date().toISOString().slice(0,10))return fail('That date is in the future.');
+  if(!(S.courses||[]).some(c=>c.name===cn&&c.tee===REG_TEE&&(c.holes||'18')===REG_HOLES))
+    return fail('That combination of tee and holes is not rated for this course.');
+  const regs={...potmRegs()};
+  pids.forEach(pid=>{
+    // don't duplicate an identical declaration
+    const dup=Object.values(regs).some(r=>r.pid===pid&&r.date===date&&r.course===cn&&r.tee===REG_TEE&&r.holes===REG_HOLES&&!r.cancelled);
+    if(dup)return;
+    const id='rg'+Date.now()+Math.random().toString(36).slice(2,6);
+    regs[id]={pid,course:cn,tee:REG_TEE,holes:REG_HOLES,date,at:Date.now()};
+  });
+  upd({...S,potm:{...(S.potm||{}),regs}});
+  REG_TEE=null;REG_HOLES=null;MOD=null;
+};
+window.REG_CANCEL=id=>{
+  const regs={...potmRegs()};
+  if(!regs[id])return;
+  const pl=(S.players||[]).find(x=>x.id===regs[id].pid);
+  if(!confirm(`Cancel ${pl?pl.name+"'s":'this'} declared round at ${regs[id].course}?\n\nUse this when the round was not played — rain, cancelled tee time. It is recorded as cancelled rather than deleted.`))return;
+  regs[id]={...regs[id],cancelled:true,cancelledAt:Date.now()};
+  upd({...S,potm:{...(S.potm||{}),regs}});
+};
 window.CROWN_STEP=d=>{
   const cur=CROWN_YM||potmThisYM();
   const [y,m]=cur.split('-').map(Number);
