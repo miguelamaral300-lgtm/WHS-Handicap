@@ -890,6 +890,15 @@ textarea{resize:vertical;min-height:70px}
 .cg-tee .t1{display:flex;align-items:center;gap:7px;font-weight:600;color:#22301F}
 .cg-tee .t2{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;color:var(--text2);white-space:nowrap}
 /* ═══ CROWN — player of the month ═══ */
+.cr-fair{border:0.5px solid var(--line);background:var(--panel);border-radius:var(--r);padding:13px 14px}
+.cr-fair-t{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:16px;color:#22301F;margin-bottom:8px}
+.cr-fair-b{font-size:12px;color:var(--text2);line-height:1.6;padding:4px 0}
+.cr-fair-b b{color:#22301F}
+.cr-fair-w{font-size:11.5px;color:#8A6A22;background:rgba(216,162,74,.09);border:0.5px solid rgba(216,162,74,.3);
+  border-radius:9px;padding:9px 11px;margin-top:9px;line-height:1.55}
+.cr-warn-dot{color:#D8A24A;font-size:9px}
+.cr-pcc{border:0.5px solid rgba(127,176,105,.3);background:rgba(127,176,105,.06);border-radius:9px;padding:10px 11px;margin-top:10px}
+.cr-pccrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;font-size:11.5px;color:var(--text2);padding:4px 0}
 .cr-strip{display:flex;align-items:center;gap:10px;border:0.5px solid rgba(201,168,76,.4);
   background:linear-gradient(100deg,rgba(201,168,76,.12),rgba(201,168,76,.03));border-radius:var(--r);
   padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#22301F;cursor:pointer;line-height:1.45}
@@ -1460,6 +1469,10 @@ const POTM_DEFAULTS={
   currency:'€',
   stakeMode:'spoon',    // 'spoon' = spoon pays the winner · 'pot' = everyone buys in
   trial:true,           // trial month: everything computed, nothing owed
+  pcc:true,             // adjust for playing conditions using shared rounds
+  shrink:true,          // pull small samples toward the group average
+  shrinkK:3,            // strength of that pull, in rounds
+  shrinkCap:8,          // rounds beyond this earn no extra trust
   floorShare:0.15,      // last place in a category still scores this share, never zero
   h2hMinShared:2,       // shared rounds needed before head-to-head is scored
   settleDays:3          // days after month end before results lock
@@ -1581,9 +1594,14 @@ function potmVsHcp(r,index){
 // be the intuitive answer too. Without this, anyone playing a lot of nines (Jamor,
 // Estoril) gets a bouncier score than someone playing eighteens, for no good reason.
 function potmRoundWeight(r){ return r.nine?0.5:1; }
-function potmScoring(rounds,index,st){
+function potmScoring(rounds,index,st,pccAdj){
   if(!rounds.length||index==null)return null;
-  let set=rounds.map(r=>({v:potmVsHcp(r,index),w:potmRoundWeight(r)})).filter(x=>x.v!=null);
+  // Neutralise the day's conditions where we could measure them.
+  let set=rounds.map(r=>{
+    const raw=potmVsHcp(r,index);
+    const a=(pccAdj&&pccAdj[potmRoundKey(r)])||0;
+    return {v:raw==null?null:rd(raw-a,2),w:potmRoundWeight(r)};
+  }).filter(x=>x.v!=null);
   if(!set.length)return null;
   if(st.dropWorst&&set.length>=4){
     set=[...set].sort((a,b)=>a.v-b.v).slice(0,set.length-1);   // drop the single worst
@@ -1594,9 +1612,13 @@ function potmScoring(rounds,index,st){
 }
 // What the next round must produce for this player to reach a target average.
 // Approximate by design — it assumes an 18-hole round and ignores the drop-worst rule.
-function potmTargetForAvg(rounds,index,targetAvg,st){
+function potmTargetForAvg(rounds,index,targetAvg,st,pccAdj){
   if(index==null)return null;
-  const set=rounds.map(r=>({v:potmVsHcp(r,index),w:potmRoundWeight(r)})).filter(x=>x.v!=null);
+  const set=rounds.map(r=>{
+    const raw=potmVsHcp(r,index);
+    const a=(pccAdj&&pccAdj[potmRoundKey(r)])||0;
+    return {v:raw==null?null:raw-a,w:potmRoundWeight(r)};
+  }).filter(x=>x.v!=null);
   const sw=set.reduce((a,x)=>a+x.w,0), sv=set.reduce((a,x)=>a+x.v*x.w,0);
   const x=targetAvg*(sw+1)-sv;          // solve for a new round of weight 1
   return rd(x,2);
@@ -1725,11 +1747,150 @@ function potmMoney(r){
     note:`Wooden spoon pays the winner ${st.currency}${amount}${rolled?` (includes ${st.currency}${rolled} rolled over)`:''}.`};
 }
 
+// ── PLAYING CONDITIONS ────────────────────────────────────────────────────────
+// Real WHS neutralises the weather with a Playing Conditions Calculation: it looks at how
+// the whole field scored that day and shifts every differential by -1 to +3. Six friends
+// are not a field, but when two or more of you play the SAME course on the SAME day we
+// have exactly the signal PCC uses, just less of it.
+//
+// So: take the group's median performance against their own handicaps for that round. If
+// everyone played badly, the day was hard. Shrink that estimate by group size — two
+// players prove little, four prove more — and cap it the way WHS does. A day cannot be
+// declared more than 3 strokes hard or 1 stroke easy.
+//
+// This is the single largest source of unfairness in a competition spanning Portugal and
+// the UK, and it is the only part of it we can actually measure.
+function potmRoundKey(r){ return r.s.date+'|'+r.s.course+'|'+r.s.tee+'|'+r.cfg; }
+function potmPCC(entrants,st){
+  const groups={},adj={},detail=[];
+  entrants.forEach(e=>e.rounds.forEach(r=>{
+    const v=potmVsHcp(r,e.indexStart);
+    if(v==null)return;
+    const k=potmRoundKey(r);
+    (groups[k]=groups[k]||[]).push({pid:e.pid,name:e.name,v});
+  }));
+  Object.keys(groups).forEach(k=>{
+    const g=groups[k];
+    if(g.length<2)return;                       // one player is no evidence at all
+    const vals=g.map(x=>x.v).sort((a,b)=>a-b);
+    const med=vals.length%2?vals[(vals.length-1)/2]:(vals[vals.length/2-1]+vals[vals.length/2])/2;
+    const shrink=g.length/(g.length+3);         // 2 players → 40%, 4 → 57%, 6 → 67%
+    let a=med*shrink;
+    a=Math.max(-1,Math.min(3,a));               // the WHS range, in the same direction
+    a=rd(a,2);
+    if(Math.abs(a)<0.2)return;                  // nothing worth adjusting
+    adj[k]=a;
+    detail.push({key:k,date:k.split('|')[0],course:k.split('|')[1],players:g.length,median:rd(med,2),adj:a});
+  });
+  return {adj,detail:detail.sort((x,y)=>y.date.localeCompare(x.date))};
+}
+
+// ── FAIRNESS DIAGNOSTICS ──────────────────────────────────────────────────────
+// What Course Rating and Slope genuinely equalise, and what they do not.
+//
+// EQUALISED: course difficulty. A differential is designed to mean the same thing at
+// Jamor (slope 105) as at Boavista (143). This is the whole point of the system and it
+// works reasonably well.
+//
+// NOT EQUALISED, and worth being open about:
+//   1. CONDITIONS. Real WHS applies a Playing Conditions Calculation using the day's
+//      field scores, adjusting differentials by -1 to +3. Six friends are not a field,
+//      so this app cannot compute it. An Algarve morning and a London February afternoon
+//      produce differentials as though the weather were identical. This is the single
+//      largest unfairness in a competition spanning two countries in winter.
+//   2. SLOPE CALIBRATION. Slope is anchored on a "bogey golfer" of about 20. The further
+//      from that you are, the less precisely it converts. At 6 and at 37 — both ends of
+//      this group — hard courses are equalised least well.
+//   3. COURSE FAMILIARITY. Knowing the lines and the greens is worth real strokes and
+//      WHS never adjusts for it. It does, however, LARGELY CANCEL in this competition:
+//      Scoring measures you against your own index, and your index is itself built from
+//      the same courses. Play Jamor constantly and your index already reflects your
+//      Jamor-familiar level, so beating it is correspondingly harder. The residual
+//      asymmetry is that a narrow-course index makes AWAY rounds look worse.
+//
+// Head-to-head is the one category immune to all three: same course, same day, same
+// weather, handicaps applied.
+function potmFairness(r){
+  const out=[];
+  const allSlopes=[];
+  r.qualified.forEach(e=>{
+    const byCourse={};
+    e.rounds.forEach(x=>{byCourse[x.s.course]=(byCourse[x.s.course]||0)+1;});
+    const names=Object.keys(byCourse);
+    const top=names.sort((a,b)=>byCourse[b]-byCourse[a])[0]||null;
+    const conc=top?byCourse[top]/e.rounds.length:0;
+    const slopes=e.rounds.map(x=>x.c.slope).filter(Boolean);
+    slopes.forEach(v=>allSlopes.push(v));
+    const nines=e.rounds.filter(x=>x.nine).length;
+    out.push({pid:e.pid,name:e.name,rounds:e.rounds.length,courses:names.length,
+      topCourse:top,topShare:rd(conc*100,0),
+      slopeMin:slopes.length?Math.min(...slopes):null,
+      slopeMax:slopes.length?Math.max(...slopes):null,
+      nines,
+      h2hPlayed:e.h2hMeta?e.h2hMeta.played:0});
+  });
+  const spread=allSlopes.length?Math.max(...allSlopes)-Math.min(...allSlopes):0;
+  const anySingleCourse=out.some(x=>x.topShare>=70&&x.rounds>=3);
+  const anyNoH2H=out.some(x=>x.h2hPlayed<r.settings.h2hMinShared);
+  return {rows:out,slopeSpread:spread,anySingleCourse,anyNoH2H,
+    wideSpread:spread>=25};
+}
+// Where two entrants played the SAME course in the month — not necessarily the same day.
+// Weaker than head-to-head because conditions differ, but it strips out course difficulty
+// entirely, so it is a useful cross-check on the main table.
+function potmSameCourse(r){
+  const byCourse={};
+  r.qualified.forEach(e=>{
+    e.rounds.forEach(x=>{
+      const k=x.s.course;
+      byCourse[k]=byCourse[k]||{};
+      (byCourse[k][e.pid]=byCourse[k][e.pid]||{name:e.name,vals:[]}).vals.push(potmVsHcp(x,e.indexStart));
+    });
+  });
+  const out=[];
+  Object.keys(byCourse).forEach(k=>{
+    const players=Object.keys(byCourse[k]);
+    if(players.length<2)return;
+    out.push({course:k,players:players.map(pid=>{
+      const v=byCourse[k][pid].vals.filter(x=>x!=null);
+      return {pid,name:byCourse[k][pid].name,n:v.length,
+              avg:v.length?rd(v.reduce((a,b)=>a+b,0)/v.length,2):null};
+    }).sort((a,b)=>(a.avg??99)-(b.avg??99))});
+  });
+  return out.sort((a,b)=>b.players.length-a.players.length);
+}
+
 // Once a month has been settled its result is frozen. Recomputing it later would let an
 // edit to an old score silently change a result that has already been paid out.
 function potmSettledRecord(ym){
   return (S.potm&&S.potm.results&&S.potm.results[ym])||null;
 }
+// ── SAMPLE-SIZE SHRINKAGE ─────────────────────────────────────────────────────
+// Averaging is volume-neutral in expectation, but NOT in variance. Three rounds produce a
+// far noisier average than twelve, so a small sample has a much better chance of throwing
+// up a flattering number — and in a ranked competition, that is a real edge for whoever
+// played least. Fixing volume without fixing this only moved the unfairness.
+//
+// The standard remedy is empirical-Bayes shrinkage: pull each average toward the group's
+// own average by an amount set by how much evidence sits behind it.
+//
+//     shrunk = groupMean + (raw − groupMean) × n / (n + k)
+//
+// The prior is the group's actual mean this month, so it is self-calibrating rather than
+// assuming what "average" ought to be. And n is CAPPED — reliability is rewarded up to a
+// point and then stops, so nobody can simply out-play the field on volume.
+function potmShrink(raw,n,groupMean,st){
+  if(raw==null)return null;
+  if(!st.shrink)return raw;
+  const nEff=Math.min(n,st.shrinkCap||8);
+  const k=st.shrinkK==null?3:st.shrinkK;
+  return rd(groupMean+(raw-groupMean)*(nEff/(nEff+k)),2);
+}
+// Effective sample size, counting a nine as half a round — same logic as the weighting.
+function potmSampleN(rounds){
+  return rounds.reduce((a,r)=>a+potmRoundWeight(r),0);
+}
+
 // The whole month, computed from scratch.
 function potmCompute(ym){
   const st=potmSettings(), courses=S.courses||[];
@@ -1740,15 +1901,30 @@ function potmCompute(ym){
             indexEnd:potmIndexUpTo(p,courses,potmMonthEnd(ym))};
   });
   const h2h=potmH2H(entrants,courses,ym,st);
+  const pcc = st.pcc ? potmPCC(entrants,st) : {adj:{},detail:[]};
   entrants.forEach(e=>{
     e.qualified = e.rounds.length>=st.minRounds && e.indexStart!=null;
-    e.scoring = potmScoring(e.rounds,e.indexStart,st);
+    e.scoringRaw = potmScoring(e.rounds,e.indexStart,st);              // before conditions
+    e.scoring = potmScoring(e.rounds,e.indexStart,st,pcc.adj);         // after conditions
+    e.sampleN = potmSampleN(e.rounds);
     e.form    = potmForm((S.players||[]).find(p=>p.id===e.pid),courses,ym);
     e.bonus   = potmBonus((S.players||[]).find(p=>p.id===e.pid),courses,ym,e.indexStart,e.rounds);
     e.h2h     = h2h[e.pid]?h2h[e.pid].rate:null;
     e.h2hMeta = h2h[e.pid]||{played:0,pts:0};
   });
   const q=entrants.filter(e=>e.qualified);
+  // Shrink the scoring metric toward the qualifiers' own mean, weighted by evidence.
+  if(q.length){
+    const withVals=q.filter(e=>e.scoring!=null);
+    if(withVals.length){
+      const gm=rd(withVals.reduce((a,e)=>a+e.scoring,0)/withVals.length,3);
+      q.forEach(e=>{
+        e.scoringUnshrunk=e.scoring;
+        e.scoring=potmShrink(e.scoring,e.sampleN,gm,st);
+      });
+      q.groupMean=gm;
+    }
+  }
   const cats=[
     {key:'scoring',w:st.weights.scoring,lower:true},
     {key:'h2h',    w:st.weights.h2h,    lower:false},
@@ -1797,6 +1973,7 @@ function potmCompute(ym){
           winner:q.length?q[0]:null,spoon,
           void:q.length<3, locked,
           settleDate:settleFrom.toISOString().slice(0,10)};
+  out.pcc=pcc;
   out.money=potmMoney(out);
   out.settled=!!(S.potm&&S.potm.results&&S.potm.results[ym]);
   out.record=(S.potm&&S.potm.results&&S.potm.results[ym])||null;
@@ -1975,6 +2152,7 @@ function renderCrown(){
           <div class="cr-cat-h"><b>${meta[0]}</b><span>${c&&c.points!=null?c.points.toFixed(1)+' pts':'not scored'}</span></div>
           <div class="cr-cat-b">${meta[1]}</div>
           <div class="cr-cat-v">${meta[2]}: <b>${fmt(k,c?c.value:null)}</b>${c&&c.rank?` · ranked ${c.rank===Math.floor(c.rank)?c.rank:c.rank.toFixed(1)} of ${c.of}`:''}</div>
+          ${k==='scoring'&&e.scoringRaw!=null&&e.scoringUnshrunk!=null?`<div class="cr-note">Raw ${e.scoringRaw>0?'+':''}${e.scoringRaw.toFixed(2)}${e.scoringUnshrunk!==e.scoringRaw?` → ${e.scoringUnshrunk>0?'+':''}${e.scoringUnshrunk.toFixed(2)} after conditions`:''}${e.cat.scoring&&e.cat.scoring.value!==e.scoringUnshrunk?` → ${e.cat.scoring.value>0?'+':''}${e.cat.scoring.value.toFixed(2)} after ${e.sampleN.toFixed(1)} rounds of evidence`:''}</div>`:''}
         </div>`;
       });
       // what would it take to climb one place?
@@ -2044,6 +2222,52 @@ function renderCrown(){
   }
 
   if(r.winner)h+=`<button class="cr-ghost" onclick="CROWN_SHARE('${ym}')">Share the standings</button>`;
+
+  // ── same-course cross-check ──
+  const sameC=potmSameCourse(r);
+  if(sameC.length){
+    h+=`<div class="cr-sec">Same course, side by side</div><div class="cr-table">`;
+    sameC.slice(0,4).forEach(c=>{
+      h+=`<div class="cr-row" style="grid-template-columns:1fr;cursor:default;padding-bottom:4px">
+        <div class="cr-nm">${c.course}</div></div>`;
+      c.players.forEach((pl,i)=>{
+        h+=`<div class="cr-row" style="grid-template-columns:24px 1fr auto auto;cursor:default;padding-top:6px;padding-bottom:6px">
+          <div class="cr-pos">${i+1}</div><div class="cr-nm" style="font-weight:500">${pl.name}</div>
+          <div class="cr-n" style="min-width:38px">${pl.n} rd${pl.n>1?'s':''}</div>
+          <div class="cr-tot" style="min-width:52px">${pl.avg>0?'+':''}${pl.avg.toFixed(2)}</div></div>`;
+      });
+    });
+    h+=`</div><div class="cr-note">Shots against your own handicap at courses more than one of you played this month. Course difficulty is stripped out entirely — but not the weather, since these may be different days.</div>`;
+  }
+
+  // ── fairness check ──
+  const fx=potmFairness(r);
+  if(fx.rows.length){
+    h+=`<div class="cr-sec">Fairness check</div><div class="cr-fair">
+      <div class="cr-fair-t">What the handicap system does and does not level out</div>
+      <div class="cr-fair-b"><b>Levelled:</b> course difficulty. A differential is built to mean the same at Jamor (slope 105) as at Boavista (143), and every rating here is federation-official or independently verified.</div>
+      <div class="cr-fair-b"><b>Levelled as far as possible:</b> the weather. Where two or more of you played the same course on the same day, the group's median performance is used to estimate how the day played — shrunk by group size and capped the way WHS caps it, at 3 strokes hard to 1 easy. Rounds played alone cannot be adjusted, because there is no evidence to adjust them with.</div>
+      <div class="cr-fair-b"><b>Levelled:</b> unequal numbers of rounds. Three rounds give a noisier average than twelve, which quietly favours whoever played least. Each average is pulled toward the group's own mean in proportion to the evidence behind it, with the benefit capped at ${st.shrinkCap} rounds so volume cannot buy a result.</div>
+      <div class="cr-fair-b"><b>Mostly cancels:</b> knowing a course well. Scoring measures you against your own index, and your index is built from those same rounds — so playing Jamor constantly raises the bar you have to beat there. What is left over is that a narrow-course index makes away rounds look harder.</div>
+      <div class="cr-fair-b"><b>Immune to all of it:</b> head to head. Same course, same day, same weather.</div>
+      <div class="cr-table" style="margin-top:11px">
+        <div class="cr-row cr-hd" style="grid-template-columns:1fr 34px 34px 74px 40px"><div>Player</div><div>Rds</div><div>Crs</div><div>Slope</div><div>H2H</div></div>
+        ${fx.rows.map(x=>`<div class="cr-row" style="grid-template-columns:1fr 34px 34px 74px 40px;cursor:default">
+          <div class="cr-nm" style="font-weight:500">${x.name}${x.topShare>=70&&x.rounds>=3?` <span class="cr-warn-dot" title="mostly one course">●</span>`:''}</div>
+          <div class="cr-n">${x.rounds}</div><div class="cr-n">${x.courses}</div>
+          <div class="cr-n">${x.slopeMin!=null?(x.slopeMin===x.slopeMax?x.slopeMin:x.slopeMin+'–'+x.slopeMax):'—'}</div>
+          <div class="cr-n">${x.h2hPlayed}</div></div>`).join('')}
+      </div>
+      ${(r.pcc&&r.pcc.detail.length)?`<div class="cr-pcc">
+        <div class="cr-fair-t" style="font-size:14px;margin:2px 0 6px">Conditions adjusted</div>
+        ${r.pcc.detail.slice(0,6).map(d=>`<div class="cr-pccrow"><span>${d.date.slice(8)}/${d.date.slice(5,7)} · ${d.course}</span><span class="cr-n">${d.players} players</span><span class="cr-amt" style="font-size:13px">${d.adj>0?'−':'+'}${Math.abs(d.adj).toFixed(2)}</span></div>`).join('')}
+        <div class="cr-note">A hard day gives everyone who played it a credit; an easy day takes a little back.</div>
+      </div>`:`<div class="cr-note" style="margin-top:9px">No shared rounds yet this month, so conditions could not be measured. Play together and the weather stops mattering.</div>`}
+      ${fx.anySingleCourse?`<div class="cr-fair-w">● One or more players took 70% or more of their rounds at a single course. Their index is built from that course too, so it largely self-corrects — but it is on the table so nobody has to take it on trust.</div>`:''}
+      ${fx.wideSpread?`<div class="cr-fair-w">Slope range across the month is ${fx.slopeSpread} points. Slope is calibrated on a handicap of about 20, so it converts least precisely for the lowest and highest handicaps here.</div>`:''}
+      ${fx.anyNoH2H?`<div class="cr-fair-w">Somebody has fewer than ${r.settings.h2hMinShared} rounds alongside another entrant, so the one fully weather-proof category could not be scored for them. Its weight was shared across their others.</div>`:''}
+    </div>`;
+  }
 
   // how it works
   h+=`<div class="cr-sec">How it is scored</div>
@@ -2118,6 +2342,14 @@ function renderCrownSettings(){
         <option value="pot"${st.stakeMode==='pot'?' selected':''}>Everyone buys in, winner takes the pot</option>
       </select>
       <div class="pk-hint">Spoon-pays-winner is one transaction and makes both ends of the table matter. A pot is a bigger prize but more payments to chase.</div>
+    </div>
+    <div class="fr"><label class="fl">Conditions adjustment</label>
+      <select id="cPcc"><option value="1"${st.pcc?' selected':''}>Yes — level out the weather using shared rounds</option><option value="0"${!st.pcc?' selected':''}>No</option></select>
+      <div class="pk-hint">Uses the group's median performance when two or more play the same course the same day. Capped at 3 strokes hard, 1 easy, as WHS does.</div>
+    </div>
+    <div class="fr"><label class="fl">Small-sample correction</label>
+      <select id="cShrink"><option value="1"${st.shrink?' selected':''}>Yes — pull short months toward the group average</option><option value="0"${!st.shrink?' selected':''}>No</option></select>
+      <div class="pk-hint">Three rounds prove less than twelve. Without this, a lucky short month has an edge. Benefit is capped at ${st.shrinkCap} rounds so volume cannot buy a win.</div>
     </div>
     <div class="fr"><label class="fl">Trial mode</label>
       <select id="cTrial"><option value="1"${st.trial?' selected':''}>Yes — compute everything, nobody owes anything</option><option value="0"${!st.trial?' selected':''}>No — stakes are live</option></select>
@@ -4020,6 +4252,8 @@ window.CROWN_SAVE=()=>{
     spoonBasis:document.getElementById('cSpoon')?.value,
     stake,currency:cur,
     stakeMode:document.getElementById('cMode')?.value,
+    pcc:document.getElementById('cPcc')?.value==='1',
+    shrink:document.getElementById('cShrink')?.value==='1',
     trial:document.getElementById('cTrial')?.value==='1'}}});
   MOD=null;
 };
