@@ -897,6 +897,7 @@ textarea{resize:vertical;min-height:70px}
 .cr-fair-w{font-size:11.5px;color:#8A6A22;background:rgba(216,162,74,.09);border:0.5px solid rgba(216,162,74,.3);
   border-radius:9px;padding:9px 11px;margin-top:9px;line-height:1.55}
 .cr-warn-dot{color:#D8A24A;font-size:9px}
+.hi-carried{font-size:12px;color:var(--gold);vertical-align:super;margin-left:1px}
 .cr-pcc{border:0.5px solid rgba(127,176,105,.3);background:rgba(127,176,105,.06);border-radius:9px;padding:10px 11px;margin-top:10px}
 .cr-pccrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;font-size:11.5px;color:var(--text2);padding:4px 0}
 .cr-strip{display:flex;align-items:center;gap:10px;border:0.5px solid rgba(201,168,76,.4);
@@ -2283,6 +2284,60 @@ function renderCrown(){
   return h;
 }
 
+function renderHoleModal(){
+  const rec=holeRecord();
+  if(!rec)return '';
+  const p=(rec.players||[]).find(x=>x.id===EDIT_HOLE.pid);
+  const hole=EDIT_HOLE.hole;
+  const par=rec.parArr?rec.parArr[hole-1]:null;
+  const realH=(rec.holeNums&&rec.holeNums[hole-1])||hole;
+  const cur=EDIT_HOLE.val==null?holeCurrent():EDIT_HOLE.val;
+  const board=lpBoard(rec);
+  const before=board.find(x=>x.id===EDIT_HOLE.pid);
+  return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
+    <div class="mo-title">Correct Hole ${realH}</div>
+    <div class="cr-note" style="margin-bottom:12px">${p?p.name:''} · ${rec.course} · ${rec.tee} · ${rec.date.split('-').reverse().join('/')}${par?` · par ${par}`:''}</div>
+    <div class="lp-stepper" style="margin-bottom:12px">
+      <button class="st-btn" onclick="HOLE_STEP(-1)">−</button>
+      <div class="st-val${cur==null?' empty':''}">${cur==null?(par||'–'):cur}</div>
+      <button class="st-btn" onclick="HOLE_STEP(1)">＋</button>
+    </div>
+    <div class="cr-note">Round total is currently <b>${before?before.gross:'—'}</b>. Correcting a hole recomputes it and updates the posted score, so the handicap follows automatically. The rest of the card is untouched.</div>
+    <button class="btn-p" onclick="HOLE_SAVE()">Save correction</button>
+    <button class="btn-s" onclick="CM()">Cancel</button>
+  </div></div>`;
+}
+
+function renderPlayerModal(){
+  const e = EDIT_PLAYER!==null ? (S.players||[]).find(p=>p.id===EDIT_PLAYER) : null;
+  const rounds = e ? (e.scores||[]).length : 0;
+  const live = e ? calcHI(e.scores,S.courses) : null;
+  const computed = live && live.hi!==null;
+  return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
+    <div class="mo-title">${e?'Edit Player':'Add a Player'}</div>
+    <div class="fr"><label class="fl">Name</label>
+      <input type="text" id="plName" placeholder="e.g. Rui Costa" value="${e?e.name.replace(/"/g,'&quot;'):''}">
+    </div>
+    <div class="fr"><label class="fl">Do they already have a handicap?</label>
+      <select id="plHas" onchange="PL_TOGGLE()">
+        <option value="0"${!e||e.startIndex==null?' selected':''}>No — starting fresh</option>
+        <option value="1"${e&&e.startIndex!=null?' selected':''}>Yes — bringing an index with them</option>
+      </select>
+    </div>
+    <div class="fr" id="plIdxRow" style="display:none">
+      <label class="fl">Handicap Index</label>
+      <input type="number" step="0.1" id="plIdx" placeholder="e.g. 15.2" value="${e&&e.startIndex!=null?e.startIndex:''}">
+      <div class="pk-hint">Used until they have enough rounds here for the app to work it out themselves — then their own record takes over. ${computed?`<b>${e.name} already has ${rounds} rounds and a computed index of ${live.hi}, so this value is no longer in use.</b>`:''}</div>
+    </div>
+    ${!e?`<div class="cr-note">Starting fresh is normal. WHS needs 54 holes — three 18s, six 9s, or any mix — before an index exists. Until then they can post scores and everything else works.</div>`:''}
+    ${e?`<div class="cr-note">${rounds} round${rounds===1?'':'s'} posted.${computed?' Index is computed from their own record.':(e.startIndex!=null?' Still using the index they arrived with.':' No index yet — needs 54 holes.')}</div>`:''}
+    <div id="plErr" class="err" style="display:none"></div>
+    <button class="btn-p" onclick="PL_SAVE()">${e?'Save Changes':'Add Player'}</button>
+    ${e?`<button class="btn-s" style="color:#B4564B;border-color:rgba(180,86,75,.3)" onclick="PL_DELETE()">Remove from the club</button>`:''}
+    <button class="btn-s" onclick="CM()">Cancel</button>
+  </div></div>`;
+}
+
 function renderRegisterModal(){
   const bases=[...new Set((S.courses||[]).map(c=>c.name))].sort((a,b)=>a.localeCompare(b));
   const played=playedNameSet();
@@ -2543,9 +2598,18 @@ onValue(dbRef,snap=>{
 },()=>{clearTimeout(fbTimeout);SYNC='err';INIT=true;render();});
 
 function upd(ns){S=ns;push(ns);}
+// A player joining from another club keeps the index they arrive with, exactly as WHS
+// intends. It is used only until they have enough of their own rounds here for the engine
+// to produce a figure — from that point their own record takes over completely.
+// Someone starting with no handicap simply has none until 54 holes are posted.
 function ranked(){
-  return S.players.map(p=>({...p,...calcHI(p.scores,S.courses)}))
-    .sort((a,b)=>a.hi===null?1:b.hi===null?-1:a.hi-b.hi);
+  return S.players.map(p=>{
+    const r=calcHI(p.scores,S.courses);
+    if(r&&r.hi===null&&p.startIndex!=null&&!isNaN(p.startIndex)){
+      return {...p,...r,hi:rd(p.startIndex,1),carried:true};
+    }
+    return {...p,...r,carried:false};
+  }).sort((a,b)=>a.hi===null?1:b.hi===null?-1:a.hi-b.hi);
 }
 function lk(){const m={};S.courses.forEach(c=>{m[c.name+c.tee]=c;});return m;}
 
@@ -3127,11 +3191,12 @@ function renderPlay(){
         if(r){
           const B=lpBoard(r);
           h+=`<div class="lp-hole" style="margin-bottom:12px"><div class="lp-hh"><div><div class="lbl">${r.date.split('-').reverse().join('/')}</div><div class="big" style="font-size:26px">${r.course}</div></div><div class="meta">${r.tee}<br>${r.holes} holes</div></div>`;
-          h+=`<div class="lp-tblwrap"><table class="lp-tbl"><tr><th>H</th><th>Par</th>${r.players.map(p=>`<th>${p.name.split(' ')[0]}${p.guest?' ᵍ':''}</th>`).join('')}</tr>`;
+          h+=`<div class="cr-note" style="margin:8px 0 0">Tap any score to correct it. The round total and the handicap update automatically.</div>
+          <div class="lp-tblwrap"><table class="lp-tbl"><tr><th>H</th><th>Par</th>${r.players.map(p=>`<th>${p.name.split(' ')[0]}${p.guest?' ᵍ':''}</th>`).join('')}</tr>`;
           for(let x=1;x<=r.holes;x++){
             h+=`<tr><td class="hn">${x}</td><td class="pr">${r.parArr[x-1]}</td>${r.players.map(p=>{
               const g=lpHasScore(r.scores,x,p.id)?r.scores[x][p.id]:null;
-              return `<td><span class="mk ${lpNote(g,r.parArr[x-1])}">${g??'–'}</span></td>`;
+              return `<td onclick="HOLE_EDIT('${r.id}','${p.id}',${x})" style="cursor:pointer"><span class="mk ${lpNote(g,r.parArr[x-1])}">${g??'–'}</span></td>`;
             }).join('')}</tr>`;
           }
           h+=`<tr class="tot"><td colspan="2">Gross</td>${B.sort((a,b)=>r.players.findIndex(p=>p.id===a.id)-r.players.findIndex(p=>p.id===b.id)).map(p=>`<td>${p.gross}</td>`).join('')}</tr>`;
@@ -3199,6 +3264,8 @@ function render(){
   if(MOD==='course') h+=renderCourseModal();
   if(MOD==='crownset') h+=renderCrownSettings();
   if(MOD==='register') h+=renderRegisterModal();
+  if(MOD==='player') h+=renderPlayerModal();
+  if(MOD==='hole') h+=renderHoleModal();
   if(MOD==='tournament') h+=renderTournamentModal();
   if(MOD==='upcoming') h+=renderUpcomingModal();
   if(MOD==='contest') h+=renderContestModal();
@@ -3235,6 +3302,9 @@ function render(){
   if(MOD==='register'){
     setTimeout(()=>{ try{ REG_PAINT(); }catch(e){} }, 0);
   }
+  if(MOD==='player'){
+    setTimeout(()=>{ try{ PL_TOGGLE(); }catch(e){} }, 0);
+  }
 }
 
 // ── RANKINGS ──────────────────────────────────────────────────────────────────
@@ -3243,8 +3313,9 @@ function renderRanking(R){
   const pos=['1st','2nd','3rd'];
   let h=`<div class="sec-head">
     <span class="sec-title">Member Rankings</span>
-    <span style="font-family:'Barlow',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)">${R.length} Members</span>
-  </div>`;
+    <button class="btn-p" onclick="PL_ADD()">+ Add Player</button>
+  </div>
+  <p style="font-size:11px;color:var(--text3);margin-bottom:12px">${R.length} member${R.length===1?'':'s'} &nbsp;·&nbsp; tap a name for their record</p>`;
   return h+R.map((p,i)=>`
     <div class="rank-row${i<3?' p'+(i+1):''}" onclick="OP('${p.id}')">
       <div class="rank-medal-wrap">
@@ -3253,11 +3324,14 @@ function renderRanking(R){
       </div>
       <div class="rank-info">
         <div class="rank-name">${p.name}</div>
-        <div class="rank-sub">${p.hi!==null?`${p.count} rounds &nbsp;·&nbsp; best ${p.n} avg`:'Awaiting rounds'}</div>
+        <div class="rank-sub">${p.carried
+          ? `Index from previous club &nbsp;·&nbsp; ${p.count||0}/3 rounds here`
+          : (p.hi!==null?`${p.count} rounds &nbsp;·&nbsp; best ${p.n} avg`
+            :(p.count?`${p.count} round${p.count===1?'':'s'} &nbsp;·&nbsp; needs 54 holes for an index`:'No rounds yet'))}</div>
       </div>
       <div class="rank-hi">
         <div class="hi-label">Index</div>
-        ${p.hi!==null?`<div class="hi-val">${p.hi.toFixed(1)}</div>`:`<div class="hi-na">—</div>`}
+        ${p.hi!==null?`<div class="hi-val">${p.hi.toFixed(1)}${p.carried?'<span class="hi-carried" title="carried from previous club">*</span>':''}</div>`:`<div class="hi-na">—</div>`}
       </div>
       <div class="rank-chev">›</div>
     </div>`).join('');
@@ -4068,7 +4142,108 @@ function renderPredictModal(){
 }
 
 // ── HANDLERS ──────────────────────────────────────────────────────────────────
-let CROWN_YM=null,CROWN_OPEN=null;
+let CROWN_YM=null,CROWN_OPEN=null,EDIT_PLAYER=null;
+// ── players ──
+window.PL_ADD=()=>{EDIT_PLAYER=null;MOD='player';render();};
+// ── correcting a hole on a card that has already been posted ──
+// Deleting and re-entering a whole round is heavy and loses the hole-by-hole detail, so
+// a single hole can be amended in place. The round's gross is recomputed, the posted
+// score is updated, and the handicap follows automatically.
+let EDIT_HOLE=null;   // {rid, pid, hole}
+window.HOLE_EDIT=(rid,pid,hole)=>{EDIT_HOLE={rid,pid,hole:+hole};MOD='hole';render();};
+window.HOLE_STEP=d=>{
+  if(!EDIT_HOLE)return;
+  const cur=EDIT_HOLE.val==null?holeCurrent():EDIT_HOLE.val;
+  const v=Math.max(1,Math.min(20,(cur||0)+d));
+  EDIT_HOLE={...EDIT_HOLE,val:v};render();
+};
+function holeRecord(){
+  if(!EDIT_HOLE)return null;
+  return (HIST&&HIST[EDIT_HOLE.rid])||null;
+}
+function holeCurrent(){
+  const rec=holeRecord(); if(!rec)return null;
+  const sc=rec.scores&&rec.scores[EDIT_HOLE.hole];
+  const v=sc?sc[EDIT_HOLE.pid]:null;
+  return (v===0||v)?v:null;
+}
+window.HOLE_SAVE=async()=>{
+  if(!EDIT_HOLE)return;
+  const rec=holeRecord(); if(!rec){alert('Could not find that card.');return;}
+  const val=EDIT_HOLE.val==null?holeCurrent():EDIT_HOLE.val;
+  if(val==null){alert('Set a score first.');return;}
+  const {rid,pid,hole}=EDIT_HOLE;
+  // 1 · amend the card
+  const scores={...(rec.scores||{})};
+  scores[hole]={...(scores[hole]||{}),[pid]:val};
+  const updated={...rec,scores,amended:{at:new Date().toISOString().slice(0,10)}};
+  // 2 · recompute that player's gross for the round
+  const board=lpBoard(updated);
+  const me=board.find(x=>x.id===pid);
+  const player=(S.players||[]).find(p=>p.id===pid);
+  const isGuest=(updated.players||[]).find(x=>x.id===pid)?.guest;
+  // 3 · update the posted score — matched by round id, or failing that by date and course
+  let ns=S;
+  if(player&&me&&!isGuest){
+    let matched=false;
+    ns={...S,players:S.players.map(p=>{
+      if(p.id!==pid)return p;
+      const sc=(p.scores||[]).map(x=>{
+        const hit = x.rid===rid ||
+          (!x.rid&&x.date===updated.date&&x.course===updated.course&&x.tee===updated.tee);
+        if(hit&&!matched){matched=true;return {...x,score:me.gross,holes:x.holes||updated.cfg||'18',rid};}
+        return x;
+      });
+      return {...p,scores:sc};
+    })};
+    if(!matched)alert(`Card corrected, but no posted round matched it for ${player.name}. Their handicap has not changed — check the round list.`);
+  }
+  HIST={...(HIST||{}),[rid]:updated};
+  if(ns!==S)upd(ns); else render();
+  try{ await fetch(`${RH_URL}/${rid}.json`,{method:'PUT',body:JSON.stringify(updated)}); }catch(e){}
+  EDIT_HOLE=null;MOD=null;render();
+};
+window.PL_EDIT=pid=>{EDIT_PLAYER=pid;MOD='player';render();};
+window.PL_TOGGLE=()=>{
+  const has=document.getElementById('plHas')?.value==='1';
+  const row=document.getElementById('plIdxRow');
+  if(row)row.style.display=has?'block':'none';
+};
+window.PL_SAVE=()=>{
+  const er=document.getElementById('plErr');
+  const fail=m=>{if(er){er.textContent=m;er.style.display='block';}};
+  const name=(document.getElementById('plName')?.value||'').trim();
+  if(!name)return fail('A name is required.');
+  const clash=(S.players||[]).some(p=>p.name.toLowerCase()===name.toLowerCase()&&p.id!==EDIT_PLAYER);
+  if(clash)return fail(`There is already a player called “${name}”.`);
+  const has=document.getElementById('plHas')?.value==='1';
+  let startIndex=null;
+  if(has){
+    const v=parseFloat(document.getElementById('plIdx')?.value);
+    if(isNaN(v))return fail('Enter their Handicap Index, or choose “starting fresh”.');
+    if(v<-10||v>54)return fail('A Handicap Index runs from about -10 to 54.');
+    startIndex=Math.round(v*10)/10;
+  }
+  if(EDIT_PLAYER!==null){
+    upd({...S,players:(S.players||[]).map(p=>p.id===EDIT_PLAYER
+      ? {...p,name,...(startIndex==null?{startIndex:null}:{startIndex})} : p)});
+  }else{
+    const id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    upd({...S,players:[...(S.players||[]),{id,name,scores:[],...(startIndex!=null?{startIndex}:{})}]});
+  }
+  EDIT_PLAYER=null;MOD=null;
+};
+window.PL_DELETE=()=>{
+  const p=(S.players||[]).find(x=>x.id===EDIT_PLAYER); if(!p)return;
+  const n=(p.scores||[]).length;
+  if(n){
+    alert(`${p.name} has ${n} round${n===1?'':'s'} recorded. Removing them would delete that history.\n\nIf they have left the club, it is better to leave them in place — they simply stop posting scores.`);
+    return;
+  }
+  if(!confirm(`Remove ${p.name} from the club?`))return;
+  upd({...S,players:(S.players||[]).filter(x=>x.id!==EDIT_PLAYER)});
+  EDIT_PLAYER=null;MOD=null;
+};
 // Inline handlers run in the GLOBAL scope, so anything they reference must be exported
 // here. Two buttons previously assigned to module-scoped variables and silently did
 // nothing — the Competition Settings button and the Courses scope toggle.
@@ -4531,7 +4706,10 @@ window.LP_F=async()=>{
   const ns={...S,players:S.players.map(p=>{
     const b=B.find(x=>x.id===p.id&&!x.guest);
     if(!b)return p;
-    return {...p,scores:[...(p.scores||[]),{date:LR.date,course:LR.course,tee:LR.tee,score:b.gross}]};
+    // `holes` matters: without it a front-nine round would be rated as a full round.
+    // `rid` links the posted score back to its card so a hole can be corrected later.
+    return {...p,scores:[...(p.scores||[]),
+      {date:LR.date,course:LR.course,tee:LR.tee,holes:LR.cfg||'18',score:b.gross,rid:LRID}]};
   })};
   upd(ns);
   // 3 · remove from live lobby
@@ -4615,7 +4793,7 @@ window.CP=()=>{PID=null;MOD=null;OPEN_SCORE=null;render();};
 window.OT=id=>{TID=id;render();};
 window.CT=()=>{TID=null;render();};
 window.OM=m=>{if(m==='score')EDIT_IDX=null; MOD=m;render();};
-window.CM=()=>{EDIT_COURSE=null;PICK_TEE=null;PICK_CFG=null;PICK_COURSE=null;PICK_Q='';MOD=null;TRN_ROUNDS=1;EDIT_IDX=null;render();};
+window.CM=()=>{EDIT_COURSE=null;EDIT_PLAYER=null;EDIT_HOLE=null;PICK_TEE=null;PICK_CFG=null;PICK_COURSE=null;PICK_Q='';MOD=null;TRN_ROUNDS=1;EDIT_IDX=null;render();};
 window.TC=i=>{OPEN_COURSE=OPEN_COURSE===i?null:i;render();};
 window.TSC=(pid,idx)=>{OPEN_SCORE=(OPEN_SCORE&&OPEN_SCORE.pid===pid&&OPEN_SCORE.idx===idx)?null:{pid,idx};render();};
 
