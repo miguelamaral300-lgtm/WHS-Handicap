@@ -931,6 +931,9 @@ textarea{resize:vertical;min-height:70px}
 .cs-note{font-size:11.5px;color:var(--text3);line-height:1.55;padding:6px 0}
 .cs-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-weight:600;margin:12px 0 2px}
 .cr-h2hwrap{overflow-x:auto;margin-top:8px}
+.cr-mg{display:block;font-family:'Barlow',sans-serif;font-size:8.5px;font-weight:600;opacity:.6;margin-top:1px}
+.cr-tb{font-size:11px;color:var(--gold);vertical-align:super}
+.cr-tbnote{font-size:10.5px;color:var(--text3);text-align:center;margin:-2px 0 8px}
 .lp-lb6{grid-template-columns:24px 1fr 38px 38px 44px 46px 36px !important}
 .lp-turn{flex:0 0 auto;display:flex;align-items:center;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;
   color:var(--gold);opacity:.6;padding:0 5px;white-space:nowrap}
@@ -1527,7 +1530,8 @@ const POTM_DEFAULTS={
   shrinkK:3,            // strength of that pull, in rounds
   shrinkCap:8,          // rounds beyond this earn no extra trust
   floorShare:0.15,      // last place in a category still scores this share, never zero
-  h2hMinShared:2,       // shared rounds needed before head-to-head is scored
+  h2hMinShared:1,       // shared rounds needed before head-to-head is scored
+  h2hShrinkK:2,         // how hard a thin head-to-head record is pulled toward even
   settleDays:3          // days after month end before results lock
 };
 function potmSettings(){
@@ -1733,15 +1737,30 @@ function potmH2H(entrants,courses,ym,st){
           if(va<vb){data[A.pid].pts+=1;}
           else if(vb<va){data[B.pid].pts+=1;}
           else {data[A.pid].pts+=0.5;data[B.pid].pts+=0.5;}
-          const recA=data[A.pid].opponents[B.pid]||(data[A.pid].opponents[B.pid]={w:0,l:0,h:0});
-          const recB=data[B.pid].opponents[A.pid]||(data[B.pid].opponents[A.pid]={w:0,l:0,h:0});
+          const recA=data[A.pid].opponents[B.pid]||(data[A.pid].opponents[B.pid]={w:0,l:0,h:0,margin:0});
+          const recB=data[B.pid].opponents[A.pid]||(data[B.pid].opponents[A.pid]={w:0,l:0,h:0,margin:0});
           if(va<vb){recA.w++;recB.l++;} else if(vb<va){recB.w++;recA.l++;} else {recA.h++;recB.h++;}
+          // Margin in net shots — the golf equivalent of goal difference. Positive means
+          // you played that many shots better than them, relative to your own handicaps.
+          const m=rd(vb-va,2);
+          recA.margin=rd(recA.margin+m,2); recB.margin=rd(recB.margin-m,2);
+          data[A.pid].margin=rd((data[A.pid].margin||0)+m,2);
+          data[B.pid].margin=rd((data[B.pid].margin||0)-m,2);
         });
       });
     }
   }
+  // A single shared round makes the raw win rate 100% or 0%, which would be a coin flip
+  // worth a fifth of the competition. Rather than refuse to score it — which, for friends
+  // in different countries, means the fairest category never counts at all — the rate is
+  // pulled toward even in proportion to the evidence behind it. One round nudges the
+  // needle; four move it properly. Same principle already used for Scoring.
+  const k=st.h2hShrinkK==null?2:st.h2hShrinkK;
   Object.values(data).forEach(d=>{
-    d.rate = d.played>=st.h2hMinShared ? rd(d.pts/d.played*100,1) : null;
+    if(d.played<st.h2hMinShared){ d.rate=null; d.rawRate=null; return; }
+    const raw=rd(d.pts/d.played*100,1);
+    d.rawRate=raw;
+    d.rate=rd(50+(raw-50)*(d.played/(d.played+k)),1);
   });
   return data;
 }
@@ -1947,6 +1966,32 @@ function potmSampleN(rounds){
   return rounds.reduce((a,r)=>a+potmRoundWeight(r),0);
 }
 
+// ── TIEBREAKS ─────────────────────────────────────────────────────────────────
+// Two players can finish level: each category pays one of a small set of fixed shares,
+// so identical totals are perfectly possible. Resolved the way a football table is —
+// points first, then the head-to-head between the players involved, then margin.
+//   1. Crown Score
+//   2. Head to head between the two of them — if you beat him, you finish above him
+//   3. Net margin across all their matches — golf's goal difference
+//   4. Scoring — who played the better golf against their own handicap
+//   5. Rounds played — turning up counts for something
+// If all five are level it is a genuine dead heat, and the app says so rather than
+// inventing a winner.
+function potmTieBreak(a,b){
+  if(a.total!==b.total)return {cmp:b.total-a.total,by:null};
+  // head to head between these two specifically
+  const ab=(a.h2hMeta&&a.h2hMeta.opponents||{})[b.pid];
+  if(ab&&(ab.w!==ab.l))return {cmp:ab.l-ab.w,by:'head to head'};
+  // margin across every match each played
+  const am=(a.h2hMeta&&a.h2hMeta.margin)||0, bm=(b.h2hMeta&&b.h2hMeta.margin)||0;
+  if(am!==bm)return {cmp:bm-am,by:'margin'};
+  // better golf against their own handicap (lower is better)
+  if(a.scoring!=null&&b.scoring!=null&&a.scoring!==b.scoring)return {cmp:a.scoring-b.scoring,by:'scoring'};
+  // more rounds played
+  if(a.rounds.length!==b.rounds.length)return {cmp:b.rounds.length-a.rounds.length,by:'rounds played'};
+  return {cmp:0,by:'dead heat'};
+}
+
 // The whole month, computed from scratch.
 function potmCompute(ym){
   const st=potmSettings(), courses=S.courses||[];
@@ -2010,7 +2055,14 @@ function potmCompute(ym){
     e.total=rd(Object.values(e.cat).reduce((a,x)=>a+x.points,0),1);
     e.redistributed=missedW>0;
   });
-  q.sort((a,b)=>b.total-a.total);
+  q.sort((a,b)=>potmTieBreak(a,b).cmp);
+  // note where a tie actually had to be broken, so the table can explain itself
+  for(let i=1;i<q.length;i++){
+    if(q[i].total===q[i-1].total){
+      const tb=potmTieBreak(q[i-1],q[i]);
+      q[i-1].tieBroke=tb.by; q[i].tieBroke=tb.by;
+    }
+  }
   // spoon
   let spoon=null;
   if(q.length>=2){
@@ -2139,11 +2191,13 @@ function renderCrown(){
         <span class="cr-b-pos">${i+1}</span>
         <span class="cr-b-nm">${e.name}<span class="cr-b-bar">${segs}</span></span>
         <span class="cr-b-rd">${e.rounds.length}</span>
-        <span class="cr-b-tot">${e.total.toFixed(1)}</span></div>`;
+        <span class="cr-b-tot">${e.total.toFixed(1)}${e.tieBroke?`<span class="cr-tb" title="separated on ${e.tieBroke}">*</span>`:''}</span></div>`;
       if(CROWN_OPEN===e.pid)h+=crownDetail(e,r,st,i);
     });
-    h+=`</div>
-    <div class="cr-key">${Object.keys(COLS).map(k=>`<span><i style="background:${COLS[k]}"></i>${({scoring:'Scoring',h2h:'Head to head',form:'Form',bonus:'Bonus'})[k]}</span>`).join('')}</div>`;
+    h+=`</div>`;
+    const broke=r.qualified.filter(e=>e.tieBroke);
+    if(broke.length)h+=`<div class="cr-tbnote">* level on points — separated on <b>${broke[0].tieBroke}</b></div>`;
+    h+=`<div class="cr-key">${Object.keys(COLS).map(k=>`<span><i style="background:${COLS[k]}"></i>${({scoring:'Scoring',h2h:'Head to head',form:'Form',bonus:'Bonus'})[k]}</span>`).join('')}</div>`;
   }
   if(r.notQualified.length){
     h+=`<div class="cr-waiting">${r.notQualified.map(e=>`<span>${e.name} <b>${e.rounds.length}/${st.minRounds}</b></span>`).join('')}</div>`;
@@ -2208,14 +2262,19 @@ function crownMatrix(r){
   const any=r.qualified.some(e=>e.h2hMeta&&Object.keys(e.h2hMeta.opponents||{}).length);
   if(!any)return `<div class="cs-note">No two entrants have played the same course on the same day yet. A pairing is found automatically — same course, same date, same number of holes. Tees can differ.</div>`;
   const short=r.qualified.filter(e=>e.h2hMeta&&e.h2hMeta.played>0&&e.h2hMeta.played<st.h2hMinShared);
-  const note=short.length?`<div class="cs-note">${short.map(e=>`${e.name} has ${e.h2hMeta.played} shared round${e.h2hMeta.played===1?'':'s'}`).join(', ')} — ${st.h2hMinShared} needed before this category scores, so the weight moves to their other categories for now.</div>`:'';
+  const thin=r.qualified.filter(e=>e.h2hMeta&&e.h2hMeta.played>0&&e.h2hMeta.rawRate!=null&&e.h2hMeta.rawRate!==e.h2hMeta.rate);
+  let note='';
+  if(short.length)note+=`<div class="cs-note">${short.map(e=>`${e.name} has ${e.h2hMeta.played} shared round${e.h2hMeta.played===1?'':'s'}`).join(', ')} — ${st.h2hMinShared} needed before this scores.</div>`;
+  note+=`<div class="cs-note">Small figure is the net margin in shots — golf's goal difference. It never decides the category, only separates players who finish level.</div>`;
+  if(thin.length)note+=`<div class="cs-note">${thin.map(e=>`${e.name.split(' ')[0]} ${e.h2hMeta.rawRate}% → <b>${e.h2hMeta.rate}%</b> (${e.h2hMeta.played} shared)`).join(' · ')}<br>A thin record is pulled toward even, so one round counts without deciding the month. Play together more and it carries full weight.</div>`;
   return `<div class="cr-h2hwrap"><div class="cr-h2h"><div class="cr-h2h-c cr-h2h-hd"></div>${r.qualified.map(o=>`<div class="cr-h2h-c cr-h2h-hd">${o.name.split(' ')[0].slice(0,4)}</div>`).join('')}</div>
     ${r.qualified.map(e=>`<div class="cr-h2h"><div class="cr-h2h-c cr-h2h-nm">${e.name.split(' ')[0]}</div>
       ${r.qualified.map(o=>{
         if(o.pid===e.pid)return `<div class="cr-h2h-c cr-h2h-self">—</div>`;
         const rec=(e.h2hMeta.opponents||{})[o.pid];
         if(!rec)return `<div class="cr-h2h-c" style="color:var(--text3)">·</div>`;
-        return `<div class="cr-h2h-c ${rec.w>rec.l?'win':rec.l>rec.w?'loss':'draw'}">${rec.w}–${rec.l}</div>`;
+        const mg=rec.margin||0;
+        return `<div class="cr-h2h-c ${rec.w>rec.l?'win':rec.l>rec.w?'loss':'draw'}">${rec.w}–${rec.l}<span class="cr-mg">${mg>0?'+':''}${mg.toFixed(1)}</span></div>`;
       }).join('')}</div>`).join('')}</div>`+note;
 }
 function crownFair(r,st){
@@ -2257,6 +2316,8 @@ function crownRules(st){
            form:['Form','how much your index came down'],
            bonus:['Bonus','share of rounds inside your handicap, plus personal bests']};
   return Object.keys(W).map(k=>`<div class="cr-w"><b>${st.weights[k]}</b> ${W[k][0]} — ${W[k][1]}</div>`).join('')
+   +`<div class="cs-sub">If two finish level</div>
+     <div class="cs-note">Settled like a league table: the head to head between those two, then net margin across all their matches, then who played better against their own handicap, then rounds played. If all of that is level it is called a dead heat.</div>`
    +`<div class="cs-note" style="margin-top:8px">Each category is ranked, so every handicap competes equally. Last place still scores ${Math.round(st.floorShare*100)}%. Rounds are averaged, never cherry-picked — playing more can't improve your score.</div>`;
 }
 
@@ -2359,7 +2420,7 @@ function renderCrownSettings(){
     <div class="fr"><label class="fl">Minimum rounds to qualify</label><input type="number" id="cMin" value="${st.minRounds}">
       <div class="pk-hint">Below this you are not ranked. Two suits a month with four weekends and short evenings; short months are already handled by the small-sample correction, so a low number is safe.</div></div>
     <div class="fr"><label class="fl">Shared rounds before head to head counts</label><input type="number" id="cH2H" value="${st.h2hMinShared}">
-      <div class="pk-hint">One round makes the win rate 100% or 0%, which is a coin flip worth ${st.weights.h2h} points. Two is steadier. Below the threshold the weight moves to a player's other categories.</div></div>
+      <div class="pk-hint">Set to 1 so a single round together counts — important if you rarely play in the same country. A thin record is automatically pulled toward even rather than swinging all ${st.weights.h2h} points, so it counts without deciding the month.</div></div>
     <div class="fr"><label class="fl">Drop your worst round</label>
       <select id="cDrop"><option value="1"${st.dropWorst?' selected':''}>Yes, once you have 4 or more</option><option value="0"${!st.dropWorst?' selected':''}>No, average everything</option></select></div>
     <div class="fr"><label class="fl">Wooden spoon goes to</label>
