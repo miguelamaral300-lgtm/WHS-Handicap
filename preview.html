@@ -1515,7 +1515,7 @@ function calcHI(scores,courses){
 // ═══════════════════════════════════════════════════════════════════════════════
 const POTM_DEFAULTS={
   weights:{scoring:55,h2h:20,form:10,bonus:15},
-  minRounds:3,          // rounds needed in the month to be ranked
+  minRounds:2,          // rounds needed in the month to be ranked (4 weekends, short days)
   dropWorst:true,       // ignore your worst round once you've played 4+
   spoonBasis:'last',    // 'last' = bottom qualifier · 'fewest' = fewest rounds
   stake:5,              // the sum at stake each month
@@ -1719,10 +1719,13 @@ function potmH2H(entrants,courses,ym,st){
       const A=entrants[a],B=entrants[b];
       A.rounds.forEach(ra=>{
         B.rounds.forEach(rb=>{
-          // Same course, same day, same tee, same configuration. Where both players
-          // registered in advance this is a declared pairing rather than an inference.
+          // Same course, same day, same holes. Tees deliberately do NOT have to match:
+          // a differential is already adjusted for the rating and slope of the tee played,
+          // and each player is measured against their own handicap, so yellow against
+          // white is a perfectly fair comparison. Requiring identical tees simply lost
+          // real pairings.
           if(ra.s.date!==rb.s.date)return;
-          if(ra.s.course!==rb.s.course||ra.s.tee!==rb.s.tee)return;
+          if(ra.s.course!==rb.s.course)return;
           if(ra.cfg!==rb.cfg)return;
           const va=potmVsHcp(ra,A.indexStart), vb=potmVsHcp(rb,B.indexStart);
           if(va==null||vb==null)return;
@@ -2201,8 +2204,11 @@ function crownDeclared(ym){
     +(ym>=potmThisYM()?`<button class="cr-btn" style="width:100%;margin-top:10px" onclick="OM('register')">Declare a round</button>`:'');
 }
 function crownMatrix(r){
+  const st=r.settings;
   const any=r.qualified.some(e=>e.h2hMeta&&Object.keys(e.h2hMeta.opponents||{}).length);
-  if(!any)return `<div class="cs-note">Nobody has played alongside another entrant yet.</div>`;
+  if(!any)return `<div class="cs-note">No two entrants have played the same course on the same day yet. A pairing is found automatically — same course, same date, same number of holes. Tees can differ.</div>`;
+  const short=r.qualified.filter(e=>e.h2hMeta&&e.h2hMeta.played>0&&e.h2hMeta.played<st.h2hMinShared);
+  const note=short.length?`<div class="cs-note">${short.map(e=>`${e.name} has ${e.h2hMeta.played} shared round${e.h2hMeta.played===1?'':'s'}`).join(', ')} — ${st.h2hMinShared} needed before this category scores, so the weight moves to their other categories for now.</div>`:'';
   return `<div class="cr-h2hwrap"><div class="cr-h2h"><div class="cr-h2h-c cr-h2h-hd"></div>${r.qualified.map(o=>`<div class="cr-h2h-c cr-h2h-hd">${o.name.split(' ')[0].slice(0,4)}</div>`).join('')}</div>
     ${r.qualified.map(e=>`<div class="cr-h2h"><div class="cr-h2h-c cr-h2h-nm">${e.name.split(' ')[0]}</div>
       ${r.qualified.map(o=>{
@@ -2210,7 +2216,7 @@ function crownMatrix(r){
         const rec=(e.h2hMeta.opponents||{})[o.pid];
         if(!rec)return `<div class="cr-h2h-c" style="color:var(--text3)">·</div>`;
         return `<div class="cr-h2h-c ${rec.w>rec.l?'win':rec.l>rec.w?'loss':'draw'}">${rec.w}–${rec.l}</div>`;
-      }).join('')}</div>`).join('')}</div>`;
+      }).join('')}</div>`).join('')}</div>`+note;
 }
 function crownFair(r,st){
   const fx=potmFairness(r);
@@ -2351,7 +2357,9 @@ function renderCrownSettings(){
       </div>
     </div>
     <div class="fr"><label class="fl">Minimum rounds to qualify</label><input type="number" id="cMin" value="${st.minRounds}">
-      <div class="pk-hint">Below this you are not ranked. Consider lowering it for winter months.</div></div>
+      <div class="pk-hint">Below this you are not ranked. Two suits a month with four weekends and short evenings; short months are already handled by the small-sample correction, so a low number is safe.</div></div>
+    <div class="fr"><label class="fl">Shared rounds before head to head counts</label><input type="number" id="cH2H" value="${st.h2hMinShared}">
+      <div class="pk-hint">One round makes the win rate 100% or 0%, which is a coin flip worth ${st.weights.h2h} points. Two is steadier. Below the threshold the weight moves to a player's other categories.</div></div>
     <div class="fr"><label class="fl">Drop your worst round</label>
       <select id="cDrop"><option value="1"${st.dropWorst?' selected':''}>Yes, once you have 4 or more</option><option value="0"${!st.dropWorst?' selected':''}>No, average everything</option></select></div>
     <div class="fr"><label class="fl">Wooden spoon goes to</label>
@@ -4437,11 +4445,13 @@ window.CROWN_SAVE=()=>{
   if(Math.abs(total-100)>0.01)return fail(`Weights total ${total}. They must add up to 100.`);
   const minR=parseInt(document.getElementById('cMin')?.value,10);
   if(isNaN(minR)||minR<1||minR>20)return fail('Minimum rounds must be between 1 and 20.');
+  const minH=parseInt(document.getElementById('cH2H')?.value,10);
+  if(isNaN(minH)||minH<1||minH>10)return fail('Shared rounds must be between 1 and 10.');
   const stake=parseFloat(document.getElementById('cStake')?.value);
   if(isNaN(stake)||stake<0)return fail('Stake must be zero or more.');
   const cur=(document.getElementById('cCur')?.value||'€').trim()||'€';
   upd({...S,potm:{...(S.potm||{}),settings:{
-    ...(S.potm&&S.potm.settings||{}),weights:w,minRounds:minR,
+    ...(S.potm&&S.potm.settings||{}),weights:w,minRounds:minR,h2hMinShared:minH,
     dropWorst:document.getElementById('cDrop')?.value==='1',
     spoonBasis:document.getElementById('cSpoon')?.value,
     stake,currency:cur,
