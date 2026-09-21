@@ -2812,7 +2812,7 @@ window.fitTrophyEngraving = function(img){
 // ═══ PLAY — live on-course scoring (multi-round lobby, history, guests) ═══
 const LRS_URL='https://whs-handicap-default-rtdb.firebaseio.com/liverounds';
 const RH_URL='https://whs-handicap-default-rtdb.firebaseio.com/roundhistory';
-let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0;
+let LPV='list',LR=null,LRID=null,LRHOLE=1,LRMSG=null,ROUNDS=null,HIST=null,HISTOPEN=null,HISTFILT=null,SUMMARY=null,LPLASTW=0,LPSIG='',LPLISTSIG='';
 // ── Offline safety net ──────────────────────────────────────────────────────────
 // Golf courses have dead zones. Any score that fails to reach the database is kept
 // in this queue, retried in the background, re-applied on top of anything the sync
@@ -2923,17 +2923,19 @@ function lpSplit(r,pid){
           outDone:oN===(single?n:half), inDone:iN===(n-half),
           total:out+inn, done:(oN+iN)===n};
 }
-// Net total and net-to-par for a player in a round.
-function lpNetTotals(r,p){
-  const b=lpBoard(r).find(x=>x.id===p.id)||{gross:0,thru:0};
+// Net total and net-to-par, from a pre-computed board row (no re-run of lpBoard).
+function lpNetFromRow(r,p,b){
   const parTot=(r.parArr||[]).reduce((a,x)=>a+x,0);
-  const net=b.gross-(p.ch||0);
-  return {gross:b.gross,net,netToPar:net-parTot,toPar:b.gross-parTot,thru:b.thru,stb:b.stb};
+  const g=b?b.gross:0, net=g-(p.ch||0);
+  return {gross:g,net,netToPar:net-parTot,toPar:g-parTot,thru:b?b.thru:0,stb:b?b.stb:0};
 }
 // The live results block — leaderboard or full scorecard, in the chosen format.
+// lpBoard is run exactly ONCE here; everything else reuses its rows.
 function lpResults(r){
   const n=r.holes, single=n<=9;
-  const board=lpBoard(r).map(b=>{const p=r.players.find(x=>x.id===b.id);return {...b,...lpNetTotals(r,p),name:p.name,guest:p.guest};});
+  const raw=lpBoard(r);                       // one pass over all holes/players
+  const byId={}; raw.forEach(b=>byId[b.id]=b);
+  const board=r.players.map(p=>{const b=byId[p.id]||{gross:0,thru:0};return {...b,...lpNetFromRow(r,p,b),name:p.name,guest:p.guest};});
   const fmt=LRFMT||'stb';
   // sort by the active format
   board.sort((a,b)=> fmt==='stb'?b.stb-a.stb : fmt==='net'?a.netToPar-b.netToPar : a.toPar-b.toPar);
@@ -2957,7 +2959,7 @@ function lpResults(r){
     card+=`<div class="sccard"><div class="tblwrap"><table class="scc">`;
     card+=holeR(front,'Hole',single?'Tot':'Out')+parR(front,sPar(front))+scR(front,sSc(front));
     if(!single){card+=holeR(back,'Hole','In')+parR(back,sPar(back))+scR(back,sSc(back));}
-    const gt=lpNetTotals(r,p);
+    const gt=board.find(x=>x.id===p.id)||{gross:0};
     card+=`<tr class="scr-t"><td class="scr-l">Total</td><td colspan="${single?n:half}">${single?'':'Out '+ (sSc(front)??'–')}</td>${single?'':`<td colspan="${n-half}">In ${sSc(back)??'–'}</td>`}<td class="scr-sp gr">${gt.gross||'–'}</td></tr>`;
     card+=`</table></div>
       <div class="scc-legend"><span><i class="eagle"></i>Eagle+</span><span><i class="birdie"></i>Birdie</span><span>Par</span><span><i class="bogey"></i>Bogey</span><span><i class="double"></i>Double+</span></div>
@@ -4946,16 +4948,21 @@ async function lpPull(){
         if(LPQ.length){ return; }
         if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was finished on another phone.';if(V==='play'&&!MOD)render();}
       }else{
-        if(Date.now()-LPLASTW<6000){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score, generous window
+        if(Date.now()-LPLASTW<6000){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score
         d.scores=lpApplyQ(d.scores);   // anything not yet synced stays visible
-        const changed=JSON.stringify(d)!==JSON.stringify(LR);
-        LR=d;
-        if(changed&&V==='play'&&!MOD)render();   // stable screen: no change → no rebuild
+        // Cheap signature instead of stringifying the whole round twice every 2.5s:
+        // only the scores and player set can change what's on screen.
+        const sig=JSON.stringify(d.scores)+'|'+d.players.length+'|'+(d.active?1:0);
+        const changed = sig!==LPSIG;
+        LR=d; LPSIG=sig;
+        if(changed&&V==='play'&&!MOD)render();   // no visible change → no rebuild
       }
     }else if(LPV==='list'){
-      const d=await(await fetch(`${LRS_URL}.json?t=${Date.now()}`)).json();
-      const changed=JSON.stringify(d||{})!==JSON.stringify(ROUNDS||{});
-      ROUNDS=d||{};
+      let d; try{ d=await(await fetch(`${LRS_URL}.json?t=${Date.now()}`)).json(); }catch(e){ return; }
+      // signature = which rounds exist + their thru-counts, not the whole payload
+      const sig=d?Object.keys(d).map(k=>k+':'+(d[k]&&d[k].active?lpThru(d[k]):'x')).join(','):'';
+      const changed = sig!==LPLISTSIG;
+      ROUNDS=d||{}; LPLISTSIG=sig;
       if(changed&&V==='play'&&!MOD)render();
     }
   }catch(e){}
