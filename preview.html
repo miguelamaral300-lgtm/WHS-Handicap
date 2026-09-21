@@ -4815,7 +4815,7 @@ out geom;`;
   render();
 };
 
-let LRVIEW='board',LRFMT='stb',LRCARD=null;
+let LRVIEW='board',LRFMT='stb',LRCARD=null,LRWROTE=false;
 window.LP_VIEW=v=>{LRVIEW=v;render();};
 window.LP_FMT=f=>{LRFMT=f;render();};
 window.LP_CARD=id=>{LRCARD=id;render();};
@@ -4847,9 +4847,20 @@ window.LP_START=async()=>{
   LRID='r'+Date.now();
   LR={active:true,course:LRSEL.course,tee:LRSEL.tee,cfg,holes:nScored,parArr,siArr,holeNums,
       players,scores:{},startedAt:Date.now(),date:new Date().toISOString().slice(0,10)};
-  LRHOLE=1;LRMSG=null;LPV='round';render();
-  try{await fetch(`${LRS_URL}/${LRID}.json`,{method:'PUT',body:JSON.stringify(LR)});}catch(e){}
+  LRHOLE=1;LRMSG=null;LPV='round';LRWROTE=false;render();
+  lpEnsureWritten();
 };
+// Write the round to the server, and keep trying until it lands. The scoring screen is
+// already open locally, so a slow or failed first write must never strand the round.
+async function lpEnsureWritten(){
+  if(!LR||!LRID)return;
+  try{
+    const r=await fetch(`${LRS_URL}/${LRID}.json`,{method:'PUT',body:JSON.stringify({...LR,active:true})});
+    if(r.ok){LRWROTE=true;return;}
+  }catch(e){}
+  // failed — try again shortly, as long as we're still in this round
+  setTimeout(()=>{ if(LRID&&LPV==='round'&&!LRWROTE)lpEnsureWritten(); },2000);
+}
 window.LP_JOIN=id=>{LRID=id;LR=ROUNDS[id];LRHOLE=1;GPGEO=null;LPQ=[];lpLoadLocal(id);if(LR)LR.scores=lpApplyQ(LR.scores);lpFlush();
   // jump to first incomplete hole
   if(LR){for(let x=1;x<=LR.holes;x++){if(!LR.players.every(p=>lpHasScore(LR.scores,x,p.id))){LRHOLE=x;break;}LRHOLE=LR.holes;}}
@@ -4920,10 +4931,20 @@ window.LP_HFILT=nm=>{HISTFILT=HISTFILT===nm?null:nm;HISTOPEN=null;render();};
 async function lpPull(){
   try{
     if(LPV==='round'&&LRID){
-      const d=await(await fetch(`${LRS_URL}/${LRID}.json?t=${Date.now()}`)).json();
-      if(!d||!d.active){
-        // round finished or discarded elsewhere
+      let d; try{ d=await(await fetch(`${LRS_URL}/${LRID}.json?t=${Date.now()}`)).json(); }
+      catch(e){ return; }                    // network blip — never close the round on a failed fetch
+      // A round we started locally may not be on the server yet. Only treat "missing"
+      // as closed once the round is old enough to have certainly been written, AND we
+      // have no unsynced local scores waiting. Otherwise leave it exactly as it is.
+      const localAge = LR&&LR.startedAt ? Date.now()-LR.startedAt : 1e9;
+      if(d===null){
+        if(LR && localAge<15000){ lpEnsureWritten(); return; }   // brand new — (re)write, don't kill
+        if(LPQ.length){ return; }                                 // scores pending — never drop them
         if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was closed on another phone.';if(V==='play'&&!MOD)render();}
+      }else if(!d.active){
+        // explicitly finished or discarded elsewhere — that is a real close
+        if(LPQ.length){ return; }
+        if(LR){LR=null;LRID=null;LPV='list';LRMSG='That round was finished on another phone.';if(V==='play'&&!MOD)render();}
       }else{
         if(Date.now()-LPLASTW<6000){ d.scores=LR?LR.scores:d.scores; } // protect a just-tapped score, generous window
         d.scores=lpApplyQ(d.scores);   // anything not yet synced stays visible
