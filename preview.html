@@ -1043,12 +1043,6 @@ textarea{resize:vertical;min-height:70px}
 .cr-w{font-size:12.5px;color:var(--text2);line-height:1.6;padding:5px 0}
 .cr-w b{display:inline-block;min-width:26px;font-family:'Barlow Semi Condensed',sans-serif;font-size:15px;color:var(--gold)}
 /* ── live results: tabs, formats, scorecard ── */
-.sc-tabs{display:flex;background:rgba(11,30,18,.05);border:0.5px solid rgba(11,30,18,.12);border-radius:12px;padding:3px;margin-bottom:9px}
-.sc-tab{flex:1;border:none;background:none;font-family:'Barlow',sans-serif;font-weight:600;font-size:13px;color:var(--text2,#5a6b5a);padding:9px;border-radius:9px;cursor:pointer;touch-action:manipulation}
-.sc-tab.on{background:#0F2717;color:#E6CE80}
-.sc-fmt{display:flex;gap:6px;margin-bottom:12px}
-.sc-fbtn{flex:1;border:0.5px solid rgba(11,30,18,.14);background:#fff;border-radius:9px;font-family:'Barlow',sans-serif;font-weight:600;font-size:11.5px;color:var(--text2,#5a6b5a);padding:8px 4px;cursor:pointer;white-space:nowrap;touch-action:manipulation}
-.sc-fbtn.on{border-color:var(--gold,#C9A84C);background:rgba(201,168,76,.13);color:#8A6A22}
 /* leaderboard rows */
 .lbr{display:grid;grid-template-columns:24px 1fr auto;grid-template-rows:auto auto;gap:0 12px;align-items:center;background:#fff;border:0.5px solid rgba(11,30,18,.08);border-radius:13px;padding:11px 14px;margin-bottom:7px}
 .lbr.lead{border-color:var(--gold,#C9A84C);background:linear-gradient(100deg,rgba(201,168,76,.1),#fff)}
@@ -1172,6 +1166,57 @@ table.scc td{text-align:center;padding:0;font-variant-numeric:tabular-nums}
 .lp-tbl .mk.o1{border:1.5px solid #D8A24A;border-radius:4px;color:#D8A24A}
 .lp-tbl .mk.o2{border:1.5px solid #CF6B5C;border-radius:4px;color:#CF6B5C}
 .lp-tbl .tot td{font-weight:700;color:var(--text);background:rgba(0,0,0,.2)}
+
+/* ═══ live results 2.0 — dark, mobile-first, clean ═══ */
+.rv-tabs{display:flex;gap:4px;background:rgba(0,0,0,.25);border:0.5px solid var(--border2);border-radius:13px;padding:4px;margin:18px 0 9px}
+.rv-tab{flex:1;border:none;background:none;font-family:'Barlow',sans-serif;font-weight:600;font-size:13.5px;color:var(--text2);padding:11px;border-radius:10px;cursor:pointer;touch-action:manipulation;transition:.2s}
+.rv-tab.on{background:linear-gradient(160deg,var(--gold),var(--gold-dim));color:#1A1306}
+.rv-fmt{display:flex;gap:6px;margin-bottom:14px}
+.rv-fbtn{flex:1;border:0.5px solid var(--border2);background:var(--mid);color:var(--text2);font-family:'Barlow',sans-serif;font-weight:600;font-size:12px;padding:9px 4px;border-radius:9px;cursor:pointer;touch-action:manipulation;transition:.2s}
+.rv-fbtn.on{border-color:var(--gold);background:rgba(201,168,76,.16);color:var(--gold-lt)}
+/* leaderboard */
+.rv-lb{display:flex;flex-direction:column;gap:8px}
+.rv-row{display:grid;grid-template-columns:26px 1fr auto;grid-template-rows:auto auto;gap:1px 13px;align-items:center;
+  background:var(--mid);border:0.5px solid var(--border2);border-radius:15px;padding:13px 16px}
+.rv-row.lead{border-color:var(--border);background:linear-gradient(100deg,rgba(201,168,76,.1),var(--mid))}
+.rv-pos{grid-row:1/3;font-family:'Cormorant Garamond','Playfair Display',serif;font-style:italic;font-weight:700;font-size:21px;color:var(--gold);text-align:center}
+.rv-nm{font-weight:600;font-size:15.5px;color:var(--text)}
+.rv-sub{grid-row:2;font-size:11px;color:var(--text3)}
+.rv-main{grid-row:1;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:24px;color:var(--gold-lt);text-align:right;line-height:1}
+.rv-main small{font-size:11px;color:var(--text3);font-weight:600;margin-left:2px}
+.rv-main .u{color:#CF6B5C}.rv-main .d{color:#6FA368}
+.rv-sub2{grid-row:2;font-size:11px;color:var(--text3);text-align:right}
+/* scorecard — stacked full-width nine-blocks */
+.rv-pchips{display:flex;gap:7px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}.rv-pchips::-webkit-scrollbar{display:none}
+.rv-pchip{flex:0 0 auto;border:0.5px solid var(--border2);background:var(--mid);border-radius:20px;padding:8px 15px;font-weight:600;font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.rv-pchip.on{border-color:var(--gold);background:rgba(201,168,76,.16);color:var(--gold-lt)}
+.sccard2{background:var(--mid);border:0.5px solid var(--border);border-radius:18px;padding:16px}
+.scc2-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.scc2-nm{font-family:'Cormorant Garamond','Playfair Display',serif;font-style:italic;font-weight:700;font-size:19px;color:var(--gold-lt)}
+.scc2-meta{font-size:12px;color:var(--text2)}
+.scblock{margin-bottom:16px}
+.scb-hd{display:flex;justify-content:space-between;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:8px}
+.scb-hd span:last-child{color:var(--gold-lt);font-family:'Barlow Semi Condensed',sans-serif;font-size:14px;letter-spacing:0}
+.scb-hd small{color:var(--text3);font-weight:500}
+.scb-holes,.scb-pars,.scb-scores{display:grid;grid-template-columns:repeat(9,1fr);gap:3px}
+.scnum{text-align:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:10px;color:var(--text3);padding-bottom:3px}
+.scpar{text-align:center;font-size:10px;color:var(--text2);padding-bottom:5px}
+.sccell{display:flex;justify-content:center}
+.scmk{display:grid;place-items:center;width:100%;aspect-ratio:1;max-width:30px;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:14px;color:var(--text)}
+.scmk.eagle{background:var(--gold-lt);color:#1A1306;border-radius:50%}
+.scmk.birdie{background:#6FA368;color:#08160D;border-radius:50%}
+.scmk.bogey{border:1.5px solid #5C97B8;border-radius:7px}
+.scmk.double{background:#CF6B5C;color:#fff;border-radius:7px}
+.scc2-tot{display:flex;justify-content:space-between;align-items:center;padding-top:12px;margin-top:4px;border-top:0.5px solid var(--border);
+  font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:600}
+.scc2-big{font-family:'Barlow Semi Condensed',sans-serif;font-size:22px;color:var(--gold-lt);letter-spacing:0;text-transform:none}
+.scc2-big small{font-size:11px;color:var(--text3)}
+.scc2-legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:14px;font-size:10px;color:var(--text2)}
+.scc2-legend span{display:flex;align-items:center;gap:5px}
+.scc2-legend i{width:13px;height:13px;border-radius:50%;display:block}
+.scc2-legend i.eagle{background:var(--gold-lt)}.scc2-legend i.birdie{background:#6FA368}
+.scc2-legend i.bogey{border:1.5px solid #5C97B8;border-radius:4px}.scc2-legend i.double{background:#CF6B5C;border-radius:4px}
+
 </style>
 </head>
 <body>
@@ -2925,73 +2970,88 @@ function lpSplit(r,pid){
 }
 // Net total and net-to-par, from a pre-computed board row (no re-run of lpBoard).
 function lpNetFromRow(r,p,b){
-  const parTot=(r.parArr||[]).reduce((a,x)=>a+x,0);
+  // Everything comes straight from the board row, which already scoped par to holes
+  // played. No full-round-par subtraction — that was the source of the −100.
   const g=b?b.gross:0, net=g-(p.ch||0);
-  return {gross:g,net,netToPar:net-parTot,toPar:g-parTot,thru:b?b.thru:0,stb:b?b.stb:0};
+  return {gross:g,net,netToPar:b?b.netToPar:0,toPar:b?b.toPar:0,thru:b?b.thru:0,stb:b?b.stb:0};
 }
 // The live results block — leaderboard or full scorecard, in the chosen format.
 // lpBoard is run exactly ONCE here; everything else reuses its rows.
 function lpResults(r){
   const n=r.holes, single=n<=9;
-  const raw=lpBoard(r);                       // one pass over all holes/players
-  const byId={}; raw.forEach(b=>byId[b.id]=b);
-  const board=r.players.map(p=>{const b=byId[p.id]||{gross:0,thru:0};return {...b,...lpNetFromRow(r,p,b),name:p.name,guest:p.guest};});
+  const raw=lpBoard(r);
+  const byId={}; raw.forEach(x=>byId[x.id]=x);
+  const board=r.players.map(p=>{const x=byId[p.id]||{gross:0,thru:0};return {...x,...lpNetFromRow(r,p,x),name:p.name,guest:p.guest};});
   const fmt=LRFMT||'stb';
-  // sort by the active format
-  board.sort((a,b)=> fmt==='stb'?b.stb-a.stb : fmt==='net'?a.netToPar-b.netToPar : a.toPar-b.toPar);
+  board.sort((A,B)=> fmt==='stb'?B.stb-A.stb : fmt==='net'?A.netToPar-B.netToPar : A.toPar-B.toPar);
+
+  // view + format switch (dark, on-theme)
+  let h=`<div class="rv-tabs">
+    <button class="rv-tab${LRVIEW!=='card'?' on':''}" onclick="LP_VIEW('board')">Leaderboard</button>
+    <button class="rv-tab${LRVIEW==='card'?' on':''}" onclick="LP_VIEW('card')">Scorecard</button>
+  </div>
+  <div class="rv-fmt">${['stb','net','gross'].map(fm=>`<button class="rv-fbtn${fmt===fm?' on':''}" onclick="LP_FMT('${fm}')">${({stb:'Stableford',net:'Net',gross:'Gross'})[fm]}</button>`).join('')}</div>`;
 
   if(LRVIEW==='card'){
-    // full colour-coded scorecard for the selected player (default: leader)
     if(!LRCARD||!r.players.some(p=>p.id===LRCARD))LRCARD=board[0]?board[0].id:(r.players[0]&&r.players[0].id);
     const p=r.players.find(x=>x.id===LRCARD)||r.players[0];
-    const half=Math.floor(n/2);
-    const idx=Array.from({length:n},(_,i)=>i);
-    const front=idx.slice(0,single?n:half), back=single?[]:idx.slice(half);
-    const cell=i=>{const g=lpHasScore(r.scores,i+1,p.id)?r.scores[i+1][p.id]:null;
+    const brow=byId[p.id]||{gross:0};
+    h+=`<div class="rv-pchips">${board.map(x=>`<button class="rv-pchip${x.id===LRCARD?' on':''}" onclick="LP_CARD('${x.id}')">${x.name.split(' ')[0]}</button>`).join('')}</div>`;
+    // A mobile scorecard reads in TWO stacked nine-blocks, each full-width, never squeezed.
+    const mk=i=>{const g=lpHasScore(r.scores,i+1,p.id)?r.scores[i+1][p.id]:null;
       const cls=g==null?'':({b2:'eagle',b1:'birdie',o1:'bogey',o2:'double'})[lpNote(g,r.parArr[i])]||'';
-      return `<td><span class="scmk ${cls}">${g==null?'·':g}</span></td>`;};
-    const holeR=(a,lbl,sp)=>`<tr class="scr-h"><td class="scr-l">${lbl}</td>${a.map(i=>`<td>${(r.holeNums&&r.holeNums[i])||i+1}</td>`).join('')}<td class="scr-sp">${sp}</td></tr>`;
-    const parR=(a,sp)=>`<tr class="scr-p"><td class="scr-l">Par</td>${a.map(i=>`<td>${r.parArr[i]}</td>`).join('')}<td class="scr-sp">${sp}</td></tr>`;
-    const scR=(a,sp)=>`<tr class="scr-s"><td class="scr-l">${p.name.split(' ')[0]}</td>${a.map(cell).join('')}<td class="scr-sp">${sp||'–'}</td></tr>`;
-    const sPar=(a)=>a.reduce((t,i)=>t+r.parArr[i],0);
-    const sSc=(a)=>{let t=0,any=false;a.forEach(i=>{if(lpHasScore(r.scores,i+1,p.id)){t+=r.scores[i+1][p.id];any=true;}});return any?t:null;};
-    let card=`<div class="pswitch">${board.map(b=>`<button class="pchip${b.id===LRCARD?' on':''}" onclick="LP_CARD('${b.id}')">${b.name.split(' ')[0]}</button>`).join('')}</div>`;
-    card+=`<div class="sccard"><div class="tblwrap"><table class="scc">`;
-    card+=holeR(front,'Hole',single?'Tot':'Out')+parR(front,sPar(front))+scR(front,sSc(front));
-    if(!single){card+=holeR(back,'Hole','In')+parR(back,sPar(back))+scR(back,sSc(back));}
-    const gt=board.find(x=>x.id===p.id)||{gross:0};
-    card+=`<tr class="scr-t"><td class="scr-l">Total</td><td colspan="${single?n:half}">${single?'':'Out '+ (sSc(front)??'–')}</td>${single?'':`<td colspan="${n-half}">In ${sSc(back)??'–'}</td>`}<td class="scr-sp gr">${gt.gross||'–'}</td></tr>`;
-    card+=`</table></div>
-      <div class="scc-legend"><span><i class="eagle"></i>Eagle+</span><span><i class="birdie"></i>Birdie</span><span>Par</span><span><i class="bogey"></i>Bogey</span><span><i class="double"></i>Double+</span></div>
+      return `<div class="sccell"><span class="scmk ${cls}">${g==null?'·':g}</span></div>`;};
+    const block=(from,to,label)=>{
+      const idx=[];for(let i=from;i<to;i++)idx.push(i);
+      const par=idx.reduce((t,i)=>t+r.parArr[i],0);
+      let gr=0,any=false;idx.forEach(i=>{if(lpHasScore(r.scores,i+1,p.id)){gr+=r.scores[i+1][p.id];any=true;}});
+      return `<div class="scblock">
+        <div class="scb-hd"><span>${label}</span><span>${any?gr:'–'} <small>/ ${par}</small></span></div>
+        <div class="scb-holes">${idx.map(i=>`<div class="scnum">${(r.holeNums&&r.holeNums[i])||i+1}</div>`).join('')}</div>
+        <div class="scb-pars">${idx.map(i=>`<div class="scpar">${r.parArr[i]}</div>`).join('')}</div>
+        <div class="scb-scores">${idx.map(mk).join('')}</div>
+      </div>`;
+    };
+    h+=`<div class="sccard2">
+      <div class="scc2-hd"><span class="scc2-nm">${p.name}</span><span class="scc2-meta">CH ${p.ch}</span></div>
+      ${block(0, single?n:9, single?'Round':'Front 9')}
+      ${single?'':block(9,18,'Back 9')}
+      <div class="scc2-tot"><span>Total</span><span class="scc2-big">${brow.gross||'–'}<small> · ${brow.toPar>0?'+':''}${brow.toPar||0} vs par</small></span></div>
+      <div class="scc2-legend"><span><i class="eagle"></i>Eagle+</span><span><i class="birdie"></i>Birdie</span><span>Par</span><span><i class="bogey"></i>Bogey</span><span><i class="double"></i>Double+</span></div>
     </div>`;
-    return card;
+    return h;
   }
 
   // leaderboard
-  let h=`<div class="lp-lb">`;
+  h+=`<div class="rv-lb">`;
   board.forEach((p,i)=>{
     const played=p.thru>0;
-    const gp=p.toPar,gpc=gp>0?'u':gp<0?'d':'e',gps=gp>0?'+'+gp:gp===0?'E':gp;
-    const np=p.netToPar,npc=np>0?'u':np<0?'d':'e',nps=np>0?'+'+np:np===0?'E':np;
-    const main = fmt==='stb' ? `${p.stb}<small> pts</small>` : fmt==='net' ? `<span class="${npc}">${played?nps:'–'}</span>` : `<span class="${gpc}">${played?gps:'–'}</span>`;
+    const gp=p.toPar,gps=gp>0?'+'+gp:gp===0?'E':gp;
+    const np=p.netToPar,nps=np>0?'+'+np:np===0?'E':np;
+    const main = fmt==='stb' ? `${p.stb}<small>pts</small>` : fmt==='net' ? `<span class="${np>0?'u':np<0?'d':''}">${played?nps:'–'}</span>` : `<span class="${gp>0?'u':gp<0?'d':''}">${played?gps:'–'}</span>`;
     const sub  = fmt==='stb' ? `net ${played?nps:'–'}` : fmt==='net' ? `net ${played?p.net:'–'}` : `gross ${played?p.gross:'–'}`;
-    h+=`<div class="lbr${i===0?' lead':''}"><div class="lbr-pos">${played?i+1:'–'}</div>
-      <div class="lbr-who"><div class="lbr-nm">${p.name}${p.guest?' ᵍ':''}</div><div class="lbr-sub">thru ${p.thru}/${n}</div></div>
-      <div class="lbr-main">${main}</div><div class="lbr-sub2">${sub}</div></div>`;
+    h+=`<div class="rv-row${i===0&&played?' lead':''}">
+      <div class="rv-pos">${played?i+1:'–'}</div>
+      <div class="rv-who"><div class="rv-nm">${p.name}${p.guest?' ᵍ':''}</div><div class="rv-sub">thru ${p.thru}/${n}</div></div>
+      <div class="rv-main">${main}</div>
+      <div class="rv-sub2">${sub}</div></div>`;
   });
   return h+`</div>`;
 }
 function lpBoard(r){
   const n=r.holes;
   return r.players.map(p=>{
-    let thru=0,gross=0,toPar=0,stb=0;
+    let thru=0,gross=0,grossPar=0,netToPar=0,stb=0;
     for(let h=1;h<=n;h++){
       if(!lpHasScore(r.scores,h,p.id))continue;
       const g=r.scores[h][p.id],par=r.parArr[h-1],stk=lpStrokes(p.ch,r.siArr[h-1],n);
-      thru++;gross+=g;toPar+=(g-stk-par);stb+=Math.max(0,par+stk-g+2);
+      thru++;gross+=g;grossPar+=par;             // par of holes PLAYED, not all 18
+      netToPar+=(g-stk-par);                      // net vs par, over holes played
+      stb+=Math.max(0,par+stk-g+2);
     }
-    return {...p,thru,gross,toPar,stb};
-  }).sort((a,b)=>a.thru===0&&b.thru===0?0:b.thru===0?-1:a.thru===0?1:(a.toPar-b.toPar)||(b.stb-a.stb));
+    // toPar here = GROSS vs par of holes played (never a full-18 par against 3 holes)
+    return {...p,thru,gross,grossPar,toPar:gross-grossPar,netToPar,stb};
+  }).sort((a,b)=>a.thru===0&&b.thru===0?0:b.thru===0?-1:a.thru===0?1:(a.netToPar-b.netToPar)||(b.stb-a.stb));
 }
 function lpThru(r){ let t=0; for(let h=1;h<=r.holes;h++){ if(r.players.every(p=>lpHasScore(r.scores,h,p.id)))t++; } return t; }
 function lpShareText(rec){
@@ -3319,15 +3379,8 @@ function renderPlay(){
     }).join('')}<div class="lp-tl-h">${n>9?'out · in · total':'out · total'}</div></div>`;
     h+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
     // ── live results: leaderboard ↔ full scorecard, in three formats ──
-    h+=`<div class="lp-sec" style="margin-top:20px">Live results</div>`;
-    h+=`<div class="sc-tabs">
-      <button class="sc-tab${LRVIEW!=='card'?' on':''}" onclick="LP_VIEW('board')">Leaderboard</button>
-      <button class="sc-tab${LRVIEW==='card'?' on':''}" onclick="LP_VIEW('card')">Scorecard</button>
-    </div>`;
-    h+=`<div class="sc-fmt">
-      ${['stb','net','gross'].map(fmt=>`<button class="sc-fbtn${LRFMT===fmt?' on':''}" onclick="LP_FMT('${fmt}')">${({stb:'Stableford',net:'Stroke Net',gross:'Stroke Gross'})[fmt]}</button>`).join('')}
-    </div>`;
-    h+=lpResults(LR);
+    h+=`<div class="lp-sec" style="margin-top:22px">Live results</div>`;
+    h+=lpResults(LR);   // renders its own view + format toggles (dark, on-theme)
     if(LPQ.length) h+=`<div class="lp-offline">⟳ ${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
     // finished only when every player has a score on every hole
     const _board=lpBoard(LR);
