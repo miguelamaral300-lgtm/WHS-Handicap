@@ -3229,6 +3229,7 @@ function renderPlay(){
     }).join('');
     h+=`<button class="lp-start" onclick="LP_NEW()">Start a new round</button>`;
     h+=`<button class="lp-ghost" onclick="LP_HIST()">Past rounds →</button>`;
+    if(live.length)h+=`<button class="lp-ghost" style="color:#CF6B5C;border-color:rgba(207,107,92,.3)" onclick="LP_CLEARALL()">Clear stuck rounds</button>`;
   }
 
   else if(LPV==='setup'){
@@ -3328,7 +3329,9 @@ function renderPlay(){
     </div>`;
     h+=lpResults(LR);
     if(LPQ.length) h+=`<div class="lp-offline">⟳ ${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
-    const allDone=B.every(p=>p.thru===n);
+    // finished only when every player has a score on every hole
+    const _board=lpBoard(LR);
+    const allDone=_board.length>0 && _board.every(p=>p.thru===n);
     h+=`<div class="lp-fin"><button class="lp-fbtn disc" onclick="LP_X()">Discard</button><button class="lp-fbtn post" ${allDone?'':'disabled'} onclick="LP_F()">Finish round</button></div>`;
     if(!allDone)h+=`<div class="lp-hint">Finishing unlocks when every player has all ${n} holes in. The round is saved live — closing the app never loses it.</div>`;
     h+=`<button class="lp-ghost sm" onclick="LP_BACK()">‹ Leave (round keeps running)</button>`;
@@ -4863,10 +4866,28 @@ async function lpEnsureWritten(){
   // failed — try again shortly, as long as we're still in this round
   setTimeout(()=>{ if(LRID&&LPV==='round'&&!LRWROTE)lpEnsureWritten(); },2000);
 }
-window.LP_JOIN=id=>{LRID=id;LR=ROUNDS[id];LRHOLE=1;GPGEO=null;LPQ=[];lpLoadLocal(id);if(LR)LR.scores=lpApplyQ(LR.scores);lpFlush();
-  // jump to first incomplete hole
-  if(LR){for(let x=1;x<=LR.holes;x++){if(!LR.players.every(p=>lpHasScore(LR.scores,x,p.id))){LRHOLE=x;break;}LRHOLE=LR.holes;}}
-  LPV='round';LRMSG=null;render();};
+window.LP_JOIN=id=>{
+  const r=ROUNDS&&ROUNDS[id];
+  // A round must be well-formed to be playable. A broken/partial test round (no players,
+  // no hole data) would crash the scoring screen — refuse it cleanly instead.
+  if(!r||!r.active||!Array.isArray(r.players)||!r.players.length||!r.holes||!Array.isArray(r.parArr)||!r.parArr.length){
+    LRMSG='That round can’t be opened — it looks incomplete. Use “Clear stuck rounds” below.';
+    render();return;
+  }
+  LRID=id;LR={...r,startedAt:r.startedAt||Date.now()};   // stamp so the poll protects it
+  LRHOLE=1;GPGEO=null;LPQ=[];lpLoadLocal(id);
+  LR.scores=lpApplyQ(LR.scores||{});
+  LPSIG='';                                              // force a clean first render
+  lpFlush();
+  for(let x=1;x<=LR.holes;x++){if(!LR.players.every(p=>lpHasScore(LR.scores,x,p.id))){LRHOLE=x;break;}LRHOLE=LR.holes;}
+  LPV='round';LRMSG=null;render();
+};
+// Clear every live round at once — for wiping test rounds that got stuck.
+window.LP_CLEARALL=async()=>{
+  if(!confirm('Clear ALL live rounds?\n\nThis removes every round currently showing as live (including stuck test rounds). Finished rounds in history are NOT affected.'))return;
+  try{ await fetch(`${LRS_URL}.json`,{method:'DELETE'}); }catch(e){}
+  ROUNDS={};LPLISTSIG='';LR=null;LRID=null;LPV='list';LRMSG='All live rounds cleared.';render();
+};
 async function lpWrite(pid,v){
   // No automatic transitions of any kind. The player enters scores at their own
   // pace and moves holes only by tapping Next / Prev / a hole pip themselves.
