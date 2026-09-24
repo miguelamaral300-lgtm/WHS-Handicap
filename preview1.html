@@ -1787,6 +1787,91 @@ a.ui-btn{color:#fff}
 
 .ui-posted{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0 4px;font-size:13.5px;font-weight:500;color:var(--g)}
 .ui-done-top .ui-av.lg{width:64px;height:64px;font-size:22px}
+
+/* ════════ STAGE 5 · Crown ════════ */
+.cr-wrap{max-width:560px;margin:0 auto;padding:0 0 10px}
+.ui-crhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 14px}
+.ui-crhead-t{flex:1;text-align:center}
+.ui-crhead .ui-ico:disabled{opacity:.35}
+
+/* hero */
+.ui-crhero{position:relative;border-radius:26px;padding:26px 18px 20px;text-align:center;box-shadow:var(--sh-card)}
+.ui-crdays{position:absolute;top:14px;right:14px}
+.ui-crring{position:relative;width:230px;max-width:82%;margin:0 auto;aspect-ratio:1}
+.ui-crring svg{width:100%;height:100%;display:block}
+.ui-crring-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 16px}
+.ui-crk{display:block;height:24px;margin-bottom:2px}
+.ui-crk svg{width:26px;height:24px;stroke:#fff;stroke-width:1.8;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.ui-crname{font-size:14px;color:rgba(255,255,255,.9);margin-bottom:2px}
+.ui-crtotal{font-size:62px;color:#fff;line-height:.95}
+.ui-crsub{font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.35;margin-top:6px;max-width:170px}
+.ui-crhero-m{font-size:13px;color:rgba(255,255,255,.9);margin-top:6px}
+.ui-crhero-sp{font-size:12.5px;color:rgba(255,255,255,.75);margin-top:4px}
+.ui-crempty{background:#fff;border-radius:20px;box-shadow:inset 0 0 0 1px var(--line);padding:24px 20px;text-align:center;font-size:14px;line-height:1.5;color:var(--ink2)}
+
+/* board */
+.ui-crboard{margin-top:14px}
+.ui-crrow{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:11px 16px 11px 12px;background:#fff;border:none;border-top:1px solid var(--line);text-align:left;cursor:pointer;color:var(--ink)}
+.ui-crboard>.ui-crrow:first-child{border-top:none}
+.ui-crrow.lead{background:var(--gl);border-top-color:#fff}
+.ui-crrow.me .ui-row-t{font-weight:700}
+.ui-crrow.open{box-shadow:inset 0 -1px 0 var(--line)}
+.ui-crbar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin-top:6px;background:var(--line)}
+.ui-crbar span{display:block;height:100%}
+.ui-crtot{text-align:right;flex-shrink:0;font-weight:500;font-size:24px;letter-spacing:-.05em;font-feature-settings:'tnum'}
+.ui-crtot small{display:block;font-size:11px;font-weight:400;color:var(--ink2);letter-spacing:0}
+.ui-crkey{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;font-size:11.5px;color:var(--ink2);margin-top:12px}
+.ui-crkey span{display:flex;align-items:center;gap:5px}
+.ui-crkey i{width:9px;height:9px;border-radius:3px;display:block}
+
+/* inline breakdown under a board row */
+.cr-det{background:var(--off);padding:10px 16px 14px;border-top:1px solid var(--line)}
+.cr-d-row{display:grid;grid-template-columns:1fr 66px 46px 44px;gap:6px;align-items:center;padding:7px 0;font-size:13px;border-bottom:1px solid var(--line)}
+.cr-d-row:last-of-type{border-bottom:none}
+.cr-d-n{color:var(--ink);font-weight:500}
+.cr-d-v,.cr-d-r{font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink2);text-align:right}
+.cr-d-p{font-family:'Geist Mono',monospace;font-weight:700;color:var(--g);text-align:right}
+.cr-goal{font-size:12.5px;color:var(--g);background:var(--gl);border-radius:12px;padding:9px 12px;margin-top:8px;line-height:1.45}
+
+/* detail page */
+.ui-crdetail .cs-note,.ui-crdetail .ui-note{font-size:13px;color:var(--ink2);line-height:1.55;margin:10px 2px}
+.ui-crmon{width:92px;flex-shrink:0;font-size:12.5px;color:var(--ink2)}
+.ui-crwin svg{width:20px;height:20px;stroke:var(--g);stroke-width:1.8;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.ui-fairtick{width:26px;height:26px;flex-shrink:0;border-radius:50%;background:var(--gl);display:grid;place-items:center}
+.ui-fairtick svg{width:14px;height:14px;stroke:var(--g);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* head-to-head grid */
+.cr-h2hwrap{overflow-x:auto;background:#fff;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line);padding:4px 2px}
+.cr-h2h-c{padding:10px 6px;font-family:'Geist Mono',monospace;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.cr-h2h-hd{font-family:'Geist',sans-serif;font-size:11px;font-weight:500;color:var(--ink2);background:none;text-transform:none;letter-spacing:0}
+.cr-h2h-nm{font-family:'Geist',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink);text-align:left;padding-left:12px}
+.cr-h2h-c.win{color:var(--g)}.cr-h2h-c.loss{color:var(--red)}.cr-h2h-c.draw{color:var(--ink2)}
+.cr-h2h-self{color:var(--ink3)}
+.cr-mg{font-size:9px;font-weight:500;opacity:.65}
+.cr-h2h{border-bottom:1px solid var(--line)}
+.cr-h2h:last-child{border-bottom:none}
+
+/* settings sheet */
+.ui-tog{width:48px;height:29px;border-radius:999px;border:none;background:var(--line);position:relative;cursor:pointer;flex-shrink:0;padding:0;transition:background .16s}
+.ui-tog.on{background:var(--g)}
+.ui-tog i{position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:transform .16s;box-shadow:0 1px 3px rgba(12,26,18,.25)}
+.ui-tog.on i{transform:translateX(19px)}
+.ui-wlist{background:#fff;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line);padding:6px 16px 12px}
+.ui-wrow{display:grid;grid-template-columns:104px 1fr 62px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ui-wrow:last-of-type{border-bottom:none}
+.ui-wbar{display:block;height:6px;border-radius:3px;background:var(--off);overflow:hidden}
+.ui-wbar i{display:block;height:100%;background:var(--g);border-radius:3px}
+.ui-wrow input{min-height:40px;height:40px;text-align:center;padding:0 6px;font-size:15px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line)}
+.ui-wtot{padding-top:10px;font-size:12.5px;color:var(--ink2);text-align:right}
+.ui-wtot.bad{color:var(--red);font-weight:600}
+.ui-wtot.ok{color:var(--g)}
+.ui-num{width:74px;min-height:42px;height:42px;text-align:center;padding:0 8px;font-size:15px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);flex-shrink:0}
+.ui-num.sm{width:50px}
+.ui-sel{width:auto;min-width:104px;min-height:42px;height:42px;padding:0 10px;font-size:14px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);flex-shrink:0}
+.ui-selfull{width:100%;margin-top:10px}
+.ui-settle{color:var(--ink)}
+
+.ui-tog.fixed{opacity:.5}
 </style>
 </head>
 <body>
@@ -2784,29 +2869,34 @@ function renderCrown(){
   const st=potmSettings();
   const ym=CROWN_YM||potmThisYM();
   const frozen=potmSettledRecord(ym);
-  const head=(subtitle)=>`<div class="cr-head">
-      <button class="cr-nav" onclick="CROWN_STEP(-1)">‹</button>
-      <div><div class="cr-title">${potmMonthName(ym)}</div><div class="cr-sub">${subtitle}</div></div>
-      <button class="cr-nav" ${ym>=potmThisYM()?'disabled':''} onclick="CROWN_STEP(1)">›</button>
+  const mon=potmMonthName(ym);
+  const head=(subtitle)=>`<div class="ui-crhead">
+      <button class="ui-ico" onclick="CROWN_STEP(-1)" aria-label="Previous month">${uiSvg('back')}</button>
+      <div class="ui-crhead-t"><div class="ui-h1" style="font-size:24px">${mon}</div><div class="ui-s">${subtitle}</div></div>
+      <button class="ui-ico" ${ym>=potmThisYM()?'disabled':''} onclick="CROWN_STEP(1)" aria-label="Next month">${uiSvg('chev')}</button>
     </div>`;
+
+  // a detail page (head to head, fairness, honours, entries, declared, rules) takes over
+  if(UI_CRD) return renderCrownDetail(ym,st);
 
   // ── a settled month is shown exactly as it was settled ──
   if(frozen&&ym<potmThisYM()){
     let fh=`<div class="cr-wrap">`+head('Final');
     if(frozen.void){
-      fh+=`<div class="cr-void">Void — too few players reached the minimum. The pot rolled forward.</div>`;
+      fh+=`<div class="ui-alert">Void — too few players reached the minimum. The pot rolled forward.</div>`;
     }else{
-      fh+=`<div class="cr-hero"><div class="cr-hero-k">👑</div>
-        <div class="cr-hero-n">${frozen.winner}</div>
-        <div class="cr-hero-s">${(frozen.total||0).toFixed(1)}</div>
-        ${frozen.spoon?`<div class="cr-hero-sp">🥄 ${frozen.spoon}</div>`:''}</div>`;
-      if((frozen.owed||[]).length)fh+=`<div class="cr-paid">${frozen.owed.map(o=>`${o.from} → ${o.to} <b>${frozen.currency||''}${o.amount}</b>`).join(' · ')} · settled</div>`;
-      fh+=`<div class="cr-board">${(frozen.standings||[]).map((x,i)=>`
-        <div class="cr-b-row${i===0?' lead':''}"><span class="cr-b-pos">${i+1}</span>
-        <span class="cr-b-nm">${x.name}</span><span class="cr-b-rd">${x.rounds}</span>
-        <span class="cr-b-tot">${x.total.toFixed(1)}</span></div>`).join('')}</div>`;
-      fh+=`<button class="cr-ghost" onclick="CROWN_SHARE('${ym}')">Share result</button>`;
+      fh+=`<div class="ui-crhero ui-panel">
+        ${uiCrownRing(frozen.winner,(frozen.total||0).toFixed(1),'Champion')}
+        ${frozen.spoon?`<div class="ui-crhero-sp">Wooden spoon · ${frozen.spoon}</div>`:''}
+      </div>`;
+      if((frozen.owed||[]).length)fh+=`<div class="ui-posted"><i class="ui-dot ok"></i>${frozen.owed.map(o=>`${o.from} → ${o.to} ${frozen.currency||''}${o.amount}`).join(' · ')} · settled</div>`;
+      fh+=`<div class="ui-list" style="margin-top:12px">${(frozen.standings||[]).map((x,i)=>`
+        <div class="ui-row" style="cursor:default"><span class="ui-rpos">${i+1}</span>
+        <span class="ui-row-t">${x.name}<small>${x.rounds} round${x.rounds===1?'':'s'}</small></span>
+        <span class="ui-rbig sm">${x.total.toFixed(1)}</span></div>`).join('')}</div>`;
+      fh+=`<button class="ui-btn ui-btn-w" style="margin-top:12px" onclick="CROWN_SHARE('${ym}')">Share result</button>`;
     }
+    fh+=uiCrownRows(ym,st,null);
     return fh+`</div>`;
   }
 
@@ -2814,60 +2904,112 @@ function renderCrown(){
   let h=`<div class="cr-wrap">`+head(r.locked?'Final':'Live');
 
   if(!r.entrants.length){
-    return h+`<div class="cr-empty"><div style="font-size:30px;margin-bottom:8px">👑</div>
-      Nobody has entered ${potmMonthName(ym).split(' ')[0]} yet.</div>
-      ${crownSec('entries','Entries','tap to set who is in',crownEntries(r,st,ym),true)}</div>`;
+    return h+`<div class="ui-crempty">Nobody has entered ${mon.split(' ')[0]} yet.</div>`
+      +uiCrownRows(ym,st,r)+`</div>`;
   }
 
   // ── hero: who is winning ──
   if(r.winner){
     const M=r.money;
-    h+=`<div class="cr-hero">
-      <div class="cr-hero-k">👑</div>
-      <div class="cr-hero-n">${r.winner.name}</div>
-      <div class="cr-hero-s">${r.winner.total.toFixed(1)}<span>/100</span></div>
-      ${r.spoon&&r.spoon.pid!==r.winner.pid?`<div class="cr-hero-sp">🥄 ${r.spoon.name}</div>`:''}
-      <div class="cr-hero-m">${M.trial?'Trial month — nothing at stake':(M.owed.length?`${M.owed[0].from} pays ${M.owed[0].to} ${M.cur}${M.owed[0].amount}`:`${M.cur}${M.pot} at stake`)}</div>
+    const sc=r.winner.cat&&r.winner.cat.scoring?r.winner.cat.scoring.value:null;
+    const sub=sc!=null
+      ? `${Math.abs(sc).toFixed(1)} shots ${sc<0?'better than':'worse than'} their handicap`
+      : `${r.winner.rounds.length} round${r.winner.rounds.length===1?'':'s'} in`;
+    const days=uiDaysLeft(ym);
+    h+=`<div class="ui-crhero ui-panel">
+      ${days!=null&&!r.locked?`<span class="ui-pill gw ui-crdays">${days===0?'last day':days===1?'1 day left':days+' days left'}</span>`:''}
+      ${uiCrownRing(r.winner.name,r.winner.total.toFixed(1),sub)}
+      <div class="ui-crhero-m">${M.trial?'Trial month — nothing at stake':(M.owed.length?`${M.owed[0].from} pays ${M.owed[0].to} ${M.cur}${M.owed[0].amount}`:`${M.cur}${M.pot} at stake`)}</div>
+      ${r.spoon&&r.spoon.pid!==r.winner.pid?`<div class="ui-crhero-sp">Wooden spoon · ${r.spoon.name}</div>`:''}
     </div>`;
   }else{
-    h+=`<div class="cr-empty">No qualifiers yet — ${st.minRounds} rounds needed.</div>`;
+    h+=`<div class="ui-crempty">No qualifiers yet — ${st.minRounds} round${st.minRounds===1?'':'s'} needed to be ranked.</div>`;
   }
 
-  // ── the board: one row each, a bar showing where points came from ──
-  const COLS={scoring:'#C9A84C',h2h:'#6E9E5C',form:'#5C97B8',bonus:'#B08FC7'};
+  // ── the board: one row each, a bar showing where the points came from ──
+  const COLS={scoring:'#0E7A3E',h2h:'#2F7FE0',form:'#E8B33B',bonus:'#A3ADA6'};
   if(r.qualified.length){
-    h+=`<div class="cr-board">`;
+    h+=`<div class="ui-list ui-crboard">`;
     r.qualified.forEach((e,i)=>{
       const segs=['scoring','h2h','form','bonus'].map(k=>{
         const c=e.cat[k]; if(!c||!c.points)return '';
         return `<span style="width:${c.points}%;background:${COLS[k]}"></span>`;
       }).join('');
-      h+=`<div class="cr-b-row${i===0?' lead':''}" onclick="CROWN_DETAIL('${e.pid}')">
-        <span class="cr-b-pos">${i+1}</span>
-        <span class="cr-b-nm">${e.name}<span class="cr-b-bar">${segs}</span></span>
-        <span class="cr-b-rd">${e.rounds.length}</span>
-        <span class="cr-b-tot">${e.total.toFixed(1)}${e.tieBroke?`<span class="cr-tb" title="separated on ${e.tieBroke}">*</span>`:''}</span></div>`;
+      const me=e.pid===UI_ME;
+      h+=`<button class="ui-crrow${i===0?' lead':''}${me?' me':''}${CROWN_OPEN===e.pid?' open':''}" onclick="CROWN_DETAIL('${e.pid}')">
+        <span class="ui-rpos">${i+1}</span>
+        <span class="ui-row-t">${e.name}<span class="ui-crbar">${segs}</span></span>
+        <span class="ui-crtot">${e.total.toFixed(1)}${e.tieBroke?`<i class="ui-star" title="separated on ${e.tieBroke}">*</i>`:''}<small>${e.rounds.length} rd</small></span></button>`;
       if(CROWN_OPEN===e.pid)h+=crownDetail(e,r,st,i);
     });
     h+=`</div>`;
     const broke=r.qualified.filter(e=>e.tieBroke);
-    if(broke.length)h+=`<div class="cr-tbnote">* level on points — separated on <b>${broke[0].tieBroke}</b></div>`;
-    h+=`<div class="cr-key">${Object.keys(COLS).map(k=>`<span><i style="background:${COLS[k]}"></i>${({scoring:'Scoring',h2h:'Head to head',form:'Form',bonus:'Bonus'})[k]}</span>`).join('')}</div>`;
+    if(broke.length)h+=`<div class="ui-note" style="text-align:center">* level on points — separated on <b>${broke[0].tieBroke}</b></div>`;
+    h+=`<div class="ui-crkey">${Object.keys(COLS).map(k=>`<span><i style="background:${COLS[k]}"></i>${({scoring:'Scoring',h2h:'Head to head',form:'Form',bonus:'Bonus'})[k]}</span>`).join('')}</div>`;
   }
   if(r.notQualified.length){
-    h+=`<div class="cr-waiting">${r.notQualified.map(e=>`<span>${e.name} <b>${e.rounds.length}/${st.minRounds}</b></span>`).join('')}</div>`;
+    h+=`<div class="ui-lbl">Not ranked yet</div><div class="ui-list">${r.notQualified.map(e=>`
+      <div class="ui-row" style="cursor:default;min-height:54px"><span class="ui-av">${uiInit(e.name)}</span>
+        <span class="ui-row-t">${e.name}<small>${e.rounds.length} of ${st.minRounds} round${st.minRounds===1?'':'s'}</small></span></div>`).join('')}</div>`;
   }
-  if(r.winner)h+=`<button class="cr-ghost" onclick="CROWN_SHARE('${ym}')">Share standings</button>`;
-
-  // ── everything else, folded away ──
-  h+=crownSec('entries','Entries',`${r.entrants.length} in`,crownEntries(r,st,ym));
-  h+=crownSec('declared','Declared rounds',`${potmRegList(ym).filter(x=>!x.cancelled).length}`,crownDeclared(ym));
-  h+=crownSec('h2h','Head to head','who beat whom',crownMatrix(r));
-  h+=crownSec('fair','Fairness','what is levelled out',crownFair(r,st));
-  h+=crownSec('honour','Roll of honour','past winners',crownHonour());
-  h+=crownSec('rules','How it is scored',`${st.weights.scoring}/${st.weights.h2h}/${st.weights.form}/${st.weights.bonus}`,crownRules(st));
-  h+=`<button class="cr-ghost" onclick="OM('crownset')">Settings</button>`;
+  if(r.winner)h+=`<button class="ui-btn ui-btn-w" style="margin-top:14px" onclick="CROWN_SHARE('${ym}')">Share standings</button>`;
+  h+=uiCrownRows(ym,st,r);
   return h+`</div>`;
+}
+
+// the ring at the top of the hero
+function uiCrownRing(name,total,sub){
+  return `<div class="ui-crring">
+    <svg viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="104" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/></svg>
+    <div class="ui-crring-in">
+      <span class="ui-crk">${uiSvg('crown')}</span>
+      <span class="ui-crname">${name}</span>
+      <span class="ui-xl ui-crtotal">${total}</span>
+      <span class="ui-crsub">${sub}</span>
+    </div>
+  </div>`;
+}
+function uiDaysLeft(ym){
+  try{
+    const end=potmMonthEnd(ym);
+    const d=Math.ceil((new Date(end+'T23:59:59Z')-Date.now())/86400000);
+    return d>=0?d:null;
+  }catch(e){ return null; }
+}
+// the rows under the board that lead to everything else
+function uiCrownRows(ym,st,r){
+  const declared=potmRegList(ym).filter(x=>!x.cancelled).length;
+  const row=(k,t,sub)=>`<button class="ui-row" onclick="UI_CRD_O('${k}')"><span class="ui-row-t">${t}<small>${sub}</small></span>${uiSvg('chev','ui-chev')}</button>`;
+  return `<div class="ui-lbl">The detail</div><div class="ui-list">
+    ${row('h2h','Head to head','Who beat whom, same course same day')}
+    ${row('fair','Fairness','What is levelled out')}
+    ${row('honour','Roll of honour','Past winners')}
+    ${row('entries','Entries',r?`${r.entrants.length} in`:'Who is in')}
+    ${row('declared','Declared rounds',declared?`${declared} declared this month`:'Nothing declared')}
+    ${row('rules','How it is scored',`${st.weights.scoring} / ${st.weights.h2h} / ${st.weights.form} / ${st.weights.bonus}`)}
+    <button class="ui-row" onclick="OM('crownset')"><span class="ui-row-t">Crown settings<small>Entries, weights, stakes, settle</small></span>${uiSvg('chev','ui-chev')}</button>
+  </div>`;
+}
+
+// ── the detail page: one subject at a time ──
+function renderCrownDetail(ym,st){
+  const TABS=[['h2h','Head to head'],['fair','Fairness'],['honour','Honours']];
+  const TITLE={h2h:'Head to head',fair:'Fairness',honour:'Roll of honour',entries:'Entries',declared:'Declared rounds',rules:'How it is scored'};
+  let r=null; try{ r=potmCompute(ym); }catch(e){}
+  let body='';
+  if(UI_CRD==='h2h') body=r?crownMatrix(r):'';
+  else if(UI_CRD==='fair') body=r?crownFair(r,st):'';
+  else if(UI_CRD==='honour') body=crownHonour();
+  else if(UI_CRD==='entries') body=r?crownEntries(r,st,ym):'';
+  else if(UI_CRD==='declared') body=crownDeclared(ym);
+  else if(UI_CRD==='rules') body=crownRules(st);
+  const showTabs=['h2h','fair','honour'].includes(UI_CRD);
+  return `<div class="cr-wrap">
+    <div class="ui-top"><button class="ui-ico" onclick="UI_CRD_X()" aria-label="Back">${uiSvg('back')}</button>
+      <div class="ui-top-t">${TITLE[UI_CRD]||'Crown'}</div><span style="width:40px"></span></div>
+    ${showTabs?`<div class="ui-seg ui-seg-full" style="margin-bottom:14px">${TABS.map(([k,l])=>`<button class="${UI_CRD===k?'on':''}" onclick="UI_CRD_O('${k}')">${l}</button>`).join('')}</div>`:''}
+    <div class="ui-crdetail">${body}</div>
+  </div>`;
 }
 
 // ── the pieces, each returning plain markup ──
@@ -2934,36 +3076,50 @@ function crownMatrix(r){
 }
 function crownFair(r,st){
   const fx=potmFairness(r);
-  let d=`<div class="cs-note">Course difficulty, handicap, hole count and — where you played together — the weather are all levelled out. Rounds played alone can't be weather-adjusted, and slope is least precise at the very lowest and highest handicaps.</div>`;
+  const tick=(t,s)=>`<div class="ui-row" style="cursor:default"><span class="ui-fairtick">${uiSvg('tick')}</span><span class="ui-row-t">${t}<small>${s}</small></span></div>`;
+  let d=`<div class="ui-lbl" style="margin-top:0">Levelled out</div><div class="ui-list">
+    ${tick('Course difficulty','Every rating and slope is official or verified')}
+    ${tick('Handicap','Everyone plays against their own index')}
+    ${tick('Hole count','A nine counts as half a round, never as a full one')}
+    ${tick('Weather','Adjusted when two or more of you play the same course the same day')}
+  </div>
+  <div class="ui-note">Rounds played alone cannot be weather-adjusted, and slope is least precise at the very lowest and highest handicaps.</div>`;
   if(r.pcc&&r.pcc.detail.length){
-    d+=`<div class="cr-pcc">${r.pcc.detail.slice(0,5).map(x=>`<div class="cr-pccrow"><span>${x.date.slice(8)}/${x.date.slice(5,7)} ${x.course}</span><span class="cr-n">${x.players}p</span><span class="cr-amt" style="font-size:12px">${x.adj>0?'−':'+'}${Math.abs(x.adj).toFixed(1)}</span></div>`).join('')}</div>`;
+    d+=`<div class="ui-lbl">Conditions adjustment</div><div class="ui-list">${r.pcc.detail.slice(0,5).map(x=>`
+      <div class="ui-row" style="cursor:default;min-height:52px"><span class="ui-row-t">${uiShort(x.course)}<small>${uiDay(x.date)} · ${x.players} players</small></span>
+      <span class="ui-rbig sm">${x.adj>0?'−':'+'}${Math.abs(x.adj).toFixed(1)}</span></div>`).join('')}</div>`;
   }
-  d+=`<div class="cr-h2hwrap"><div class="cr-h2h"><div class="cr-h2h-c cr-h2h-nm" style="min-width:70px">Player</div>
-    <div class="cr-h2h-c cr-h2h-hd">Rds</div><div class="cr-h2h-c cr-h2h-hd">Crs</div><div class="cr-h2h-c cr-h2h-hd">Slope</div></div>
-    ${fx.rows.map(x=>`<div class="cr-h2h"><div class="cr-h2h-c cr-h2h-nm" style="min-width:70px">${x.name}</div>
-      <div class="cr-h2h-c">${x.rounds}</div><div class="cr-h2h-c">${x.courses}</div>
-      <div class="cr-h2h-c">${x.slopeMin!=null?(x.slopeMin===x.slopeMax?x.slopeMin:x.slopeMin+'–'+x.slopeMax):'—'}</div></div>`).join('')}</div>`;
+  d+=`<div class="ui-lbl">What each player faced</div><div class="ui-list">${fx.rows.map(x=>`
+    <div class="ui-row" style="cursor:default;min-height:52px"><span class="ui-row-t">${x.name}<small>${x.rounds} round${x.rounds===1?'':'s'} · ${x.courses} course${x.courses===1?'':'s'}</small></span>
+    <span class="ui-row-v ui-mono">${x.slopeMin!=null?(x.slopeMin===x.slopeMax?'slope '+x.slopeMin:'slope '+x.slopeMin+'–'+x.slopeMax):'—'}</span></div>`).join('')}</div>`;
   const sc=potmSameCourse(r);
   if(sc.length){
-    d+=`<div class="cs-sub">Same course, side by side</div>`;
-    sc.slice(0,3).forEach(c=>{
-      d+=`<div class="cs-note" style="margin-top:6px"><b>${c.course}</b> — ${c.players.map(p=>`${p.name} ${p.avg>0?'+':''}${p.avg.toFixed(1)}`).join(' · ')}</div>`;
-    });
+    d+=`<div class="ui-lbl">Same course, side by side</div><div class="ui-list">${sc.slice(0,3).map(c=>`
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">${uiShort(c.course)}<small>${c.players.map(p=>`${p.name.split(' ')[0]} ${p.avg>0?'+':''}${p.avg.toFixed(1)}`).join(' · ')}</small></span></div>`).join('')}</div>`;
   }
   return d;
 }
 function crownHonour(){
   const res=(S.potm&&S.potm.results)||{};
-  const past=Object.keys(res).filter(k=>!res[k].void);
-  if(!past.length)return `<div class="cs-note">No months settled yet.</div>`;
+  const keys=Object.keys(res).filter(k=>!res[k].void).sort((a,b)=>b.localeCompare(a));
+  if(!keys.length)return `<div class="ui-crempty">No months settled yet. A month settles a few days after it ends, and the winner is recorded here for good.</div>`;
   const crowns={},spoons={};
-  past.forEach(k=>{const x=res[k];
+  keys.forEach(k=>{const x=res[k];
     if(x.winner)crowns[x.winner]=(crowns[x.winner]||0)+1;
     if(x.spoon)spoons[x.spoon]=(spoons[x.spoon]||0)+1;});
-  const names=[...new Set([...Object.keys(crowns),...Object.keys(spoons)])];
-  return names.sort((a,b)=>(crowns[b]||0)-(crowns[a]||0)).map(nm=>
-    `<div class="cr-erow"><span class="cr-enm">${nm}</span>
-     <span>${'👑'.repeat(Math.min(crowns[nm]||0,5))}${(crowns[nm]||0)>5?` ×${crowns[nm]}`:''} ${'🥄'.repeat(Math.min(spoons[nm]||0,3))}</span></div>`).join('');
+  const names=[...new Set([...Object.keys(crowns),...Object.keys(spoons)])]
+    .sort((a,b)=>(crowns[b]||0)-(crowns[a]||0)||a.localeCompare(b));
+  let h=`<div class="ui-list">${keys.map(k=>{
+    const x=res[k];
+    return `<div class="ui-row" style="cursor:default"><span class="ui-crmon">${potmMonthName(k)}</span>
+      <span class="ui-row-t">${x.winner||'—'}<small>${x.total!=null?x.total.toFixed(1)+' points':''}${x.spoon?` · spoon ${x.spoon}`:''}</small></span>
+      <span class="ui-crwin">${uiSvg('crown')}</span></div>`;
+  }).join('')}</div>`;
+  h+=`<div class="ui-lbl">All time</div><div class="ui-list">${names.map(nm=>`
+    <div class="ui-row" style="cursor:default"><span class="ui-av">${uiInit(nm)}</span>
+      <span class="ui-row-t">${nm}<small>${(crowns[nm]||0)} crown${(crowns[nm]||0)===1?'':'s'}${spoons[nm]?` · ${spoons[nm]} spoon${spoons[nm]===1?'':'s'}`:''}</small></span>
+      <span class="ui-rbig sm">${crowns[nm]||0}</span></div>`).join('')}</div>`;
+  return h;
 }
 function crownRules(st){
   const W={scoring:['Scoring','your rounds averaged against your own handicap, worst dropped from 4+, a nine counting as half'],
@@ -3076,51 +3232,73 @@ function renderRegisterModal(){
 
 function renderCrownSettings(){
   const st=potmSettings();
+  const ym=CROWN_YM||potmThisYM();
+  const gate=potmEntryOpen(ym);
+  const nextYM=(()=>{const [y,m]=potmThisYM().split('-').map(Number);return new Date(Date.UTC(y,m,1)).toISOString().slice(0,7);})();
+  const target=gate.open?ym:nextYM;
+  let r=null; try{ r=potmCompute(ym); }catch(e){}
+  const roundsOf=pid=>{ const e=r&&r.entrants.find(x=>x.pid===pid); return e?e.rounds.length:0; };
+  const W=[['cwS','scoring','Scoring'],['cwH','h2h','Head to head'],['cwF','form','Form'],['cwB','bonus','Bonus']];
   return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
-    <div class="mo-title">Competition Settings</div>
-    <div class="fr"><label class="fl">Category weights — must total 100</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div><label class="fl">Scoring</label><input type="number" id="cwS" value="${st.weights.scoring}"></div>
-        <div><label class="fl">Head to head</label><input type="number" id="cwH" value="${st.weights.h2h}"></div>
-        <div><label class="fl">Form</label><input type="number" id="cwF" value="${st.weights.form}"></div>
-        <div><label class="fl">Bonuses</label><input type="number" id="cwB" value="${st.weights.bonus}"></div>
-      </div>
+    <div class="ui-sheet-h"><div class="mo-title">Crown settings</div>
+      <button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
+
+    <div class="fl">Who’s in · ${potmMonthName(target).split(' ')[0]}</div>
+    <div class="ui-list" style="margin-bottom:6px">${(S.players||[]).map(p=>{
+      const inIt=potmEnteredIn(p.id,target), locked=inIt&&!potmCanLeave(target);
+      return `<div class="ui-row" style="cursor:default">
+        <span class="ui-row-t">${p.name}<small>${roundsOf(p.id)} round${roundsOf(p.id)===1?'':'s'}${locked?' · locked in for the month':''}</small></span>
+        <button class="ui-tog${inIt?' on':''}${locked?' fixed':''}" onclick="CROWN_TOGGLE('${target}','${p.id}')" aria-label="${inIt?'In':'Out'}"><i></i></button></div>`;
+    }).join('')}</div>
+    <div class="pk-hint" style="margin-bottom:18px">${gate.reason==='trial'?'Trial month, so entries are still open.':gate.reason==='future'?`Setting up ${potmMonthName(target)}.`:`${potmMonthName(ym)} is locked — you are setting up ${potmMonthName(nextYM)}.`} Once a month is under way nobody can drop out.</div>
+
+    <div class="fl">How it’s scored — must total 100</div>
+    <div class="ui-wlist">${W.map(([id,k,label])=>`
+      <div class="ui-wrow"><span>${label}</span>
+        <span class="ui-wbar"><i style="width:${Math.max(0,Math.min(100,st.weights[k]))}%"></i></span>
+        <input type="number" inputmode="numeric" id="${id}" value="${st.weights[k]}" oninput="UI_WSUM()"></div>`).join('')}
+      <div class="ui-wtot" id="cwTot"></div>
     </div>
-    <div class="fr"><label class="fl">Minimum rounds to qualify</label><input type="number" id="cMin" value="${st.minRounds}">
-      <div class="pk-hint">Below this you are not ranked. Two suits a month with four weekends and short evenings; short months are already handled by the small-sample correction, so a low number is safe.</div></div>
-    <div class="fr"><label class="fl">Shared rounds before head to head counts</label><input type="number" id="cH2H" value="${st.h2hMinShared}">
-      <div class="pk-hint">Set to 1 so a single round together counts — important if you rarely play in the same country. A thin record is automatically pulled toward even rather than swinging all ${st.weights.h2h} points, so it counts without deciding the month.</div></div>
-    <div class="fr"><label class="fl">Drop your worst round</label>
-      <select id="cDrop"><option value="1"${st.dropWorst?' selected':''}>Yes, once you have 4 or more</option><option value="0"${!st.dropWorst?' selected':''}>No, average everything</option></select></div>
-    <div class="fr"><label class="fl">Wooden spoon goes to</label>
-      <select id="cSpoon"><option value="last"${st.spoonBasis==='last'?' selected':''}>Bottom of the qualifiers</option><option value="fewest"${st.spoonBasis==='fewest'?' selected':''}>Fewest rounds played</option></select>
-      <div class="pk-hint">Bottom-of-qualifiers is a competitive result. Fewest-rounds punishes a busy month and can never land on whoever plays most.</div></div>
-    <div class="fr"><label class="fl">Stakes</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div><label class="fl">Amount</label><input type="number" id="cStake" step="0.5" min="0" value="${st.stake}"></div>
-        <div><label class="fl">Currency</label><input type="text" id="cCur" maxlength="3" value="${st.currency}"></div>
-      </div>
-      <select id="cMode" style="margin-top:10px">
-        <option value="spoon"${st.stakeMode==='spoon'?' selected':''}>Wooden spoon pays the winner</option>
-        <option value="pot"${st.stakeMode==='pot'?' selected':''}>Everyone buys in, winner takes the pot</option>
-      </select>
-      <div class="pk-hint">Spoon-pays-winner is one transaction and makes both ends of the table matter. A pot is a bigger prize but more payments to chase.</div>
+
+    <div class="fl" style="margin-top:18px">Qualifying</div>
+    <div class="ui-list">
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Minimum rounds<small>Below this you are not ranked</small></span>
+        <input class="ui-num" type="number" inputmode="numeric" id="cMin" value="${st.minRounds}"></div>
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Shared rounds for head to head<small>How many rounds together before it scores</small></span>
+        <input class="ui-num" type="number" inputmode="numeric" id="cH2H" value="${st.h2hMinShared}"></div>
     </div>
-    <div class="fr"><label class="fl">Conditions adjustment</label>
-      <select id="cPcc"><option value="1"${st.pcc?' selected':''}>Yes — level out the weather using shared rounds</option><option value="0"${!st.pcc?' selected':''}>No</option></select>
-      <div class="pk-hint">Uses the group's median performance when two or more play the same course the same day. Capped at 3 strokes hard, 1 easy, as WHS does.</div>
+    <div class="pk-hint">A thin head-to-head record is pulled toward even, so one round together counts without deciding the month.</div>
+
+    <div class="fl" style="margin-top:18px">Stakes</div>
+    <div class="ui-list">
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Trial month<small>Everything is computed, nobody owes anything</small></span>
+        <select id="cTrial" class="ui-sel"><option value="1"${st.trial?' selected':''}>On</option><option value="0"${!st.trial?' selected':''}>Off</option></select></div>
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Stake<small>The sum at stake each month</small></span>
+        <span style="display:flex;gap:6px;align-items:center"><input class="ui-num sm" type="text" id="cCur" maxlength="3" value="${st.currency}"><input class="ui-num" type="number" inputmode="decimal" step="0.5" min="0" id="cStake" value="${st.stake}"></span></div>
     </div>
-    <div class="fr"><label class="fl">Small-sample correction</label>
-      <select id="cShrink"><option value="1"${st.shrink?' selected':''}>Yes — pull short months toward the group average</option><option value="0"${!st.shrink?' selected':''}>No</option></select>
-      <div class="pk-hint">Three rounds prove less than twelve. Without this, a lucky short month has an edge. Benefit is capped at ${st.shrinkCap} rounds so volume cannot buy a win.</div>
+    <select id="cMode" class="ui-selfull">
+      <option value="spoon"${st.stakeMode==='spoon'?' selected':''}>Wooden spoon pays the winner</option>
+      <option value="pot"${st.stakeMode==='pot'?' selected':''}>Everyone buys in, winner takes the pot</option>
+    </select>
+    <div class="pk-hint">Spoon-pays-winner is one transaction and makes both ends of the table matter. A pot is a bigger prize but more payments to chase.</div>
+
+    <div class="fl" style="margin-top:18px">Fairness</div>
+    <div class="ui-list">
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Drop your worst round<small>Once you have four or more</small></span>
+        <select id="cDrop" class="ui-sel"><option value="1"${st.dropWorst?' selected':''}>Yes</option><option value="0"${!st.dropWorst?' selected':''}>No</option></select></div>
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Conditions adjustment<small>Level out the weather using shared rounds</small></span>
+        <select id="cPcc" class="ui-sel"><option value="1"${st.pcc?' selected':''}>Yes</option><option value="0"${!st.pcc?' selected':''}>No</option></select></div>
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Small-sample correction<small>Pull short months toward the group average</small></span>
+        <select id="cShrink" class="ui-sel"><option value="1"${st.shrink?' selected':''}>Yes</option><option value="0"${!st.shrink?' selected':''}>No</option></select></div>
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">Wooden spoon goes to<small>Bottom of the table, or fewest rounds</small></span>
+        <select id="cSpoon" class="ui-sel"><option value="last"${st.spoonBasis==='last'?' selected':''}>Bottom</option><option value="fewest"${st.spoonBasis==='fewest'?' selected':''}>Fewest rounds</option></select></div>
     </div>
-    <div class="fr"><label class="fl">Trial mode</label>
-      <select id="cTrial"><option value="1"${st.trial?' selected':''}>Yes — compute everything, nobody owes anything</option><option value="0"${!st.trial?' selected':''}>No — stakes are live</option></select>
-      <div class="pk-hint">Run the first month as a trial. It costs nothing and tells you whether the winner feels right before money is involved.</div>
-    </div>
-    <div id="cErr" class="err" style="display:none"></div>
-    <button class="btn-p" onclick="CROWN_SAVE()">Save</button>
-    <button class="btn-s" onclick="CM()">Cancel</button>
+    <div class="pk-hint">Three rounds prove less than twelve, so the correction stops a lucky short month winning. Benefit is capped at ${st.shrinkCap} rounds, so volume cannot buy a win either.</div>
+
+    <div id="cErr" class="err ui-alert red" style="display:none"></div>
+    <button class="ui-btn ui-btn-g" style="margin-top:8px" onclick="CROWN_SAVE()">Save settings</button>
+    ${r&&!r.settled?`<button class="ui-btn ui-btn-w ui-settle" style="margin-top:10px" onclick="CROWN_SETTLE('${ym}')">Settle ${potmMonthName(ym).split(' ')[0]}</button>
+      <div class="pk-hint">${r.locked?(st.trial?'This is a trial month, so nothing is owed.':'Records the result permanently and adds it to the Purse.'):`Settles from ${uiDay(r.settleDate)}, a few days after the month ends.`}</div>`:''}
   </div></div>`;
 }
 
@@ -4113,6 +4291,7 @@ function render(){
   if(UI_DONE&&!MOD) h+=renderPosted();
   if(MOD!=='course') UI_NC=null;
   if(MOD!=='score'&&MOD!=='course') UI_KEEP=null;
+  if(V!=='crown') UI_CRD=null;     // the Crown detail page belongs to the Crown tab
 
   // Floating bottom bar: Home · Rankings · Crown · Profile + green Play
   h+=renderDock(AP?(isProfile?'profile':V):AT?'':V);
@@ -6193,7 +6372,7 @@ function renderSettings(){
     </div>
     <div class="ui-lbl">Install on your phone</div>
     <div class="ui-card ui-pad" style="font-size:14px;line-height:1.5">Safari → Share → <b>Add to Home Screen</b>. It opens full-screen like an app.</div>
-    <div class="ui-note">Preview 1 · new design, stage 4 of 7. Same live data as the main app.</div>`;
+    <div class="ui-note">Preview 1 · new design, stage 5 of 7. Same live data as the main app.</div>`;
 }
 
 // ── handlers ──
@@ -6665,6 +6844,28 @@ function renderPosted(){
     </div>
   </div></div>`;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REVAMP · STAGE 5 — Crown, detail and settings
+// Only presentation. Every number comes from potmCompute / potmFairness /
+// potmSameCourse unchanged, and saving still goes through CROWN_SAVE, and
+// settling through CROWN_SETTLE, exactly as before.
+// ═══════════════════════════════════════════════════════════════════════════
+var UI_CRD=null;
+window.UI_CRD_O=k=>{UI_CRD=k;render();try{window.scrollTo(0,0);}catch(e){}};
+window.UI_CRD_X=()=>{UI_CRD=null;render();try{window.scrollTo(0,0);}catch(e){}};
+// live total for the weight boxes, so "must total 100" is obvious before saving
+window.UI_WSUM=()=>{
+  const g=id=>parseFloat(document.getElementById(id)?.value);
+  const t=['cwS','cwH','cwF','cwB'].map(g).reduce((a,b)=>a+(isFinite(b)?b:0),0);
+  const el=document.getElementById('cwTot'); if(!el)return;
+  el.textContent=`Total ${Math.round(t*10)/10}${Math.abs(t-100)<0.01?'':' — must be 100'}`;
+  el.className='ui-wtot'+(Math.abs(t-100)<0.01?' ok':' bad');
+  document.querySelectorAll('.ui-wrow').forEach((row,i)=>{
+    const v=g(['cwS','cwH','cwF','cwB'][i]);
+    const bar=row.querySelector('.ui-wbar i'); if(bar)bar.style.width=Math.max(0,Math.min(100,isFinite(v)?v:0))+'%';
+  });
+};
 </script>
 </body>
 </html>
