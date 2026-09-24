@@ -1648,6 +1648,80 @@ input::placeholder,textarea::placeholder{color:var(--ink3)}
 /* add player sheet */
 .ui-info{margin-top:10px;padding:12px 14px;border-radius:16px;background:var(--gl);color:#0B5A30;font-size:13px;line-height:1.5}
 .ui-info b{font-weight:600}
+
+/* ════════ STAGE 3 · Post a round, course search, Declare a round ════════ */
+#mci,#mdp{display:none!important}
+.ui-link.sm{font-size:13px;padding:8px 2px 0;font-weight:500}
+.pk{display:flex;flex-wrap:wrap;gap:7px}
+.pk-chip{height:40px;padding:0 14px 0 11px;gap:8px;font-size:14px}
+.pk-chip .pk-sub{font-family:'Geist Mono',monospace;font-size:11px;opacity:.6;font-weight:400}
+.pk-sw{width:15px;height:15px;border:none;box-shadow:inset 0 0 0 1px rgba(12,26,18,.18)}
+.pk-chip.on .pk-sw{box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}
+.pk-hint{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.5}
+
+/* course search */
+#mcq{background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6E64' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 14px center/18px no-repeat;padding-left:42px}
+.mc-lbl{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;color:var(--ink2);margin:10px 2px 7px}
+.mc-list{border:none;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);max-height:260px}
+.mc-item{padding:13px 16px;border-bottom:1px solid var(--line);font-family:'Geist',sans-serif}
+.mc-item:active{background:var(--gl)}
+.mc-nm{font-weight:600;font-size:15px;color:var(--ink);letter-spacing:-.02em}
+.mc-meta{font-size:12px;color:var(--ink2)}
+.mc-chosen{background:#fff;border:none;box-shadow:inset 0 0 0 1.5px var(--g);border-radius:16px;padding:12px 12px 12px 16px}
+.mc-none{margin-top:8px}
+
+/* "same as last time" */
+.ui-again{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--gl);border:none;border-radius:16px;padding:11px 14px;margin-bottom:16px;cursor:pointer;color:var(--g)}
+.ui-again svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+.ui-again span{display:flex;flex-direction:column;font-weight:600;font-size:14px}
+.ui-again small{font-weight:400;font-size:12.5px;color:#0B5A30}
+
+/* big gross stepper */
+.ui-stepper{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 18px}
+.ui-stp{width:58px;height:58px;border-radius:50%;border:none;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:26px;font-weight:400;color:var(--ink);cursor:pointer;flex-shrink:0;touch-action:manipulation}
+.ui-stp:active{background:var(--gl);transform:scale(.95)}
+.ui-stv{flex:1;display:flex;flex-direction:column;align-items:center}
+.ui-stv input{width:100%;max-width:180px;text-align:center;font-size:86px;font-weight:500;letter-spacing:-.06em;height:92px;min-height:0;padding:0;background:none;box-shadow:none;color:var(--ink);-moz-appearance:textfield}
+.ui-stv input::-webkit-outer-spin-button,.ui-stv input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.ui-stv input:focus{box-shadow:none;background:none}
+.ui-stv input::placeholder{color:var(--ink3)}
+.ui-stv span{font-size:12.5px;color:var(--ink2);margin-top:-4px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+
+/* impact preview */
+.ui-imp{background:#fff;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line);padding:12px 16px 14px;margin-bottom:14px}
+.ui-imp.ok{box-shadow:inset 0 0 0 1.5px var(--g)}
+.ui-imp.bad{background:var(--redl);box-shadow:none}
+.ui-imp-h{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--ink2);margin-bottom:8px}
+.ui-imp-row{display:flex;align-items:center;gap:16px}
+.ui-imp-row>div:first-child span{display:block;font-size:11.5px;color:var(--ink2)}
+.ui-imp-row>div:first-child b{display:block;font-size:24px;font-weight:500;letter-spacing:-.04em;margin-top:1px}
+.ui-imp-m{font-size:13.5px;line-height:1.45;color:var(--ink)}
+.ui-imp.ok .ui-imp-m{color:var(--g)}
+.ui-imp.bad .ui-imp-m{color:#9E2A20}
+.ui-imp-m b{font-weight:600}
+
+/* declare: player toggle chips */
+.ui-pchips{display:flex;flex-wrap:wrap;gap:7px}
+.ui-pchip{position:relative;cursor:pointer}
+.ui-pchip input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.ui-pchip span{display:inline-flex;align-items:center;height:40px;padding:0 15px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:14px;font-weight:500;color:var(--ink);transition:background .12s}
+.ui-pchip input:checked + span{background:var(--ink);color:#fff;box-shadow:none}
+.ui-pchip input:focus-visible + span{outline:2px solid var(--g);outline-offset:2px}
+.ui-rs.posted{color:var(--g)} .ui-rs.outstanding{color:var(--red)}
+
+/* round posted */
+.mo.ui-done{padding-top:0;overflow:hidden}
+.mo.ui-done::before{position:absolute;left:50%;transform:translateX(-50%);top:10px;margin:0;background:rgba(255,255,255,.5);z-index:2}
+.ui-done-top{margin:0 -20px;padding:34px 20px 24px;text-align:center}
+.ui-done-k{font-size:13.5px;color:rgba(255,255,255,.86)}
+.ui-done-top .ui-xl{color:#fff;margin:14px 0 6px}
+.ui-done-s{font-size:13.5px;color:rgba(255,255,255,.9)}
+.ui-done-idx{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;background:#fff;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line);padding:14px 16px;margin-top:14px;text-align:center}
+.ui-done-idx span{display:block;font-size:12px;color:var(--ink2)}
+.ui-done-idx b{display:block;font-size:30px;font-weight:500;letter-spacing:-.05em;margin-top:2px}
+.ui-done-idx .ar .ui-mv{font-size:15px}
+a.ui-btn{color:#fff}
 </style>
 </head>
 <body>
@@ -2901,28 +2975,37 @@ function renderRegisterModal(){
   const played=playedNameSet();
   const list=bases.filter(n=>played.has(n));
   const today=new Date().toISOString().slice(0,10);
+  const ym=potmThisYM();
+  const L={'18':'18','F9':'front 9','L9':'back 9','F9x2':'front 9 ×2','L9x2':'back 9 ×2'};
+  const live=potmRegList(ym).filter(x=>!x.cancelled).sort((a,b)=>b.date.localeCompare(a.date));
+  const lastC=(()=>{ const me=UI_MEP()?S.players.find(x=>x.id===UI_ME):null; const l=me?uiLastRound(me):null; return l&&list.includes(l.course)?l.course:''; })();
   return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
-    <div class="mo-title">Declare a Round</div>
-    <div class="cr-note" style="margin-bottom:12px">Say who is playing, where, and when — before you tee off. The score gets posted as usual afterwards.</div>
-    <div class="fr"><label class="fl">Players</label>
-      ${(S.players||[]).map(p=>`<label class="cr-check"><input type="checkbox" class="regp" value="${p.id}"> ${p.name}</label>`).join('')}
-      <div class="pk-hint">Tick everyone in the group. Registering together is what makes head to head reliable.</div>
+    <div class="ui-sheet-h"><div class="mo-title">Declare a round</div>
+      <button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
+    <div class="ui-s" style="margin:-6px 2px 16px;line-height:1.5">Tell the group before you play. Declared rounds count towards the Crown, and one left unfilled after 7 days lowers your bonus. The score is posted as usual afterwards.</div>
+    <div class="fr"><label class="fl">Who’s playing</label>
+      <div class="ui-pchips">${(S.players||[]).map(p=>`<label class="ui-pchip"><input type="checkbox" class="regp" value="${p.id}"${p.id===UI_ME?' checked':''} onchange="UI_REGN()"><span>${p.name.split(' ')[0]}${(S.players||[]).filter(x=>x.name.split(' ')[0]===p.name.split(' ')[0]).length>1?' '+p.name.split(' ').slice(-1)[0][0]+'.':''}</span></label>`).join('')}</div>
+      <div class="pk-hint">Tick everyone in the group — declaring together is what makes head to head reliable.</div>
     </div>
     <div class="fr"><label class="fl">Course</label>
       <select id="regC" onchange="REG_COURSE()">
         <option value="">Choose…</option>
-        ${(list.length?list:bases).map(n=>`<option>${n}</option>`).join('')}
+        ${(list.length?list:bases).map(n=>`<option${n===lastC?' selected':''}>${n}</option>`).join('')}
       </select>
     </div>
     <div class="fr"><label class="fl">Tee</label><div id="regT" class="pk"></div></div>
     <div class="fr"><label class="fl">Holes</label><div id="regH" class="pk"></div></div>
     <div class="fr"><label class="fl">Date</label>
       <input type="date" id="regD" value="${today}" max="${today}">
-      <div class="pk-hint">Today by default. Declare in advance or on the first tee — either is fine.</div>
+      <div class="pk-hint">Today by default — declare on the first tee or earlier the same day.</div>
     </div>
-    <div id="regErr" class="err" style="display:none"></div>
-    <button class="btn-p" onclick="REG_SAVE()">Declare</button>
-    <button class="btn-s" onclick="CM()">Cancel</button>
+    ${live.length?`<div class="fl" style="margin-top:4px">Already declared · ${potmMonthName(ym).split(' ')[0]}</div>
+    <div class="ui-list" style="margin-bottom:16px">${live.slice(0,6).map(rg=>{
+      const s2=potmRegState(rg), pl=(S.players||[]).find(x=>x.id===rg.pid);
+      return `<div class="ui-row" style="cursor:default;min-height:54px"><span class="ui-row-t">${pl?pl.name.split(' ')[0]:'—'} · ${uiShort(rg.course)}${rg.holes!=='18'?' '+(L[rg.holes]||rg.holes):''}<small class="ui-rs ${s2}">${uiDay(rg.date)} · ${({awaiting:'awaiting score',posted:'posted',outstanding:'missing'})[s2]||s2}</small></span>
+        ${s2!=='posted'?`<button class="ui-link sm" style="color:var(--red)" onclick="REG_CANCEL('${rg.id}')">Cancel</button>`:''}</div>`;}).join('')}</div>`:''}
+    <div id="regErr" class="err ui-alert red" style="display:none"></div>
+    <button class="ui-btn ui-btn-g" id="regGo" onclick="REG_SAVE()">Declare${UI_MEP()?' for 1 player':''}</button>
   </div></div>`;
 }
 
@@ -3929,6 +4012,9 @@ function render(){
   if(MOD==='purse-edit') h+=renderPurseEditModal();
   if(MOD==='predict') h+=renderPredictModal();
   if(UI_MENU&&!MOD) h+=renderMenu();
+  if(UI_DONE&&!MOD) h+=renderPosted();
+  if(MOD!=='course') UI_NC=null;
+  if(MOD!=='score'&&MOD!=='course') UI_KEEP=null;
 
   // Floating bottom bar: Home · Rankings · Crown · Profile + green Play
   h+=renderDock(AP?(isProfile?'profile':V):AT?'':V);
@@ -4522,31 +4608,40 @@ function renderCourses(){
 
 // ── MODALS ────────────────────────────────────────────────────────────────────
 function renderScoreModal(p){
-  const un=[...new Set(S.courses.map(c=>c.name))].sort();
   const isEdit = EDIT_IDX!==null && p.scores[EDIT_IDX];
   const existing = isEdit ? p.scores[EDIT_IDX] : null;
+  const today=new Date().toISOString().slice(0,10);
+  const yest=new Date(Date.now()-864e5).toISOString().slice(0,10);
+  const last=!isEdit?uiLastRound(p):null;
+  const dVal=UI_KEEP&&UI_KEEP.date?UI_KEEP.date:existing&&existing.date?existing.date:today;
+  const sVal=UI_KEEP&&UI_KEEP.score?UI_KEEP.score:existing?existing.score:'';
   return`<div class="ov" onclick="if(event.target===this)CM()">
-  <div class="mo">
-    <div class="mo-title">${isEdit?'Edit Round':'Add Round'} — ${p.name}</div>
-    <div class="fr"><label class="fl">Course</label><div id="mcbox"></div></div>
-    <div class="fr" id="mtr" style="display:none"><label class="fl">Tee colour</label><div id="mtc" class="pk"></div></div>
-    <div class="fr" id="mhr" style="display:none"><label class="fl">Holes played</label><div id="mhc" class="pk"></div></div>
-    <div id="mci" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div><label class="fl">Gross Score</label>
-        <input type="number" id="msc" min="1" max="250" placeholder="e.g. 87" oninput="UM()" value="${existing?existing.score:''}">
-      </div>
-      <div><label class="fl">Date Played</label>
-        <input type="date" id="msdate" required max="${new Date().toISOString().slice(0,10)}" value="${existing&&existing.date?existing.date:new Date().toISOString().slice(0,10)}">
-        <div class="pk-hint">Required. Defaults to today — change it if you're posting a round from another day.</div>
+  <div class="mo" onclick="UI_IMP_SOON()">
+    <div class="ui-sheet-h"><div><div class="mo-title" style="margin-bottom:4px">${isEdit?'Edit round':'Post a round'}</div>
+      <div class="ui-s" style="margin-bottom:16px">${p.id===UI_ME?'Your record':p.name}</div></div>
+      <button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
+    ${last?`<button class="ui-again" onclick="UI_LAST()">${uiSvg('again')}<span>Same as last time<small>${uiShort(last.course)} · ${last.tee} · ${uiCfgL(last.holes||'18')}</small></span></button>`:''}
+    <div class="fr"><label class="fl">Course</label><div id="mcbox"></div>
+      <button type="button" class="ui-link sm" onclick="UI_NEWCOURSE()">Course not listed? Add it with its rating and slope</button></div>
+    <div class="fr" id="mtr" style="display:none"><label class="fl">Tee</label><div id="mtc" class="pk"></div></div>
+    <div class="fr" id="mhr" style="display:none"><label class="fl">Holes</label><div id="mhc" class="pk"></div></div>
+    <div id="mci" style="display:none"></div>
+    <div class="ui-stepper">
+      <button type="button" class="ui-stp" onclick="UI_STEP(-1)" aria-label="One less">−</button>
+      <div class="ui-stv"><input type="number" inputmode="numeric" id="msc" min="1" max="250" placeholder="–" oninput="UM();UI_IMP()" value="${sVal}"><span>gross</span></div>
+      <button type="button" class="ui-stp" onclick="UI_STEP(1)" aria-label="One more">+</button>
+    </div>
+    <div class="fr"><label class="fl">Date played</label>
+      <input type="date" id="msdate" required max="${today}" value="${dVal}" onchange="UI_DATECHIPS();UI_IMP()">
+      <div class="chips ui-datechips" style="margin-top:8px">
+        <button type="button" class="ui-chip sm${dVal===today?' on':''}" data-d="${today}" onclick="UI_DATE('${today}')">Today</button>
+        <button type="button" class="ui-chip sm${dVal===yest?' on':''}" data-d="${yest}" onclick="UI_DATE('${yest}')">Yesterday</button>
       </div>
     </div>
-    <div id="mdp" style="display:none;padding:11px 14px;background:var(--parchment);border-radius:var(--r);margin-bottom:14px;font-size:13px"></div>
-    <div id="mer" style="color:var(--danger);font-size:13px;margin-bottom:12px;display:none"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn-s" onclick="CM()">Cancel</button>
-      <button class="btn-p" onclick="SS('${p.id}')">${isEdit?'Save Changes':'Save Round'}</button>
-    </div>
+    <div id="mdp" style="display:none"></div>
+    <div id="uiImp"></div>
+    <div id="mer" class="ui-alert red" style="display:none"></div>
+    <button class="ui-btn ui-btn-g" onclick="UI_SAVE_ROUND('${p.id}')">${isEdit?'Save changes':'Post round'}</button>
   </div></div>`;
 }
 
@@ -4556,29 +4651,27 @@ function renderCourseModal(){
   const teeOpts=['White','Yellow','Blue','Red','Green','Purple','Black'];
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
-    <div class="mo-title">${e?'Edit Tee':'Add Course / Tee'}</div>
-    <div class="fr"><label class="fl">Course Name</label><input type="text" id="an" placeholder="e.g. Royal Portrush" value="${e?e.name.replace(/"/g,'&quot;'):''}" oninput="AN_TYPE(this.value)" autocomplete="off">
+    <div class="ui-sheet-h"><div class="mo-title">${e?'Edit tee':'Add a course'}</div>
+      <button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
+    <div class="ui-s" style="margin:-6px 2px 16px;line-height:1.5">Rating and slope are printed on the scorecard, or on the club’s website. Each tee and each set of holes has its own.</div>
+    <div class="fr"><label class="fl">Course name</label><input type="text" id="an" placeholder="e.g. Royal Portrush" value="${e?e.name.replace(/"/g,'&quot;'):''}" oninput="AN_TYPE(this.value)" autocomplete="off">
       <div id="anmatch" class="pk-hint"></div>
-      <div class="pk-hint">Reuse an existing name to add another tee to that course rather than creating a duplicate.</div>
     </div>
-    <div class="fr"><label class="fl">Tee Colour</label>
-      <select id="at">${teeOpts.map(t=>`<option${e&&e.tee===t?' selected':''}>${t}</option>`).join('')}</select>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fr"><label class="fl">Tee</label>
+        <select id="at">${teeOpts.map(t=>`<option${e&&e.tee===t?' selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fr"><label class="fl">Holes</label>
+        <select id="ah">${[['18','18 holes'],['F9','Front 9'],['L9','Back 9'],['F9x2','Front 9 twice'],['L9x2','Back 9 twice']].map(([v,l])=>`<option value="${v}"${cfg===v?' selected':''}>${l}</option>`).join('')}</select></div>
     </div>
-    <div class="fr"><label class="fl">Holes Played</label>
-      <select id="ah">${[['18','18 holes'],['F9','Front 9'],['L9','Back 9'],['F9x2','Front 9 twice'],['L9x2','Back 9 twice']].map(([v,l])=>`<option value="${v}"${cfg===v?' selected':''}>${l}</option>`).join('')}</select>
-      <div class="pk-hint">Each configuration carries its own official rating and slope — a back nine is not half a full round.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="fr"><label class="fl">Rating</label><input type="number" inputmode="decimal" step="0.1" id="ar" placeholder="72.4" oninput="ATP()" value="${e?e.rating:''}"></div>
+      <div class="fr"><label class="fl">Slope</label><input type="number" inputmode="numeric" id="as" placeholder="128" value="${e?e.slope:''}"></div>
+      <div class="fr"><label class="fl">Par <span style="color:var(--ink3)">opt.</span></label><input type="number" inputmode="numeric" id="ap" placeholder="72" value="${e&&e.par?e.par:''}"></div>
     </div>
-    <div class="fr"><label class="fl">Par <span style="color:var(--text3);font-weight:400">(optional)</span></label><input type="number" id="ap" placeholder="e.g. 72" value="${e&&e.par?e.par:''}"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div><label class="fl">Course Rating</label><input type="number" step="0.1" id="ar" placeholder="e.g. 72.4" oninput="ATP()" value="${e?e.rating:''}"></div>
-      <div><label class="fl">Slope Rating</label><input type="number" id="as" placeholder="e.g. 128" value="${e?e.slope:''}"></div>
-    </div>
-    <div id="atp" style="display:none;padding:10px 13px;border-radius:var(--r);margin-bottom:12px;font-size:13px;font-weight:500"></div>
-    <div id="aer" style="color:var(--danger);font-size:13px;margin-bottom:12px;display:none"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn-s" onclick="CM()">Cancel</button>
-      <button class="btn-p" onclick="SC2()">${e?'Save Changes':'Add'}</button>
-    </div>
+    <div class="pk-hint" style="margin:-6px 2px 12px">A back nine is not half a full round — it carries its own official rating and slope.</div>
+    <div id="atp" style="display:none;padding:10px 13px;border-radius:14px;margin-bottom:12px;font-size:13px;font-weight:500"></div>
+    <div id="aer" class="ui-alert red" style="display:none"></div>
+    <button class="ui-btn ui-btn-g" onclick="UI_SC2()">${e?'Save changes':'Add course'}</button>
   </div></div>`;
 }
 
@@ -5925,6 +6018,7 @@ const UI_I={
   down:'<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14"/>',
   play:'<path d="M7 21V4l10 4-10 4"/>',
   pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  again:'<path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/>',
 };
 function uiSvg(k,cls){ return `<svg viewBox="0 0 24 24"${cls?` class="${cls}"`:''} aria-hidden="true">${UI_I[k]||''}</svg>`; }
 function uiInit(n){ return String(n||'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
@@ -6000,7 +6094,7 @@ function renderSettings(){
     </div>
     <div class="ui-lbl">Install on your phone</div>
     <div class="ui-card ui-pad" style="font-size:14px;line-height:1.5">Safari → Share → <b>Add to Home Screen</b>. It opens full-screen like an app.</div>
-    <div class="ui-note">Preview 1 · new design, stage 2 of 7. Same live data as the main app.</div>`;
+    <div class="ui-note">Preview 1 · new design, stage 3 of 7. Same live data as the main app.</div>`;
 }
 
 // ── handlers ──
@@ -6311,6 +6405,7 @@ function renderHome(R){
   if(!me) h+=renderCrownStrip();
   h+=`<div class="ui-list" style="margin-top:10px">
       <button class="ui-row" onclick="UI_POST()"><span class="ui-av g">${uiSvg('plus')}</span><span class="ui-row-t">Post a round<small>Add a score you played today or earlier</small></span>${uiSvg('chev','ui-chev')}</button>
+      <button class="ui-row" onclick="OM('register')"><span class="ui-av">${uiSvg('crown')}</span><span class="ui-row-t">Declare a round<small>Tell the group before you tee off — counts for the Crown</small></span>${uiSvg('chev','ui-chev')}</button>
       <button class="ui-row" onclick="UI_GO('play')"><span class="ui-av">${uiSvg('flag')}</span><span class="ui-row-t">Play live<small>Everyone scores on their own phone</small></span>${uiSvg('chev','ui-chev')}</button>
     </div>`;
   h+=`<div class="ui-lbl">The club</div>${uiTiles()}</div>`;
@@ -6328,6 +6423,149 @@ window.UI_PLHAS=v=>{
   document.querySelectorAll('#plSeg button').forEach((b,i)=>b.classList.toggle('on',String(i)===v));
   const fr=document.getElementById('plFresh'); if(fr) fr.style.display=v==='1'?'none':'block';
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REVAMP · STAGE 3 — Post a round, course search, Declare a round
+// Posting still goes through SS() exactly as before; the impact preview and the
+// "round posted" card only READ the engine (calcHI on a copy with the new round).
+// ═══════════════════════════════════════════════════════════════════════════
+var UI_DONE=null, UI_NC=null, UI_IMPT=0, UI_KEEP=null;
+function uiCfgL(g){ return g==='18'?'18 holes':g==='F9'?'front 9':g==='L9'?'back 9':g==='F9x2'?'front 9 ×2':g==='L9x2'?'back 9 ×2':g; }
+function uiLastRound(p){ const o=orderScores(p.scores||[]); for(let k=o.length-1;k>=0;k--){ const s=o[k].s, c=findCourse(S.courses,s); if(c&&!roundIssue(s,c))return s; } return null; }
+// the same tee / holes choice SS() will make, so the preview matches what gets saved
+function uiPick(){
+  const cn=PICK_COURSE||''; if(!cn||!S.courses.some(c=>c.name===cn)) return null;
+  const tees=[...new Set(S.courses.filter(c=>c.name===cn).map(c=>c.tee))];
+  const tee=(PICK_TEE&&tees.includes(PICK_TEE))?PICK_TEE:(tees[0]||'');
+  const rows=S.courses.filter(x=>x.name===cn&&x.tee===tee);
+  const cfgs=[...new Set(rows.map(x=>x.holes||(x.rating<40?'F9':'18')))];
+  const holes=(PICK_CFG&&cfgs.includes(PICK_CFG))?PICK_CFG:(cfgs[0]||'18');
+  const c=findCourse(S.courses,{course:cn,tee,holes});
+  return {course:cn,tee,holes,c};
+}
+function uiImpact(p,entry,editIdx){
+  const scores=p.scores||[];
+  const hyp=editIdx!==null&&editIdx!==undefined&&scores[editIdx]?scores.map((s,i)=>i===editIdx?entry:s):[...scores,entry];
+  const idx=editIdx!==null&&editIdx!==undefined&&scores[editIdx]?editIdx:hyp.length-1;
+  const r0=calcHI(scores,S.courses), r1=calcHI(hyp,S.courses);
+  const m=r1.meta&&r1.meta[idx];
+  const c=findCourse(S.courses,entry);
+  const d=c?calcDiff(entry.score,c.rating,c.slope):null;
+  return {before:r0.hi,after:r1.hi,counts:!!(r1.countingIdx&&r1.countingIdx.has(idx)),d,d18:m&&m.eighteenhDiff!=null?m.eighteenhDiff:d,issue:(r1.issues||{})[idx]||null,pending:!!(m&&m.pendingConversion),hyp};
+}
+window.UI_IMP=()=>{
+  const box=document.getElementById('uiImp'); if(!box) return;
+  const p=S.players.find(x=>x.id===PID); const pk=uiPick();
+  if(!p||!pk||!pk.c){ box.innerHTML=''; return; }
+  const c=pk.c, g=parseInt(document.getElementById('msc')?.value,10);
+  const head=`<div class="ui-imp-h"><span>${uiShort(pk.course)} · ${pk.tee} · ${uiCfgL(pk.holes)}</span><span class="ui-mono">${c.rating.toFixed(1)} / ${c.slope}${c.par?' · par '+c.par:''}</span></div>`;
+  if(!isFinite(g)||g<1){ box.innerHTML=`<div class="ui-imp">${head}<div class="ui-imp-m">Enter the gross score to see what it does to the index.</div></div>`; return; }
+  const date=document.getElementById('msdate')?.value||new Date().toISOString().slice(0,10);
+  const r=uiImpact(p,{course:pk.course,tee:pk.tee,holes:pk.holes,score:g,date},EDIT_IDX);
+  if(r.issue){ box.innerHTML=`<div class="ui-imp bad">${head}<div class="ui-imp-m"><b>This wouldn’t count</b> — ${r.issue}.</div></div>`; return; }
+  const who=p.id===UI_ME?'your':'the';
+  let msg;
+  if(r.after==null) msg=r.pending?'Stored as a nine for now — it converts once 54 holes are posted.':'Counts towards the 54 holes needed for a first index.';
+  else if(r.before==null) msg=`This gives ${p.id===UI_ME?'you':p.name.split(' ')[0]} a first index: <b>${r.after.toFixed(1)}</b>.`;
+  else if(Math.abs(r.after-r.before)<0.05) msg=`${r.counts?'Counts':'Doesn’t count'} · ${who} index stays <b>${r.after.toFixed(1)}</b>`;
+  else msg=`${r.counts?'Counts':'Doesn’t count'} · ${who} index ${r.after<r.before?'drops':'goes up'} to <b>${r.after.toFixed(1)}</b> <span class="ui-mv ${r.after<r.before?'dn':'up'}">${r.after<r.before?'↓':'↑'}${Math.abs(rd(r.after-r.before,1)).toFixed(1)}</span>`;
+  box.innerHTML=`<div class="ui-imp${r.counts?' ok':''}">${head}
+    <div class="ui-imp-row"><div><span>Differential</span><b class="ui-mono">${r.d18!=null?r.d18.toFixed(1):'—'}</b></div><div class="ui-imp-m">${msg}</div></div></div>`;
+};
+window.UI_IMP_SOON=()=>{ clearTimeout(UI_IMPT); UI_IMPT=setTimeout(()=>{ try{UI_IMP();}catch(e){} },30); };
+window.UI_STEP=d=>{
+  const el=document.getElementById('msc'); if(!el) return;
+  let v=parseInt(el.value,10);
+  if(!isFinite(v)){
+    const pk=uiPick(), p=S.players.find(x=>x.id===PID);
+    const nine=pk&&isNineCfg(pk.holes);
+    const par=(pk&&pk.c&&pk.c.par)||(nine?36:72);
+    const hi=p?calcHI(p.scores,S.courses).hi:null;
+    v=Math.round(par+(hi!=null?(nine?hi/2:hi):(nine?12:24)));
+  }else v=Math.min(250,Math.max(1,v+d));
+  el.value=v; try{UM();}catch(e){} UI_IMP();
+};
+window.UI_DATE=d=>{ const el=document.getElementById('msdate'); if(el){ el.value=d; } UI_DATECHIPS(); UI_IMP(); };
+window.UI_DATECHIPS=()=>{ const v=document.getElementById('msdate')?.value; document.querySelectorAll('.ui-datechips .ui-chip').forEach(b=>b.classList.toggle('on',b.dataset.d===v)); };
+window.UI_LAST=()=>{
+  const p=S.players.find(x=>x.id===PID); const l=p&&uiLastRound(p); if(!l) return;
+  PICK_COURSE=l.course; PICK_TEE=l.tee||null; PICK_CFG=l.holes||null; PICK_Q='';
+  mcPaint(); UM(); UI_IMP();
+};
+window.UI_NEWCOURSE=()=>{
+  UI_KEEP={score:document.getElementById('msc')?.value||'',date:document.getElementById('msdate')?.value||''};
+  UI_NC={pid:PID,score:document.getElementById('msc')?.value||'',date:document.getElementById('msdate')?.value||'',edit:EDIT_IDX};
+  EDIT_COURSE=null; MOD='course'; render();
+};
+// Add course → straight back to the round you were posting, with the new course picked.
+window.UI_SC2=()=>{
+  const name=(document.getElementById('an')?.value||'').trim();
+  const back=UI_NC; UI_NC=null;
+  SC2();
+  if(MOD!==null){ UI_NC=back; return; }           // validation failed — stay on the form
+  if(back&&back.pid&&S.players.some(p=>p.id===back.pid)){
+    PID=back.pid; EDIT_IDX=back.edit; PICK_COURSE=name; PICK_TEE=null; PICK_CFG=null; PICK_Q=''; MOD='score'; render();
+    setTimeout(()=>{ const s=document.getElementById('msc'), d=document.getElementById('msdate');
+      if(s&&back.score)s.value=back.score; if(d&&back.date)d.value=back.date; try{UM();UI_DATECHIPS();UI_IMP();}catch(e){} },20);
+  }else render();
+};
+window.UI_REGN=()=>{ const n=[...document.querySelectorAll('.regp')].filter(x=>x.checked).length; const b=document.getElementById('regGo'); if(b) b.textContent=n?`Declare for ${n} player${n>1?'s':''}`:'Declare'; };
+
+// ── save, then show what the round did ──
+window.UI_SAVE_ROUND=pid=>{
+  const p0=S.players.find(x=>x.id===pid); if(!p0) return;
+  const wasEdit=EDIT_IDX!==null;
+  const R0=ranked(), pos0=R0.filter(x=>x.hi!==null).findIndex(x=>x.id===pid)+1;
+  const hi0=calcHI(p0.scores,S.courses).hi, st0=uiStats(p0), b0=new Set(potmBadges(p0,S.courses).map(b=>b.name));
+  const n0=(p0.scores||[]).length;
+  SS(pid);
+  if(MOD!==null) return;                           // SS found a problem — its message is showing
+  const p1=S.players.find(x=>x.id===pid);
+  if(wasEdit||!p1||(p1.scores||[]).length!==n0+1){ render(); return; }
+  const s=p1.scores[p1.scores.length-1], c=findCourse(S.courses,s);
+  const r1=calcHI(p1.scores,S.courses), idx=p1.scores.length-1, m=r1.meta&&r1.meta[idx];
+  const st1=uiStats(p1), R1=ranked(), pos1=R1.filter(x=>x.hi!==null).findIndex(x=>x.id===pid)+1;
+  const nine=c&&isNineCfg(cfgOf(s,c));
+  const hl=[];
+  if(!nine&&st1.bestGross&&st1.bestGross.score===s.score&&(!st0.bestGross||s.score<st0.bestGross.score)) hl.push(st0.bestGross?`New personal best — beats ${st0.bestGross.score}`:'First full round on the record');
+  if(r1.hi!=null&&st0.lowHI!=null&&r1.hi<st0.lowHI) hl.push(`Lowest index ever — was ${st0.lowHI.toFixed(1)}`);
+  if(pos1&&pos0&&pos1<pos0) hl.push(`Up to ${uiOrd(pos1)} in the club`);
+  if(pos1&&pos0&&pos1>pos0) hl.push(`Down to ${uiOrd(pos1)} in the club`);
+  if(hi0==null&&r1.hi!=null) hl.push(`First handicap index: ${r1.hi.toFixed(1)}`);
+  potmBadges(p1,S.courses).forEach(b=>{ if(!b0.has(b.name)) hl.push(`New badge — ${b.name}`); });
+  UI_DONE={pid,name:p1.name,score:s.score,course:s.course,tee:s.tee,holes:s.holes||'18',date:s.date,
+    d:m&&m.eighteenhDiff!=null?m.eighteenhDiff:(c?calcDiff(s.score,c.rating,c.slope):null),
+    counts:!!(r1.countingIdx&&r1.countingIdx.has(idx)),hi0,hi1:r1.hi,hl};
+  render();
+};
+window.UI_DONE_X=()=>{ UI_DONE=null; render(); };
+function uiShareText(x){
+  const first=x.name.split(' ')[0];
+  const mv=x.hi0!=null&&x.hi1!=null&&Math.abs(x.hi1-x.hi0)>=0.05?` (${x.hi1<x.hi0?'↓':'↑'}${Math.abs(rd(x.hi1-x.hi0,1)).toFixed(1)})`:'';
+  return `${first} shot ${x.score} at ${x.course} · ${x.tee}${x.holes!=='18'?' · '+uiCfgL(x.holes):''}.`
+    +(x.d!=null?` Differential ${x.d.toFixed(1)}.`:'')
+    +(x.hi1!=null?` Index ${x.hi0!=null?x.hi0.toFixed(1)+' → ':''}${x.hi1.toFixed(1)}${mv}.`:'')
+    +(x.hl.length?' '+x.hl.join(' · ')+'.':'')+' — The Club';
+}
+function renderPosted(){
+  const x=UI_DONE; if(!x) return '';
+  const moved=x.hi0!=null&&x.hi1!=null?rd(x.hi1-x.hi0,1):null;
+  return `<div class="ov" onclick="if(event.target===this)UI_DONE_X()"><div class="mo ui-done">
+    <div class="ui-done-top ui-panel">
+      <div class="ui-done-k">${x.name.split(' ')[0]} · ${uiShort(x.course)} · ${uiCfgL(x.holes)}</div>
+      <div class="ui-xl" style="font-size:88px">${x.score}</div>
+      <div class="ui-done-s">${x.d!=null?`Differential ${x.d.toFixed(1)} · `:''}${x.counts?'counts toward the index':'doesn’t count this time'}</div>
+    </div>
+    ${x.hi1!=null?`<div class="ui-done-idx"><div><span>Index before</span><b>${x.hi0!=null?x.hi0.toFixed(1):'—'}</b></div>
+      <div class="ar">${moved!=null&&Math.abs(moved)>=0.05?`<span class="ui-mv ${moved<0?'dn':'up'}">${moved<0?'↓':'↑'}${Math.abs(moved).toFixed(1)}</span>`:'<span class="ui-s">no change</span>'}</div>
+      <div><span>Index now</span><b>${x.hi1.toFixed(1)}</b></div></div>`:''}
+    ${x.hl.length?`<div class="ui-list" style="margin-top:12px">${x.hl.map(t=>`<div class="ui-row" style="cursor:default;min-height:50px"><span class="ui-dot ok"></span><span class="ui-row-t" style="font-weight:500">${t}</span></div>`).join('')}</div>`:''}
+    <div class="ui-duo" style="margin-top:14px">
+      <button class="ui-btn ui-btn-w" onclick="UI_DONE_X()">Done</button>
+      <a class="ui-btn ui-btn-g" href="https://wa.me/?text=${encodeURIComponent(uiShareText(x))}" target="_blank" rel="noopener" onclick="setTimeout(UI_DONE_X,300)">Share to the group</a>
+    </div>
+  </div></div>`;
+}
 </script>
 </body>
 </html>
