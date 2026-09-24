@@ -1,0 +1,17 @@
+{
+  "id": "the-club-preview1",
+  "name": "The Club",
+  "short_name": "The Club",
+  "description": "The Club — WHS handicap rankings, live rounds, the Crown",
+  "start_url": "preview1.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E7A3E",
+  "theme_color": "#F4F6F3",
+  "icons": [
+    { "src": "icon1-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon1-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon1-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

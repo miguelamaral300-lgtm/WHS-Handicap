@@ -7,8 +7,9 @@
 <!-- PWA -->
 <meta name="theme-color" content="#F4F6F3">
 <meta name="description" content="The Club — WHS handicap rankings, tournaments and contests">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest1.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icon1-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon1-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1872,10 +1873,111 @@ a.ui-btn{color:#fff}
 .ui-settle{color:var(--ink)}
 
 .ui-tog.fixed{opacity:.5}
+
+/* ════════ STAGE 6 · Tournaments, Events, Contests, Purse, Courses, Honour ════════ */
+.ui-ico.sm{width:34px;height:34px}
+.ui-ico.sm svg{width:16px;height:16px}
+.ui-av svg{stroke:var(--ink2)}
+.ui-twin{font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-.02em}
+.ui-row.lead{background:var(--gl)}
+.ui-badge.sm{height:28px;padding:0 11px;font-size:12px}
+.ui-badge.sm.me{background:var(--gl);box-shadow:none;color:var(--g);font-weight:600}
+
+/* events */
+.ui-evhero{border-radius:24px;padding:20px;box-shadow:var(--sh-card);margin-bottom:-14px;padding-bottom:30px}
+.ui-evhero-d{font-size:13px;color:rgba(255,255,255,.88)}
+.ui-evhero-c{font-size:13.5px;color:rgba(255,255,255,.88);margin-top:6px}
+.ui-evcard{background:#fff;border-radius:22px;box-shadow:var(--sh-card);padding:14px 16px;margin-bottom:10px;position:relative}
+.ui-evcard.first{box-shadow:0 -6px 18px -12px rgba(12,26,18,.3),var(--sh-card)}
+.ui-evrow{display:flex;align-items:center;gap:8px}
+.ui-evrow .ui-row-t{flex:1;min-width:0}
+.ui-evnotes{font-size:13px;color:var(--ink2);margin-top:8px;line-height:1.45}
+.ui-evplayers{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ui-evpred{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.ui-evpredrow{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink2);padding:3px 0}
+.ui-evpredrow b{color:var(--ink);font-weight:600}
+
+/* purse */
+.ui-pursetotal{border-radius:24px;padding:20px;text-align:center;box-shadow:var(--sh-card)}
+.ui-pt-l{font-size:13px;color:rgba(255,255,255,.88)}
+.ui-pt-s{font-size:13px;color:rgba(255,255,255,.88);margin-top:4px}
+.ui-purserow{align-items:flex-start;padding-top:12px;padding-bottom:12px}
+.ui-pbar{display:block;height:5px;border-radius:3px;background:var(--off);overflow:hidden;margin:7px 0 5px;max-width:190px}
+.ui-pbar i{display:block;height:100%;border-radius:3px}
+.ui-pbar i.up{background:var(--g)}.ui-pbar i.dn{background:var(--red)}
+.ui-pnl{flex-shrink:0;font-weight:500;font-size:20px;letter-spacing:-.04em;font-feature-settings:'tnum'}
+.ui-pnl.up{color:var(--g)}.ui-pnl.dn{color:var(--red)}
+.ui-phead,.ui-prow{display:grid;grid-template-columns:1fr 62px 62px 68px;gap:8px;align-items:center}
+.ui-phead{font-size:11px;color:var(--ink2);padding-bottom:6px;border-bottom:1px solid var(--line)}
+.ui-phead span:not(:first-child),.ui-prow span:not(:first-child){text-align:right}
+.ui-prow{padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+.ui-prow:last-child{border-bottom:none}
+.ui-prow b{display:block;font-size:13.5px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+.ui-prow small{font-size:11.5px;color:var(--ink2)}
+.ui-prow .up{color:var(--g);font-weight:600}.ui-prow .dn{color:var(--red);font-weight:600}
+.ui-prow.tot{border-top:1px solid var(--line);border-bottom:none;padding-top:10px}
+
+/* roll of honour */
+.ui-trophystage{background:#fff;border-radius:24px;box-shadow:var(--sh-card);padding:22px 20px 24px;text-align:center}
+.ui-trophy-n{font-weight:600;font-size:24px;letter-spacing:-.035em;margin-top:16px}
+.ui-trophy-e{font-size:13px;color:var(--ink2);margin-top:4px}
+.trophy-image-wrap{max-width:220px}
+
+/* courses */
+.ui-csearch{width:100%;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6E64' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 14px center/18px no-repeat;padding-left:42px}
+.ui-chevrot{display:flex;transition:transform .15s}
+.ui-chevrot.up{transform:rotate(-90deg)}
+.ui-chevrot svg{transform:rotate(90deg)}
+.ui-teehead{display:grid;grid-template-columns:1fr 58px 50px 76px;gap:8px;font-size:11px;color:var(--ink2);padding-bottom:6px;border-bottom:1px solid var(--line)}
+.ui-teehead span:not(:first-child){text-align:right}
+.ui-teerow{display:grid;grid-template-columns:1fr 58px 50px 76px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.ui-teerow:last-child{border-bottom:none}
+.ui-teerow .ui-mono{text-align:right;color:var(--ink2)}
+.ui-teen{display:flex;align-items:center;gap:8px;font-weight:600;letter-spacing:-.02em}
+.ui-teen small{font-weight:400;color:var(--ink2);font-size:11.5px}
+.ui-teen .pk-sw{width:14px;height:14px;flex-shrink:0}
+.ui-teeact{display:flex;gap:4px;justify-content:flex-end}
+.ui-row.open{box-shadow:inset 0 -1px 0 var(--line)}
 </style>
 </head>
 <body>
 <div id="app"><div class="ui-loading"><div class="ui-spin"></div>Connecting to The Club…</div></div>
+
+<!-- ── durable "remember me" storage ──────────────────────────────────────────
+     localStorage alone is not reliable on a phone: iOS clears script-written
+     storage after a spell of not using the site, a Home Screen app gets its own
+     storage box separate from Safari, and Private tabs throw outright. So the
+     passphrase and the chosen player are written to BOTH localStorage and a
+     long-life cookie, and read back from whichever still has them. -->
+<script>
+(function(){
+  var MEM={};
+  function ck(name){
+    try{
+      var m=document.cookie.match('(?:^|; )'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)');
+      return m?decodeURIComponent(m[1]):null;
+    }catch(e){ return null; }
+  }
+  window.CLUB_GET=function(k){
+    if(MEM[k]!=null)return MEM[k];
+    var v=null;
+    try{ v=localStorage.getItem(k); }catch(e){}
+    if(v==null) v=ck(k);
+    if(v!=null) MEM[k]=v;
+    return v;
+  };
+  window.CLUB_SET=function(k,v){
+    MEM[k]=v;
+    try{ localStorage.setItem(k,v); }catch(e){}
+    try{ document.cookie=k+'='+encodeURIComponent(v)+'; path=/; max-age=34560000; SameSite=Lax'; }catch(e){}
+  };
+  window.CLUB_DEL=function(k){
+    delete MEM[k];
+    try{ localStorage.removeItem(k); }catch(e){}
+    try{ document.cookie=k+'=; path=/; max-age=0; SameSite=Lax'; }catch(e){}
+  };
+})();
+</script>
 
 <!-- ── PASSPHRASE GATE (client-side; share the password with members) ── -->
 <script>
@@ -1887,12 +1989,12 @@ a.ui-btn{color:#fff}
   var AUTH_KEY  = 'whs_club_auth_v1';
 
   function isAuthed(){
-    try { return localStorage.getItem(AUTH_KEY) === CLUB_PASS; }
+    try { return CLUB_GET(AUTH_KEY) === CLUB_PASS; }
     catch(e){ return false; }
   }
 
   window.LOGOUT_CLUB = function(){
-    try { localStorage.removeItem(AUTH_KEY); } catch(e){}
+    try { CLUB_DEL(AUTH_KEY); } catch(e){}
     location.reload();
   };
 
@@ -1901,7 +2003,7 @@ a.ui-btn{color:#fff}
     var err = document.getElementById('gate-err');
     if(!inp) return;
     if(inp.value === CLUB_PASS){
-      try { localStorage.setItem(AUTH_KEY, CLUB_PASS); } catch(e){}
+      try { CLUB_SET(AUTH_KEY, CLUB_PASS); } catch(e){}
       var gate = document.getElementById('gate');
       if(gate){ gate.style.transition='opacity .25s'; gate.style.opacity='0'; setTimeout(function(){ gate.remove(); }, 260); }
     } else {
@@ -4516,28 +4618,17 @@ function renderRoundHistory(p){
 // ── TOURNAMENTS ───────────────────────────────────────────────────────────────
 function renderTournaments(){
   const sorted=[...S.tournaments].sort((a,b)=>b.date.localeCompare(a.date));
-  let h=`<div class="sec-head">
-    <span class="sec-title">Tournament History</span>
-    <button class="btn-p" onclick="OM('tournament')">+ Add</button>
-  </div>`;
-  if(!sorted.length)return h+`<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-title">No tournaments yet</div><div class="empty-sub">Record your first competition above</div></div>`;
-  return h+sorted.map(t=>{
+  let h=`<div class="ui-pagehead"><div class="ui-h1">Tournaments</div>
+    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('tournament')">${uiSvg('plus')}Add</button></div>`;
+  if(!sorted.length)return h+`<div class="ui-crempty">No tournaments yet. Record your first competition and it starts the Roll of Honour.</div>`;
+  return h+`<div class="ui-list">`+sorted.map(t=>{
     const w=S.players.find(p=>p.id===t.winnerId);
-    const prize=t.prize?`<div style="font-size:11px;color:var(--gold-dim);font-weight:600">${fmtCurrency(t.prize)} purse</div>`:'';
-    return`<div class="trn-row" onclick="OT('${t.id}')">
-      <div class="trn-icon" style="background:var(--deep)">🏆</div>
-      <div style="flex:1;min-width:0">
-        <div class="trn-name">${t.name}</div>
-        <div class="trn-meta">${fmtDate(t.date)} &middot; ${t.entries.length} player${t.entries.length!==1?'s':''}</div>
-        ${prize}
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        ${w?`<div class="trn-win">🥇&ensp;${w.name}</div>`:''}
-        <div style="font-size:10px;color:var(--text3);letter-spacing:.5px">Tap to view</div>
-      </div>
-      <span style="color:rgba(201,168,76,.5);font-size:20px;margin-left:6px">›</span>
-    </div>`;
-  }).join('');
+    return`<button class="ui-row" onclick="OT('${t.id}')">
+      <span class="ui-av${w?' g':''}">${w?uiInit(w.name):uiSvg('trophy')}</span>
+      <span class="ui-row-t">${t.name}<small>${uiDay(t.date)} · ${t.entries.length} player${t.entries.length!==1?'s':''}${t.prize?' · '+fmtCurrency(t.prize):''}</small></span>
+      <span class="ui-row-v">${w?`<b class="ui-twin">${w.name.split(' ')[0]}</b><br><span class="ui-s" style="font-size:11.5px">winner</span>`:'—'}</span>
+      ${uiSvg('chev','ui-chev')}</button>`;
+  }).join('')+`</div>`;
 }
 
 // ── TOURNAMENT DETAIL ─────────────────────────────────────────────────────────
@@ -4545,45 +4636,31 @@ function renderTournamentDetail(t){
   const sorted=[...t.entries].sort((a,b)=>a.score-b.score);
   const w=S.players.find(p=>p.id===t.winnerId);
   const we=t.entries.find(e=>e.playerId===t.winnerId);
-  let h=`<div class="back-nav">
-    <button class="back-btn" onclick="CT()">&#8592; Tournaments</button>
-  </div>
-  <div class="ccard" style="padding:20px 22px;margin-bottom:14px">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between">
-      <div>
-        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--deep)">${t.name}</div>
-        <div style="font-size:13px;color:var(--text3);margin-top:5px">📅&ensp;${fmtDate(t.date)} &middot; ${t.entries.length} players</div>
-        ${t.prize?`<div style="font-size:13px;color:var(--gold);font-weight:600;margin-top:4px">💰&ensp;${fmtCurrency(t.prize)} purse</div>`:''}
-      </div>
-      <button class="btn-ic" onclick="DT('${t.id}')" title="Delete">🗑</button>
-    </div>
-    ${w?`<div class="win-box">
-      <div style="font-size:28px">🏆</div>
-      <div>
-        <div class="win-lbl">Tournament Champion</div>
-        <div class="win-name">${w.name}</div>
-        <div style="font-size:13px;color:var(--text3);margin-top:2px" class="${scoreClass(we?.score??0)}">${fmtScore(we?.score??0)}</div>
-      </div>
-    </div>`:''}
-  </div>
-  <div class="sec-head"><span class="sec-title">Scoreboard</span></div>
-  <div class="ccard">
-    <div class="tscore" style="font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:var(--text3);padding-top:10px;padding-bottom:9px;border-bottom:0.5px solid rgba(11,30,18,.1)">
-      <span>Player</span><span style="text-align:center">Score</span><span style="text-align:center">Result</span>
+  let h=`<div class="ui-top"><button class="ui-ico" onclick="CT()" aria-label="Back">${uiSvg('back')}</button>
+    <span></span><button class="ui-ico" onclick="DT('${t.id}')" aria-label="Delete tournament" style="color:var(--red)">${uiSvg('bin')}</button></div>`;
+  if(w){
+    h+=`<div class="ui-done-top ui-panel" style="border-radius:24px;margin-bottom:14px">
+      <span class="ui-av g lg" style="margin:0 auto;background:#fff;color:var(--g)">${uiInit(w.name)}</span>
+      <div class="ui-h1" style="color:#fff;margin-top:12px">${w.name}</div>
+      <div class="ui-done-s">Champion · ${fmtScore(we&&we.score!=null?we.score:0)}</div>
+      <div class="ui-done-s" style="margin-top:2px">${t.name} · ${uiDay(t.date)}</div>
     </div>`;
+  }else{
+    h+=`<div style="margin:0 4px 14px"><div class="ui-h1">${t.name}</div>
+      <div class="ui-s" style="margin-top:6px">${uiDay(t.date)} · ${t.entries.length} player${t.entries.length!==1?'s':''}${t.prize?' · '+fmtCurrency(t.prize)+' purse':''}</div></div>`;
+  }
+  h+=`<div class="ui-lbl">Scoreboard</div><div class="ui-list">`;
   sorted.forEach((e,i)=>{
     const isW=e.playerId===t.winnerId;
     const hasRounds=e.rounds&&e.rounds.length>1;
-    h+=`<div class="tscore" style="${isW?'background:linear-gradient(90deg,rgba(201,168,76,.07),transparent);margin:0 -18px;padding:12px 18px;':''}">
-      <span style="font-weight:${isW?600:400}">
-        ${isW?'🏆 ':i===1?'🥈 ':i===2?'🥉 ':''}${e.playerName}
-        ${hasRounds?`<div style="font-size:10px;color:var(--text3);margin-top:3px;font-weight:400">
-          ${e.rounds.map(r=>`R${r.round}: ${fmtScore(r.score)}${r.course?' @ '+r.course:''}`).join(' &nbsp;·&nbsp; ')}
-        </div>`:(e.course?`<div style="font-size:10px;color:var(--text3);font-weight:400;margin-top:2px">⛳ ${e.course}</div>`:'')}
-      </span>
-      <span class="tscore-val ${scoreClass(e.score)}" style="text-align:center">${fmtScore(e.score)}${hasRounds?'<div style="font-size:9px;color:var(--text3);font-weight:400">total</div>':''}</span>
-      <span style="text-align:center"><span class="pill ${isW?'pwon':'prun'}">${isW?'Winner':i===1?'2nd':i===2?'3rd':''}</span></span>
-    </div>`;
+    const detail=hasRounds
+      ? e.rounds.map(r=>`R${r.round} ${fmtScore(r.score)}`).join(' · ')
+      : (e.course?uiShort(e.course):'');
+    h+=`<div class="ui-row${isW?' lead':''}" style="cursor:default">
+      <span class="ui-rpos">${i+1}</span>
+      <span class="ui-row-t">${e.playerName}<small>${detail}${hasRounds?' · total':''}</small></span>
+      ${isW?'<span class="ui-pill">Winner</span>':''}
+      <span class="ui-rbig sm ${e.score<0?'red':''}">${fmtScore(e.score)}</span></div>`;
   });
   return h+`</div>`;
 }
@@ -4594,186 +4671,114 @@ function renderUpcoming(){
   const upcoming=[...S.upcoming]
     .filter(t=>new Date(t.date)>=now||(daysUntil(t.date)||0)>=-1)
     .sort((a,b)=>a.date.localeCompare(b.date));
-  let h=`<div class="sec-head">
-    <span class="sec-title">Upcoming Events</span>
-    <button class="btn-p" onclick="OM('upcoming')">+ Add Event</button>
-  </div>`;
-  if(!upcoming.length)return h+`<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No upcoming events</div><div class="empty-sub">Plan your next round or tournament above</div></div>`;
-  return h+upcoming.map(t=>{
+  let h=`<div class="ui-pagehead"><div class="ui-h1">Events</div>
+    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('upcoming')">${uiSvg('plus')}Add</button></div>`;
+  if(!upcoming.length)return h+`<div class="ui-crempty">Nothing in the diary. Add the next outing and everyone can say whether they’re in.</div>`;
+  const me=UI_MEP()?S.players.find(p=>p.id===UI_ME):null;
+  const first=upcoming[0];
+  upcoming.forEach((t,idx)=>{
     const days=daysUntil(t.date);
-    const[y,m,day]=t.date.split('-');
-    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const monStr=months[parseInt(m)-1];
-    let countLabel='',countStyle='';
-    if(days===0){countLabel='Today!';countStyle='background:rgba(42,96,64,.15);color:var(--success)';}
-    else if(days===1){countLabel='Tomorrow';countStyle='background:rgba(201,168,76,.12);color:var(--gold-dim)';}
-    else if(days>0&&days<=7){countLabel=`${days} days`;countStyle='background:rgba(201,168,76,.12);color:var(--gold-dim)';}
-    else if(days>0){countLabel=`${days} days`;countStyle='background:rgba(11,30,18,.06);color:var(--text3)';}
-    return`<div class="upcoming-row">
-      <div class="date-block">
-        <div class="date-day">${day}</div>
-        <div class="date-mon">${monStr}</div>
-        <div class="date-yr">${y}</div>
+    const when=days===0?'Today':days===1?'Tomorrow':days>0?`in ${days} days`:'';
+    const inIt=!!(me&&(t.players||[]).includes(me.name));
+    const preds=t.predictions&&Object.keys(t.predictions).length?t.predictions:null;
+    if(idx===0){
+      h+=`<div class="ui-evhero ui-panel">
+        <div class="ui-evhero-d">${uiWeekday(t.date)}${when?' · '+when:''}</div>
+        <div class="ui-h1" style="color:#fff;margin-top:4px">${t.name}</div>
+        ${t.course?`<div class="ui-evhero-c">${t.course}</div>`:''}
+      </div>`;
+    }
+    h+=`<div class="ui-evcard${idx===0?' first':''}">
+      <div class="ui-evrow">
+        <div class="ui-row-t">${idx===0?'Who’s in':t.name}<small>${idx===0?`${(t.players||[]).length} in`:`${uiDay(t.date)}${t.course?' · '+uiShort(t.course):''} · ${(t.players||[]).length} in`}</small></div>
+        ${me?`<button class="ui-btn ui-btn-sm ${inIt?'ui-btn-w':'ui-btn-g'}" onclick="UI_EVENT_IN('${t.id}')">${inIt?'You’re in':'I’m in'}</button>`:''}
+        <button class="ui-ico sm" onclick="SET_PRED('${t.id}')" aria-label="Predictions">${uiSvg('dice')}</button>
+        <button class="ui-ico sm" onclick="DU('${t.id}')" aria-label="Remove" style="color:var(--red)">${uiSvg('bin')}</button>
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-          <div class="upcoming-name">${t.name}</div>
-          ${countLabel?`<span class="countdown" style="${countStyle}">${countLabel}</span>`:''}
-        </div>
-        ${t.course?`<div class="upcoming-meta">📍&ensp;${t.course.includes(',')?t.course.split(',').map(c=>`<span style='display:inline-block;margin-right:6px'>${c.trim()}</span>`).join(''):t.course}</div>`:''}
-        ${t.notes?`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-style:italic">${t.notes}</div>`:''}
-        ${t.players&&t.players.length?`<div class="upcoming-players">${t.players.map(pl=>`<span class="player-tag">${pl}</span>`).join('')}</div>`:''}
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-        <button class="btn-ic" onclick="DU('${t.id}')" title="Remove">🗑</button>
-        <button onclick="event.stopPropagation();SET_PRED('${t.id}')" style="background:rgba(201,168,76,.12);border:0.5px solid rgba(201,168,76,.25);border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer;color:var(--gold);font-family:'Barlow',inherit;font-weight:700;letter-spacing:.8px;white-space:nowrap">🎲 Bet</button>
-      </div>
-    </div>
-    ${(t.predictions&&Object.keys(t.predictions).length)?`
-    <div style="margin:-6px 0 10px;padding:10px 14px;background:rgba(201,168,76,.05);border-radius:0 0 var(--r2) var(--r2);border:0.5px solid rgba(201,168,76,.15);border-top:none">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,.45);margin-bottom:8px">Predictions</div>
-      ${Object.entries(t.predictions).map(([pid,pred])=>{
+      ${t.notes?`<div class="ui-evnotes">${t.notes}</div>`:''}
+      ${(t.players||[]).length?`<div class="ui-evplayers">${t.players.map(pl=>`<span class="ui-badge sm${me&&pl===me.name?' me':''}">${pl}</span>`).join('')}</div>`:''}
+      ${preds?`<div class="ui-evpred"><span class="ui-s">Predictions</span>${Object.entries(preds).map(([pid,pred])=>{
         const pl=S.players.find(p=>p.id===pid);
-        return`<div style="font-size:12px;color:var(--text2);margin-bottom:4px;display:flex;justify-content:space-between">
-          <span style="color:var(--text3)">${pl?pl.name:'?'} predicts:</span>
-          <span style="color:var(--gold-lt);font-weight:500">${pred.pick}${pred.bet?' · €'+pred.bet:''}</span>
-        </div>`;
-      }).join('')}
-    </div>`:''}`;
-  }).join('');
+        return `<div class="ui-evpredrow"><span>${pl?pl.name.split(' ')[0]:'?'}</span><b>${pred.pick}${pred.bet?' · €'+pred.bet:''}</b></div>`;}).join('')}</div>`:''}
+    </div>`;
+  });
+  return h;
 }
 
 // ── PURSE LEADERBOARD ─────────────────────────────────────────────────────────
 function renderPurse(){
   const purseData=calcPurse();
   const totalEarned=purseData.reduce((s,p)=>s+p.totalEarned,0);
-  const maxEarned=Math.max(...purseData.map(p=>p.totalEarned),1);
-  let h=`<div class="sec-head">
-    <span class="sec-title">Prize Money</span>
-    <button class="btn-p" onclick="SET_PURSE(null)">+ Record Winnings</button>
+  let h=`<div class="ui-pagehead"><div class="ui-h1">Purse</div>
+    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="SET_PURSE(null)">${uiSvg('plus')}Record</button></div>`;
+  h+=`<div class="ui-pursetotal ui-panel">
+    <div class="ui-pt-l">The purse · ${new Date().getFullYear()} season</div>
+    <div class="ui-xl" style="font-size:62px;color:#fff">${fmtCurrency(totalEarned)}</div>
+    <div class="ui-pt-s">${totalEarned===0?'Nothing recorded yet — tap Record to add winnings':`changed hands across ${purseData.reduce((s,p)=>s+p.events,0)} entr${purseData.reduce((s,p)=>s+p.events,0)===1?'y':'ies'}`}</div>
   </div>`;
-  if(totalEarned===0){
-    h+=`<div style="background:rgba(201,168,76,.06);border:0.5px solid rgba(201,168,76,.2);border-radius:var(--r2);padding:16px;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.6">
-      💡 Record each player's exact winnings per tournament — different bets, different amounts. Tap <strong style="color:var(--gold-lt)">+ Record Winnings</strong> above.
-    </div>`;
-  }
-  h+=`<div class="purse-total">
-    <div class="purse-lbl">Total Prize Money Distributed</div>
-    <div class="purse-amt">${fmtCurrency(totalEarned)}</div>
-  </div>
-  <div class="ccard">
-    <div style="display:grid;grid-template-columns:auto 1fr 90px;gap:12px;padding:11px 0 9px;font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:var(--text3);border-bottom:0.5px solid rgba(11,30,18,.1)">
-      <span></span><span>Member</span><span style="text-align:right">Earned</span>
-    </div>`;
   const maxAbsPnl=Math.max(...purseData.map(p=>Math.abs(p.pnl)),1);
+  h+=`<div class="ui-list" style="margin-top:14px">`;
   purseData.forEach((p,i)=>{
-    const meds=['medal-1','medal-2','medal-3'];
     const isProfit=p.pnl>=0;
-    const pct=maxAbsPnl>0?(Math.abs(p.pnl)/maxAbsPnl*100).toFixed(0):0;
-    h+=`<div style="display:grid;grid-template-columns:auto 1fr 70px 70px 28px;gap:10px;align-items:center;padding:14px 0;border-bottom:0.5px solid var(--border)">
-      <div class="rank-medal ${i<3?meds[i]:'medal-n'}" style="width:28px;height:28px;font-size:12px;flex-shrink:0">${i+1}</div>
-      <div style="min-width:0">
-        <div class="purse-name">${p.name}</div>
-        <div style="margin-top:5px">
-          <div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${isProfit?'linear-gradient(90deg,#3A8050,#5AB870)':'linear-gradient(90deg,#7A2020,#B04040)'};border-radius:3px;transition:width .8s"></div>
-          </div>
-        </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:4px">${p.wins} win${p.wins!==1?'s':''} · ${p.events} event${p.events!==1?'s':''} · in: ${p.totalBuyIn>0?fmtCurrency(p.totalBuyIn):'—'}</div>
-      </div>
-      <div style="text-align:right;font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--text2)">${p.totalEarned>0?fmtCurrency(p.totalEarned):'—'}</div>
-      <div style="text-align:right;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:${isProfit?'#5AB870':'#E07070'}">${p.pnl!==0?(isProfit?'+':'')+fmtCurrency(p.pnl):'—'}</div>
-      <div style="text-align:right">
-        <div class="purse-earned">${p.total>0?fmtCurrency(p.totalEarned):'—'}</div>
-        ${p.history.length>0?`<div style="font-size:10px;color:var(--text3);margin-top:3px">${p.history.length} event${p.history.length>1?'s':''}</div>`:''}
-      </div>
-      <button onclick="TOGGLE_PURSE_DETAIL('${p.name.replace(/ /g,'_')}')" style="background:none;border:none;cursor:pointer;color:rgba(201,168,76,.4);font-size:18px;padding:0 2px;flex-shrink:0">›</button>
-    </div>
-    ${PURSE_OPEN===p.name.replace(/ /g,'_')?`
-    <div style="margin:0 0 10px;padding:12px 14px;background:rgba(0,0,0,.2);border-radius:0 0 var(--r2) var(--r2);border:0.5px solid var(--border);border-top:none">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,.4);margin-bottom:10px">Earnings Breakdown</div>
-      ${p.history.length?p.history.map(h=>`
-        <div style="display:grid;grid-template-columns:1fr 60px 60px 64px;gap:8px;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border)">
-          <div>
-            <div style="font-size:13px;color:var(--text);font-weight:500">${h.tournament}</div>
-            <div style="font-size:10px;color:var(--text3)">${fmtDate(h.date)}</div>
-          </div>
-          <div style="text-align:right;font-size:12px;color:var(--text3)">${h.buyin>0?fmtCurrency(h.buyin):'—'}</div>
-          <div style="text-align:right;font-size:12px;color:var(--text2)">${h.earned>0?fmtCurrency(h.earned):'—'}</div>
-          <div style="text-align:right;font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:${h.pnl>=0?'#5AB870':'#E07070'}">${h.pnl!==0?(h.pnl>0?'+':'')+fmtCurrency(h.pnl):'—'}</div>
-        </div>`).join(''):`<div style="font-size:12px;color:var(--text3);padding:8px 0">No data recorded yet</div>`}
-      <div style="display:grid;grid-template-columns:1fr 60px 60px 64px;gap:8px;padding:10px 0 0;margin-top:4px;border-top:0.5px solid var(--border)">
-        <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Total</span>
-        <span style="text-align:right;font-size:12px;color:var(--text3)">${p.totalBuyIn>0?fmtCurrency(p.totalBuyIn):'—'}</span>
-        <span style="text-align:right;font-size:12px;color:var(--text2)">${p.totalEarned>0?fmtCurrency(p.totalEarned):'—'}</span>
-        <span style="text-align:right;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:${p.pnl>=0?'#5AB870':'#E07070'}">${p.pnl!==0?(p.pnl>0?'+':'')+fmtCurrency(p.pnl):'—'}</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 60px 60px 64px;gap:8px;padding:4px 0 0;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);text-align:right">
-        <span></span><span>Buy-in</span><span>Won</span><span>P&amp;L</span>
-      </div>
-    </div>`:''}`;
+    const pct=maxAbsPnl>0?Math.round(Math.abs(p.pnl)/maxAbsPnl*100):0;
+    const key=p.name.replace(/ /g,'_');
+    const open=PURSE_OPEN===key;
+    h+=`<button class="ui-row ui-purserow${open?' open':''}" onclick="TOGGLE_PURSE_DETAIL('${key}')">
+      <span class="ui-av">${uiInit(p.name)}</span>
+      <span class="ui-row-t">${p.name}<span class="ui-pbar"><i class="${isProfit?'up':'dn'}" style="width:${pct}%"></i></span>
+        <small>${p.wins} win${p.wins!==1?'s':''} · ${p.events} event${p.events!==1?'s':''}${p.totalBuyIn>0?' · in '+fmtCurrency(p.totalBuyIn):''}</small></span>
+      <span class="ui-pnl ${isProfit?'up':'dn'}">${p.pnl!==0?(isProfit?'+':'−')+fmtCurrency(Math.abs(p.pnl)):'—'}</span></button>`;
+    if(open){
+      h+=`<div class="ui-hdet">`;
+      if(p.history.length){
+        h+=`<div class="ui-phead"><span>Event</span><span>Buy-in</span><span>Won</span><span>P&amp;L</span></div>`;
+        h+=p.history.map(x=>`<div class="ui-prow">
+          <span><b>${x.tournament}</b><small>${uiDay(x.date)}</small></span>
+          <span class="ui-mono">${x.buyin>0?fmtCurrency(x.buyin):'—'}</span>
+          <span class="ui-mono">${x.earned>0?fmtCurrency(x.earned):'—'}</span>
+          <span class="ui-mono ${x.pnl>=0?'up':'dn'}">${x.pnl!==0?(x.pnl>0?'+':'−')+fmtCurrency(Math.abs(x.pnl)):'—'}</span></div>`).join('');
+        h+=`<div class="ui-prow tot"><span><b>Total</b></span>
+          <span class="ui-mono">${p.totalBuyIn>0?fmtCurrency(p.totalBuyIn):'—'}</span>
+          <span class="ui-mono">${p.totalEarned>0?fmtCurrency(p.totalEarned):'—'}</span>
+          <span class="ui-mono ${p.pnl>=0?'up':'dn'}">${p.pnl!==0?(p.pnl>0?'+':'−')+fmtCurrency(Math.abs(p.pnl)):'—'}</span></div>`;
+      }else h+=`<div class="ui-s" style="padding:6px 0">Nothing recorded for ${p.name.split(' ')[0]} yet.</div>`;
+      h+=`</div>`;
+    }
   });
   return h+`</div>`;
 }
 
 // ── CONTESTS ──────────────────────────────────────────────────────────────────
 function renderContests(){
-  const CTABS=[['drive','Longest Drive'],['pin','Closest to Pin'],['birdie','Most Birdies'],['eagle','Eagles']];
+  const CTABS=[['drive','Longest drive'],['pin','Closest to pin'],['birdie','Most birdies'],['eagle','Eagles']];
   const filtered=S.contests.filter(c=>c.type===CTAB).sort((a,b)=>b.date.localeCompare(a.date));
-
-  // Tally wins per player per contest type
   const wins={};
   S.players.forEach(p=>{wins[p.id]={name:p.name,drive:0,pin:0,birdie:0,eagle:0};});
   S.contests.forEach(c=>{if(wins[c.winnerId])wins[c.winnerId][c.type]=(wins[c.winnerId][c.type]||0)+1;});
-
-  const leader=Object.values(wins).sort((a,b)=>(b[CTAB]||0)-(a[CTAB]||0))[0];
-  const leaderWins=leader?leader[CTAB]||0:0;
-
-  let h=`<div class="sec-head">
-    <span class="sec-title">Contests &amp; Stats</span>
-    <button class="btn-p" onclick="OM('contest')">+ Add Result</button>
-  </div>`;
-
-  // Tab selector
-  h+=`<div class="contest-tab">${CTABS.map(([v,l])=>`<button class="ctab${CTAB===v?' on':''}" onclick="SC('${v}')"">${l}</button>`).join('')}</div>`;
-
-  // Leader stat box
-  if(leaderWins>0){
-    h+=`<div style="background:var(--deep);border-radius:var(--r2);padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
-      <div style="font-size:28px">${CTAB==='drive'?'💥':CTAB==='pin'?'🎯':CTAB==='birdie'?'🐦':'🦅'}</div>
-      <div style="flex:1">
-        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,.5);margin-bottom:4px">All-time leader</div>
-        <div class="stat-leader">${leader.name}</div>
-        <div class="stat-count">${leaderWins} win${leaderWins!==1?'s':''}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        ${Object.values(wins).sort((a,b)=>(b[CTAB]||0)-(a[CTAB]||0)).slice(0,3).map((p,i)=>
-          p[CTAB]>0?`<div style="font-size:11px;color:rgba(201,168,76,.${i===0?8:i===1?6:4})">${p.name} (${p[CTAB]})</div>`:''
-        ).join('')}
-      </div>
+  const table=Object.values(wins).filter(x=>x[CTAB]>0).sort((a,b)=>b[CTAB]-a[CTAB]);
+  const label=(CTABS.find(c=>c[0]===CTAB)||['','Contest'])[1];
+  let h=`<div class="ui-pagehead"><div class="ui-h1">Contests</div>
+    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('contest')">${uiSvg('plus')}Add</button></div>
+    <div class="ui-chips-x" style="margin-bottom:14px">${CTABS.map(([v,l])=>`<button class="ui-chip sm${CTAB===v?' on':''}" onclick="SC('${v}')">${l}</button>`).join('')}</div>`;
+  if(table.length){
+    const lead=table[0];
+    h+=`<div class="ui-card ui-pad" style="margin-bottom:14px">
+      <div class="ui-s">All-time leader · ${label.toLowerCase()}</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+        <span class="ui-av g">${uiInit(lead.name)}</span>
+        <span class="ui-row-t" style="flex:1">${lead.name}<small>${lead[CTAB]} win${lead[CTAB]!==1?'s':''}</small></span>
+        <span class="ui-rbig sm">${lead[CTAB]}</span></div>
+      ${table.length>1?`<div class="ui-evplayers" style="margin-top:10px">${table.slice(1,4).map(p=>`<span class="ui-badge sm">${p.name.split(' ')[0]} ${p[CTAB]}</span>`).join('')}</div>`:''}
     </div>`;
   }
-
-  h+=`<div class="sec-head" style="margin-top:4px">
-    <span style="font-size:14px;font-weight:500;color:var(--text2)">${CTABS.find(c=>c[0]===CTAB)?.[1]} Results</span>
-  </div>`;
-
-  if(!filtered.length)return h+`<div class="empty-state" style="padding:30px 20px"><div class="empty-icon">${CTAB==='drive'?'💥':CTAB==='pin'?'🎯':CTAB==='birdie'?'🐦':'🦅'}</div><div class="empty-title">No ${CTABS.find(c=>c[0]===CTAB)?.[1]} results yet</div><div class="empty-sub">Add your first result above</div></div>`;
-
-  h+=`<div class="ccard">
-    <div style="display:grid;grid-template-columns:1fr 110px 28px;gap:8px;padding:10px 0 9px;font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:var(--text3);border-bottom:0.5px solid rgba(11,30,18,.1)">
-      <span>Course / Event</span><span style="text-align:right">Winner</span><span></span>
-    </div>`;
+  if(!filtered.length)return h+`<div class="ui-crempty">No ${label.toLowerCase()} results yet. Add the first one and the all-time table starts here.</div>`;
+  h+=`<div class="ui-lbl">${label} results</div><div class="ui-list">`;
   filtered.forEach(c=>{
     const w=S.players.find(p=>p.id===c.winnerId);
-    h+=`<div class="contest-row">
-      <div>
-        <div class="contest-course">${c.course||c.event||'—'}</div>
-        <div class="contest-meta">${fmtDate(c.date)}${c.detail?' &middot; '+c.detail:''}</div>
-      </div>
-      <div class="contest-winner">${w?w.name:'—'}</div>
-      <button class="btn-ic" onclick="DC('${c.id}')">&times;</button>
-    </div>`;
+    h+=`<div class="ui-row" style="cursor:default">
+      <span class="ui-row-t">${c.course||c.event||'—'}<small>${uiDay(c.date)}${c.detail?' · '+c.detail:''}</small></span>
+      <span class="ui-row-v"><b class="ui-twin">${w?w.name.split(' ')[0]:'—'}</b></span>
+      <button class="ui-ico sm" onclick="DC('${c.id}')" aria-label="Remove" style="color:var(--red)">${uiSvg('x')}</button></div>`;
   });
   return h+`</div>`;
 }
@@ -4783,50 +4788,40 @@ function renderWinners(){
   const sorted=[...S.tournaments].filter(t=>t.winnerId).sort((a,b)=>b.date.localeCompare(a.date));
   const latest=sorted[0],lw=latest?S.players.find(p=>p.id===latest.winnerId):null;
   const wins={};sorted.forEach(t=>{wins[t.winnerId]=(wins[t.winnerId]||0)+1;});
-  let h=`<div class="trophy-stage">
-    <div class="trophy-eyebrow">Roll of Honour</div>
-    ${trophySVG(lw?.name||'',latest?.name||'',latest?.date||'')}
-    <div class="trophy-champ">${lw?lw.name:'Awaiting First Champion'}</div>
-    ${latest?`<div class="trophy-event">${latest.name}&ensp;&middot;&ensp;${fmtDate(latest.date)}</div>`:''}
-  </div>
-  <div class="divider"></div>`;
-  if(!sorted.length)return h+`<div class="empty-state" style="padding-top:8px"><div class="empty-sub">Add a tournament to begin the Roll of Honour</div></div>`;
-  h+=`<div class="sec-head"><span class="sec-title">All Champions</span></div><div class="ccard">`;
-  sorted.forEach((t,i)=>{
+  let h=`<div style="margin:2px 4px 14px"><div class="ui-h1">Roll of honour</div></div>
+  <div class="ui-trophystage">
+    ${trophySVG((lw&&lw.name)||'',(latest&&latest.name)||'',(latest&&latest.date)||'')}
+    <div class="ui-trophy-n">${lw?lw.name:'Awaiting the first champion'}</div>
+    ${latest?`<div class="ui-trophy-e">${latest.name} · ${uiDay(latest.date)}</div>`:''}
+  </div>`;
+  if(!sorted.length)return h+`<div class="ui-crempty" style="margin-top:14px">Add a tournament with a winner and their name is engraved here.</div>`;
+  h+=`<div class="ui-lbl">All champions</div><div class="ui-list">`;
+  sorted.forEach(t=>{
     const w=S.players.find(p=>p.id===t.winnerId);
     const entry=t.entries.find(e=>e.playerId===t.winnerId);
-    const sc=entry?.score??null;
-    h+=`<div class="honour-row">
-      <div class="honour-pos" style="${i===0?'background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.3)':''}">${i===0?'🥇':'🏆'}</div>
-      <div style="flex:1;min-width:0">
-        <div class="honour-name">${w?.name||'Unknown'}</div>
-        <div class="honour-event">${t.name}${t.prize?` &middot; ${fmtCurrency(t.prize)}`:''}</div>
-      </div>
-      <div style="text-align:right">
-        ${sc!==null?`<div class="honour-score ${scoreClass(sc)}">${fmtScore(sc)}</div>`:''}
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${fmtDate(t.date)}</div>
-      </div>
-    </div>`;
+    const sc=entry&&entry.score!=null?entry.score:null;
+    h+=`<button class="ui-row" onclick="OT('${t.id}')">
+      <span class="ui-av g">${w?uiInit(w.name):'—'}</span>
+      <span class="ui-row-t">${(w&&w.name)||'Unknown'}<small>${t.name}${t.prize?' · '+fmtCurrency(t.prize):''} · ${uiDay(t.date)}</small></span>
+      ${sc!==null?`<span class="ui-rbig sm ${sc<0?'red':''}">${fmtScore(sc)}</span>`:''}
+      ${uiSvg('chev','ui-chev')}</button>`;
   });
   h+=`</div>`;
   const leaders=Object.entries(wins).map(([id,c])=>({p:S.players.find(x=>x.id===id),c})).filter(x=>x.p).sort((a,b)=>b.c-a.c);
   if(leaders.length>1){
-    h+=`<div class="sec-head" style="margin-top:18px"><span class="sec-title">Championship Wins</span></div><div class="ccard">`;
-    leaders.forEach(({p,c})=>{
-      h+=`<div class="honour-row">
-        <div style="flex:1;font-family:'Playfair Display',serif;font-size:15px;font-weight:500">${p.name}</div>
-        <div style="display:flex;gap:3px">${'🏆'.repeat(Math.min(c,5))}${c>5?`<span style="font-size:12px;color:var(--text3)"> +${c-5}</span>`:''}</div>
-        <div style="font-size:16px;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;min-width:22px;text-align:right;margin-left:10px">${c}</div>
-      </div>`;
-    });
-    h+=`</div>`;
+    h+=`<div class="ui-lbl">Championship wins</div><div class="ui-list">${leaders.map(({p,c})=>`
+      <div class="ui-row" style="cursor:default"><span class="ui-av">${uiInit(p.name)}</span>
+        <span class="ui-row-t">${p.name}<small>${c} title${c===1?'':'s'}</small></span>
+        <span class="ui-rbig sm">${c}</span></div>`).join('')}</div>`;
   }
   return h;
 }
 
 // ── COURSES ───────────────────────────────────────────────────────────────────
 function renderCourses(){
-  const q=(document.getElementById('csr')?.value||'').trim().toLowerCase();
+  const el=document.getElementById('csr');
+  const raw=el?el.value:'';
+  const q=(raw||'').trim().toLowerCase();
   const played=playedNameSet();
   // One entry per CLUB, not per tee — a course with six tees and three configurations was
   // filling ten rows and drowning the list. Tap a club to see what it offers.
@@ -4840,15 +4835,14 @@ function renderCourses(){
   const CFGL={'18':'18 holes','F9':'Front 9','L9':'Back 9','F9x2':'Front 9 ×2','L9x2':'Back 9 ×2'};
   const TEEC={White:'#F2EFE4',Yellow:'#E8C544',Blue:'#5C97B8',Red:'#C4544B',Green:'#6E9E5C',Purple:'#8E6BA8',Black:'#2A2A2A',Gold:'#C9A84C',Orange:'#D98A3C'};
 
-  let h=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-    <input type="search" placeholder="Search all ${totalClubs} courses…" id="csr" value="${(document.getElementById('csr')?.value||'').replace(/"/g,'&quot;')}" oninput="CSR_TYPE()" style="flex:1">
-    <button class="btn-p" onclick="OM('course')">+ Add</button>
-  </div>
-  ${!q?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-    <button class="lp-chip${!COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(0)">Courses you play</button>
-    <button class="lp-chip${COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(1)">All ${totalClubs}</button>
-  </div>`:`<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${names.length} club${names.length===1?'':'s'} matching</div>`}
-  <div class="ccard" id="cglist">`;
+  let h=`<div class="ui-pagehead"><div class="ui-h1">Courses</div>
+    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('course')">${uiSvg('plus')}Add</button></div>
+  <input type="search" id="csr" placeholder="Search all ${totalClubs} courses…" value="${(raw||'').replace(/"/g,'&quot;')}" oninput="CSR_TYPE()" class="ui-csearch">
+  ${!q?`<div class="ui-chips-x" style="margin:12px 0 14px">
+    <button class="ui-chip sm${!COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(0)">Courses you play</button>
+    <button class="ui-chip sm${COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(1)">All ${totalClubs}</button>
+  </div>`:`<div class="ui-note" style="margin:10px 4px 12px">${names.length} club${names.length===1?'':'s'} matching</div>`}
+  <div class="ui-list">`;
 
   names.slice(0,120).forEach(n=>{
     const rows=groups[n];
@@ -4857,30 +4851,33 @@ function renderCourses(){
     const isVer=rows.some(r=>r.src==='verified');
     const open=OPEN_COURSE===n;
     const nRounds=(S.players||[]).reduce((a,p)=>a+(p.scores||[]).filter(x=>x.course===n).length,0);
-    h+=`<button class="cg-row" onclick="TC('${n.replace(/'/g,"\\'")}')">
-      <span><span class="cg-nm">${n}</span>
-        <span class="cg-sub">${tees.length} tee${tees.length>1?'s':''} · ${rows.length} rated setup${rows.length>1?'s':''}${nRounds?` · ${nRounds} round${nRounds>1?'s':''} played`:''}${isFpg?' · FPG official':isVer?' · verified':''}</span></span>
-      <span class="cg-caret">${open?'▲':'▼'}</span></button>`;
+    h+=`<button class="ui-row${open?' open':''}" onclick="TC('${n.replace(/'/g,"\\'")}')">
+      <span class="ui-row-t">${n}<small>${tees.length} tee${tees.length>1?'s':''} · ${rows.length} rated setup${rows.length>1?'s':''}${nRounds?` · ${nRounds} round${nRounds>1?'s':''} played`:''}</small></span>
+      ${isFpg?'<span class="ui-pill">FPG</span>':isVer?'<span class="ui-pill">verified</span>':''}
+      <span class="ui-chevrot${open?' up':''}">${uiSvg('chev','ui-chev')}</span></button>`;
     if(open){
-      h+=`<div class="cg-detail">`;
+      h+=`<div class="ui-hdet"><div class="ui-teehead"><span>Tee</span><span>Rating</span><span>Slope</span><span></span></div>`;
       tees.forEach(te=>{
         rows.filter(r=>r.tee===te)
           .sort((a,b)=>['18','F9','L9','F9x2','L9x2'].indexOf(a.holes||'18')-['18','F9','L9','F9x2','L9x2'].indexOf(b.holes||'18'))
           .forEach(r=>{
             const cfg=r.holes||(r.rating<40?'F9':'18');
-            h+=`<div class="cg-tee">
-              <span class="t1"><span class="pk-sw" style="background:${TEEC[te]||'#BBB'}"></span>${te}<span style="font-weight:500;color:var(--text3);font-size:11px">${CFGL[cfg]||cfg}</span></span>
-              <span class="t2">${r.rating}</span><span class="t2">${r.slope}</span>
-              <span style="display:flex;gap:4px"><button class="mini-btn" title="Edit" onclick="event.stopPropagation();EC(${r.i})">✎</button><button class="mini-btn del" title="Delete" onclick="event.stopPropagation();XC(${r.i})">✕</button></span>
+            h+=`<div class="ui-teerow">
+              <span class="ui-teen"><i class="pk-sw" style="background:${TEEC[te]||'#BBB'}"></i>${te}<small>${CFGL[cfg]||cfg}</small></span>
+              <span class="ui-mono">${r.rating}</span><span class="ui-mono">${r.slope}</span>
+              <span class="ui-teeact">
+                <button class="ui-ico sm" onclick="event.stopPropagation();EC(${r.i})" aria-label="Edit tee">${uiSvg('pen')}</button>
+                <button class="ui-ico sm" onclick="event.stopPropagation();XC(${r.i})" aria-label="Delete tee" style="color:var(--red)">${uiSvg('x')}</button></span>
             </div>`;
           });
       });
-      h+=`<div style="font-size:10px;color:var(--text3);padding:8px 12px 4px;letter-spacing:.5px">RATING · SLOPE shown for each setup</div></div>`;
+      h+=`</div>`;
     }
   });
-  if(!names.length)h+=`<div style="padding:30px;text-align:center;color:var(--text3);font-size:13px">${q?`No club matches “${document.getElementById('csr')?.value||''}”`:'No courses played yet'}</div>`;
-  if(names.length>120)h+=`<div style="padding:12px;text-align:center;color:var(--text3);font-size:11.5px">Showing 120 of ${names.length} — keep typing to narrow it.</div>`;
-  return h+`</div>`;
+  if(!names.length)h+=`<div class="ui-row" style="cursor:default;justify-content:center;color:var(--ink2)">${q?`No club matches “${raw}”`:'No courses played yet'}</div>`;
+  h+=`</div>`;
+  if(names.length>120)h+=`<div class="ui-note" style="text-align:center">Showing 120 of ${names.length} — keep typing to narrow it.</div>`;
+  return h;
 }
 
 // ── MODALS ────────────────────────────────────────────────────────────────────
@@ -6261,7 +6258,7 @@ window.SC2=()=>{
 // Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
 // ═══════════════════════════════════════════════════════════════════════════
 var UI_MENU=false, UI_FROM='home', UI_ME=null;
-try{ UI_ME=localStorage.getItem('club_me_v1')||null; }catch(e){ UI_ME=null; }
+try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
 
 const UI_MAIN=['home','rankings','crown','profile','play'];
@@ -6297,6 +6294,8 @@ const UI_I={
   pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
   again:'<path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/>',
   tick:'<path d="M4 12.5 9 17.5 20 6.5"/>',
+  bin:'<path d="M4 7h16M10 7V5h4v2M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',
+  dice:'<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="15" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="9" cy="15" r="1.2"/>',
 };
 function uiSvg(k,cls){ return `<svg viewBox="0 0 24 24"${cls?` class="${cls}"`:''} aria-hidden="true">${UI_I[k]||''}</svg>`; }
 function uiInit(n){ return String(n||'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
@@ -6372,7 +6371,7 @@ function renderSettings(){
     </div>
     <div class="ui-lbl">Install on your phone</div>
     <div class="ui-card ui-pad" style="font-size:14px;line-height:1.5">Safari → Share → <b>Add to Home Screen</b>. It opens full-screen like an app.</div>
-    <div class="ui-note">Preview 1 · new design, stage 5 of 7. Same live data as the main app.</div>`;
+    <div class="ui-note">Preview 1 · new design, stage 6 of 7. Same live data as the main app.</div>`;
 }
 
 // ── handlers ──
@@ -6389,11 +6388,11 @@ window.UI_MENU_O=()=>{UI_MENU=true;render();};
 window.UI_MENU_X=()=>{UI_MENU=false;render();};
 window.UI_MENU_GO=v=>UI_GO(v);
 window.UI_SETME=id=>{
-  UI_ME=id; try{ localStorage.setItem('club_me_v1',id); }catch(e){}
+  UI_ME=id; try{ CLUB_SET('club_me_v1',id); }catch(e){}
   PID=id; V='profile'; render(); try{ window.scrollTo(0,0); }catch(e){}
 };
 window.UI_ME_CLEAR=()=>{
-  UI_ME=null; try{ localStorage.removeItem('club_me_v1'); }catch(e){}
+  UI_ME=null; try{ CLUB_DEL('club_me_v1'); }catch(e){}
   UI_GO('profile');
 };
 window.UI_POST=()=>{
@@ -6865,6 +6864,30 @@ window.UI_WSUM=()=>{
     const v=g(['cwS','cwH','cwF','cwB'][i]);
     const bar=row.querySelector('.ui-wbar i'); if(bar)bar.style.width=Math.max(0,Math.min(100,isFinite(v)?v:0))+'%';
   });
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REVAMP · STAGE 6 — Tournaments, Events, Contests, Purse, Courses, Roll of honour
+// ═══════════════════════════════════════════════════════════════════════════
+// "I'm in / can't make it" on an event. The only new thing that writes: it adds or
+// removes your own name in that event's player list, nothing else.
+window.UI_EVENT_IN=id=>{
+  if(!UI_MEP()) return UI_GO('profile');
+  const me=S.players.find(p=>p.id===UI_ME); if(!me) return;
+  const list=(S.upcoming||[]).map(t=>{
+    if(t.id!==id) return t;
+    const players=Array.isArray(t.players)?[...t.players]:[];
+    const at=players.indexOf(me.name);
+    if(at!==-1){ players.splice(at,1); return {...t,players}; }
+    // add back in the club's own order, so the list never reshuffles
+    const order=(S.players||[]).map(x=>x.name);
+    const pos=order.indexOf(me.name);
+    let ins=players.length;
+    for(let k=0;k<players.length;k++){ const o=order.indexOf(players[k]); if(o===-1||o>pos){ ins=k; break; } }
+    players.splice(ins,0,me.name);
+    return {...t,players};
+  });
+  upd({...S,upcoming:list});
 };
 </script>
 </body>
