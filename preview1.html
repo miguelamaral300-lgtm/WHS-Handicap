@@ -1533,6 +1533,12 @@ input::placeholder,textarea::placeholder{color:var(--ink3)}
 
 .ui-btn{white-space:nowrap}
 
+/* Any icon dropped into a button sizes itself — without this an inline <svg> with no
+   width falls back to the replaced-element default (300px) and shoves the label off
+   centre. This is the safety net for every .ui-btn that carries an icon. */
+.ui-btn svg{width:18px;height:18px;flex:0 0 18px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ui-btn-sm svg{width:16px;height:16px;flex:0 0 16px}
+
 /* ════════ STAGE 2 · Home, Rankings, Profile, Round history, Add player ════════ */
 .ui-pagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 4px 12px}
 .ui-btn-sm svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -1938,6 +1944,15 @@ a.ui-btn{color:#fff}
 .ui-teen .pk-sw{width:14px;height:14px;flex-shrink:0}
 .ui-teeact{display:flex;gap:4px;justify-content:flex-end}
 .ui-row.open{box-shadow:inset 0 -1px 0 var(--line)}
+
+/* Stage 7 · comfortable tap targets on a phone in the wind */
+.ui-link.sm{min-height:34px;padding-top:9px;padding-bottom:9px}
+.ui-tog{position:relative}
+.ui-tog::after{content:'';position:absolute;inset:-8px -6px}
+
+/* one Events section, four tabs */
+.ui-evtabs{margin-bottom:16px}
+.ui-evtabs button{flex:1;font-size:12.5px;padding:0 6px}
 </style>
 </head>
 <body>
@@ -3002,7 +3017,7 @@ function renderCrown(){
     return fh+`</div>`;
   }
 
-  const r=potmCompute(ym);
+  const r=uiCrown(ym);
   let h=`<div class="cr-wrap">`+head(r.locked?'Final':'Live');
 
   if(!r.entrants.length){
@@ -3097,7 +3112,7 @@ function uiCrownRows(ym,st,r){
 function renderCrownDetail(ym,st){
   const TABS=[['h2h','Head to head'],['fair','Fairness'],['honour','Honours']];
   const TITLE={h2h:'Head to head',fair:'Fairness',honour:'Roll of honour',entries:'Entries',declared:'Declared rounds',rules:'How it is scored'};
-  let r=null; try{ r=potmCompute(ym); }catch(e){}
+  let r=null; try{ r=uiCrown(ym); }catch(e){}
   let body='';
   if(UI_CRD==='h2h') body=r?crownMatrix(r):'';
   else if(UI_CRD==='fair') body=r?crownFair(r,st):'';
@@ -3338,7 +3353,7 @@ function renderCrownSettings(){
   const gate=potmEntryOpen(ym);
   const nextYM=(()=>{const [y,m]=potmThisYM().split('-').map(Number);return new Date(Date.UTC(y,m,1)).toISOString().slice(0,7);})();
   const target=gate.open?ym:nextYM;
-  let r=null; try{ r=potmCompute(ym); }catch(e){}
+  let r=null; try{ r=uiCrown(ym); }catch(e){}
   const roundsOf=pid=>{ const e=r&&r.entrants.find(x=>x.pid===pid); return e?e.rounds.length:0; };
   const W=[['cwS','scoring','Scoring'],['cwH','h2h','Head to head'],['cwF','form','Form'],['cwB','bonus','Bonus']];
   return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
@@ -4371,11 +4386,8 @@ function render(){
   else if(V==='rankings') h+=renderRanking(R);
   else if(V==='play') h+=renderPlay();
   else if(V==='crown') h+=renderCrown();
-  else if(V==='tournaments') h+=renderTournaments();
-  else if(V==='upcoming') h+=renderUpcoming();
+  else if(uiIsEvents(V)) h+=renderEvents();
   else if(V==='purse') h+=renderPurse();
-  else if(V==='contests') h+=renderContests();
-  else if(V==='winners') h+=renderWinners();
   else h+=renderCourses();
 
   if(MOD==='score'&&AP) h+=renderScoreModal(AP);
@@ -4618,8 +4630,7 @@ function renderRoundHistory(p){
 // ── TOURNAMENTS ───────────────────────────────────────────────────────────────
 function renderTournaments(){
   const sorted=[...S.tournaments].sort((a,b)=>b.date.localeCompare(a.date));
-  let h=`<div class="ui-pagehead"><div class="ui-h1">Tournaments</div>
-    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('tournament')">${uiSvg('plus')}Add</button></div>`;
+  let h='';
   if(!sorted.length)return h+`<div class="ui-crempty">No tournaments yet. Record your first competition and it starts the Roll of Honour.</div>`;
   return h+`<div class="ui-list">`+sorted.map(t=>{
     const w=S.players.find(p=>p.id===t.winnerId);
@@ -4671,8 +4682,7 @@ function renderUpcoming(){
   const upcoming=[...S.upcoming]
     .filter(t=>new Date(t.date)>=now||(daysUntil(t.date)||0)>=-1)
     .sort((a,b)=>a.date.localeCompare(b.date));
-  let h=`<div class="ui-pagehead"><div class="ui-h1">Events</div>
-    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('upcoming')">${uiSvg('plus')}Add</button></div>`;
+  let h='';
   if(!upcoming.length)return h+`<div class="ui-crempty">Nothing in the diary. Add the next outing and everyone can say whether they’re in.</div>`;
   const me=UI_MEP()?S.players.find(p=>p.id===UI_ME):null;
   const first=upcoming[0];
@@ -4757,9 +4767,7 @@ function renderContests(){
   S.contests.forEach(c=>{if(wins[c.winnerId])wins[c.winnerId][c.type]=(wins[c.winnerId][c.type]||0)+1;});
   const table=Object.values(wins).filter(x=>x[CTAB]>0).sort((a,b)=>b[CTAB]-a[CTAB]);
   const label=(CTABS.find(c=>c[0]===CTAB)||['','Contest'])[1];
-  let h=`<div class="ui-pagehead"><div class="ui-h1">Contests</div>
-    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('contest')">${uiSvg('plus')}Add</button></div>
-    <div class="ui-chips-x" style="margin-bottom:14px">${CTABS.map(([v,l])=>`<button class="ui-chip sm${CTAB===v?' on':''}" onclick="SC('${v}')">${l}</button>`).join('')}</div>`;
+  let h=`<div class="ui-chips-x" style="margin-bottom:14px">${CTABS.map(([v,l])=>`<button class="ui-chip sm${CTAB===v?' on':''}" onclick="SC('${v}')">${l}</button>`).join('')}</div>`;
   if(table.length){
     const lead=table[0];
     h+=`<div class="ui-card ui-pad" style="margin-bottom:14px">
@@ -4788,8 +4796,7 @@ function renderWinners(){
   const sorted=[...S.tournaments].filter(t=>t.winnerId).sort((a,b)=>b.date.localeCompare(a.date));
   const latest=sorted[0],lw=latest?S.players.find(p=>p.id===latest.winnerId):null;
   const wins={};sorted.forEach(t=>{wins[t.winnerId]=(wins[t.winnerId]||0)+1;});
-  let h=`<div style="margin:2px 4px 14px"><div class="ui-h1">Roll of honour</div></div>
-  <div class="ui-trophystage">
+  let h=`<div class="ui-trophystage">
     ${trophySVG((lw&&lw.name)||'',(latest&&latest.name)||'',(latest&&latest.date)||'')}
     <div class="ui-trophy-n">${lw?lw.name:'Awaiting the first champion'}</div>
     ${latest?`<div class="ui-trophy-e">${latest.name} · ${uiDay(latest.date)}</div>`:''}
@@ -4827,6 +4834,10 @@ function renderCourses(){
   // filling ten rows and drowning the list. Tap a club to see what it offers.
   const groups={};
   S.courses.forEach((c,i)=>{ (groups[c.name]=groups[c.name]||[]).push({...c,i}); });
+  // One pass over the record instead of a full scan per club — with 120 clubs the old
+  // way walked every player's whole history 120 times over.
+  const roundsBy={};
+  (S.players||[]).forEach(p=>(p.scores||[]).forEach(x=>{ roundsBy[x.course]=(roundsBy[x.course]||0)+1; }));
   let names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
   const totalClubs=names.length;
   if(q) names=names.filter(n=>n.toLowerCase().includes(q));
@@ -4850,7 +4861,7 @@ function renderCourses(){
     const isFpg=rows.some(r=>r.src==='fpg');
     const isVer=rows.some(r=>r.src==='verified');
     const open=OPEN_COURSE===n;
-    const nRounds=(S.players||[]).reduce((a,p)=>a+(p.scores||[]).filter(x=>x.course===n).length,0);
+    const nRounds=roundsBy[n]||0;
     h+=`<button class="ui-row${open?' open':''}" onclick="TC('${n.replace(/'/g,"\\'")}')">
       <span class="ui-row-t">${n}<small>${tees.length} tee${tees.length>1?'s':''} · ${rows.length} rated setup${rows.length>1?'s':''}${nRounds?` · ${nRounds} round${nRounds>1?'s':''} played`:''}</small></span>
       ${isFpg?'<span class="ui-pill">FPG</span>':isVer?'<span class="ui-pill">verified</span>':''}
@@ -6263,15 +6274,12 @@ V='home';   // the app now opens on Home
 
 const UI_MAIN=['home','rankings','crown','profile','play'];
 const UI_MORE=[
-  ['upcoming','Events','What’s coming up','cal'],
-  ['tournaments','Tournaments','Results & scores','trophy'],
+  ['upcoming','Events','Diary, results, contests, winners','cal'],
   ['purse','Purse','Who’s up, who owes','purse'],
-  ['contests','Contests','Drives, pins & more','target'],
-  ['winners','Winners','Roll of honour','medal'],
   ['courses','Courses','Tees, ratings, slopes','flag'],
   ['settings','Settings','Sync, backup, players','gear'],
 ];
-const UI_TITLES={upcoming:'Events',tournaments:'Tournaments',purse:'Purse',contests:'Contests',winners:'Winners',courses:'Courses',settings:'Settings'};
+const UI_TITLES={upcoming:'Events',tournaments:'Events',contests:'Events',winners:'Events',purse:'Purse',courses:'Courses',settings:'Settings'};
 const UI_I={
   home:'<path d="M4 10.5 12 4l8 6.5V20H4z"/>',
   rank:'<path d="M5 19V9M12 19V5M19 19v-7"/>',
@@ -6368,6 +6376,7 @@ function renderSettings(){
     <div class="ui-lbl">This phone</div>
     <div class="ui-list">
       <button class="ui-row" onclick="${me?'UI_ME_CLEAR()':"UI_GO('profile')"}"><span class="ui-row-t">${me?me.name:'Not set'}<small>${me?'Tap to switch player':'Choose who uses this phone'}</small></span>${uiSvg('chev','ui-chev')}</button>
+      <button class="ui-row" onclick="UI_SIGNOUT()"><span class="ui-row-t" style="color:var(--red)">Sign out<small>Forgets the passphrase and who you are on this phone</small></span>${uiSvg('chev','ui-chev')}</button>
     </div>
     <div class="ui-lbl">Install on your phone</div>
     <div class="ui-card ui-pad" style="font-size:14px;line-height:1.5">Safari → Share → <b>Add to Home Screen</b>. It opens full-screen like an app.</div>
@@ -6391,6 +6400,15 @@ window.UI_SETME=id=>{
   UI_ME=id; try{ CLUB_SET('club_me_v1',id); }catch(e){}
   PID=id; V='profile'; render(); try{ window.scrollTo(0,0); }catch(e){}
 };
+// The app could never be signed out: the function existed but nothing called it, so a
+// shared or lost phone stayed logged in for good.
+window.UI_SIGNOUT=()=>{
+  if(!confirm('Sign out of The Club on this phone?\n\nYou will need the passphrase to get back in, and you will pick your player again. Nothing is removed from the club.')) return;
+  try{ CLUB_DEL('club_me_v1'); }catch(e){}
+  if(window.LOGOUT_CLUB) return LOGOUT_CLUB();
+  try{ CLUB_DEL('whs_club_auth_v1'); }catch(e){}
+  location.reload();
+};
 window.UI_ME_CLEAR=()=>{
   UI_ME=null; try{ CLUB_DEL('club_me_v1'); }catch(e){}
   UI_GO('profile');
@@ -6406,7 +6424,29 @@ window.UI_POST=()=>{
 // roundIssue, orderScores…) on copies of the data and never write anything.
 // ═══════════════════════════════════════════════════════════════════════════
 var UI_RSORT='hi', UI_RH=null, UI_H2H={}, UI_LIVE=null, UI_LIVE_AT=0, UI_LIVE_SIG='';
-const UI_STC=new WeakMap(), UI_TGC=new WeakMap();
+const UI_STC=new Map(), UI_TGC=new Map();
+// Cache key. It must change whenever ANYTHING in the record changes — including an edit
+// to a round in the middle of the list, which a count-and-last-round fingerprint misses.
+// Every write goes through upd(), which replaces these arrays, so their identity is an
+// exact "has anything changed" signal; a stale answer cannot survive a change.
+var UI_GEN=0, UI_GEN_P=null, UI_GEN_C=null;
+function uiGen(){
+  if(UI_GEN_P!==S.players||UI_GEN_C!==S.courses){ UI_GEN++; UI_GEN_P=S.players; UI_GEN_C=S.courses; }
+  return UI_GEN;
+}
+function uiSig(p){ return p.id+'|'+uiGen(); }
+// potmCompute is the most expensive call in the app (~100ms on an older phone) and both
+// Home and the Crown want it on every render. The engine is untouched — this only
+// remembers the last answer and drops it the moment the data is replaced.
+var UI_CRC=null;
+function uiCrown(ym){
+  if(UI_CRC&&UI_CRC.ym===ym&&UI_CRC.players===S.players&&UI_CRC.courses===S.courses&&UI_CRC.potm===S.potm) return UI_CRC.r;
+  const r=potmCompute(ym);
+  UI_CRC={ym,players:S.players,courses:S.courses,potm:S.potm,r};
+  return r;
+}
+function uiCacheGet(m,k){ return m.get(k); }
+function uiCacheSet(m,k,v){ if(m.size>60) m.clear(); m.set(k,v); return v; }
 
 function uiShort(n){ return String(n||'').replace(/\s+(Golf Club|Golf Course|Golf|GC|Club)$/i,'').replace(/^Quinta da /,'').trim()||n; }
 function uiDay(d){ try{ const x=new Date(d+'T12:00:00'); return x.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+(x.getFullYear()!==new Date().getFullYear()?' '+x.getFullYear():''); }catch(e){ return fmtDate(d); } }
@@ -6417,7 +6457,8 @@ function uiToday(){ return new Date().toISOString().slice(0,10); }
 // that player's rounds (or the course list) change.
 function uiStats(p){
   const sc=p.scores||[];
-  const hit=UI_STC.get(sc); if(hit&&hit.c===S.courses) return hit.v;
+  const key=uiSig(p);
+  const hit=uiCacheGet(UI_STC,key); if(hit) return hit;
   const ord=orderScores(sc);
   const tl=[]; let prev=null;
   for(let k=0;k<ord.length;k++){
@@ -6456,14 +6497,14 @@ function uiStats(p){
   const res=(S.potm&&S.potm.results)||{};
   const crowns=Object.values(res).filter(x=>x&&x.winnerId===p.id).length;
   const v={tl,valid,holes,roundsYear,bestGross,bestDiff,courses,lowHI,lowHIDate,move,yearStart,yearDelta,form,crowns,spark:tl.filter(t=>t.hi!=null).map(t=>t.hi)};
-  UI_STC.set(sc,{c:S.courses,v});
-  return v;
+  return uiCacheSet(UI_STC,key,v);
 }
 
 // What the next round does to the index, on the course played most in the last year.
 function uiTarget(p){
   const sc=p.scores||[];
-  const hit=UI_TGC.get(sc); if(hit&&hit.c===S.courses&&hit.d===uiToday()) return hit.v;
+  const key=uiSig(p)+'|'+uiToday();
+  const hit=uiCacheGet(UI_TGC,key); if(hit) return hit.v;
   let v=null;
   const cur=calcHI(sc,S.courses);
   if(cur.hi!=null){
@@ -6486,7 +6527,7 @@ function uiTarget(p){
       }
     }
   }
-  UI_TGC.set(sc,{c:S.courses,d:uiToday(),v});
+  uiCacheSet(UI_TGC,key,{v});
   return v;
 }
 function uiTargetCard(t,onGreen){
@@ -6664,7 +6705,7 @@ function renderHome(R){
   let crown='';
   if(me){
     try{
-      const ym=potmThisYM(), r=potmCompute(ym), e=r.entrants.find(x=>x.pid===me.id);
+      const ym=potmThisYM(), r=uiCrown(ym), e=r.entrants.find(x=>x.pid===me.id);
       const mon=potmMonthName(ym).split(' ')[0];
       if(potmSettledRecord(ym)) crown='';
       else if(!e) crown=`<button class="ui-tile" onclick="UI_GO('crown')"><span class="k">${mon} Crown</span><span class="v">Not entered</span><span class="k">Tap to see the race</span></button>`;
@@ -6889,6 +6930,30 @@ window.UI_EVENT_IN=id=>{
   });
   upd({...S,upcoming:list});
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUDIT · one Events section instead of four menu entries
+// Upcoming, Tournaments, Contests and Winners are the same thing at different
+// points in time, and the approved mockup shows them as one screen with tabs.
+// V still carries which tab is open, so every existing link keeps working.
+// ═══════════════════════════════════════════════════════════════════════════
+const UI_EVTABS=[['upcoming','Upcoming'],['tournaments','Tournaments'],['contests','Contests'],['winners','Winners']];
+const UI_EVADD={upcoming:["OM('upcoming')",'New event'],tournaments:["OM('tournament')",'Add result'],
+                contests:["OM('contest')",'Add result'],winners:null};
+function uiIsEvents(v){ return UI_EVTABS.some(t=>t[0]===v); }
+function renderEvents(){
+  const tab=uiIsEvents(V)?V:'upcoming';
+  const add=UI_EVADD[tab];
+  let h=`<div class="ui-pagehead"><div class="ui-h1">Events</div>
+    ${add?`<button class="ui-btn ui-btn-g ui-btn-sm" onclick="${add[0]}">${uiSvg('plus')}${add[1]}</button>`:''}</div>
+    <div class="ui-seg ui-seg-full ui-evtabs">${UI_EVTABS.map(([k,l])=>
+      `<button class="${tab===k?'on':''}" onclick="UI_GO('${k}')">${l}</button>`).join('')}</div>`;
+  if(tab==='upcoming') h+=renderUpcoming();
+  else if(tab==='tournaments') h+=renderTournaments();
+  else if(tab==='contests') h+=renderContests();
+  else h+=renderWinners();
+  return h;
+}
 </script>
 </body>
 </html>
