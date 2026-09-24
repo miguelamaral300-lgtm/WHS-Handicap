@@ -1529,6 +1529,125 @@ input::placeholder,textarea::placeholder{color:var(--ink3)}
 .medal-1::after,.medal-2::after,.medal-3::after{font-size:13px;font-weight:600;color:var(--ink2)}
 .medal-1::after{content:'1'}.medal-2::after{content:'2'}.medal-3::after{content:'3'}
 .ui-tiles .ui-tile:last-child:nth-child(odd){grid-column:span 2;min-height:0}
+
+/* ════════ STAGE 2 · Home, Rankings, Profile, Round history, Add player ════════ */
+.ui-pagehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 4px 12px}
+.ui-btn-sm svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ui-btn-red{background:var(--redl);color:var(--red)}
+.ui-seg-full{display:flex;width:100%}.ui-seg-full button{flex:1;height:44px;font-size:14px}
+.ui-na{color:var(--ink3);font-weight:400}
+.ui-star{font-style:normal;color:var(--g);font-size:.5em;vertical-align:super;margin-left:1px}
+.ui-star.w{color:rgba(255,255,255,.8)}
+.ui-strong{color:var(--ink);font-weight:600;font-size:15px}
+.ui-av.lg{width:60px;height:60px;font-size:20px}
+.ui-av svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ui-row svg.ui-chev.g{stroke:var(--g)}
+
+/* movement */
+.ui-mv{font-weight:600;white-space:nowrap}
+.ui-mv.dn{color:var(--g)} .ui-mv.up{color:var(--red)}
+
+/* rankings */
+.ui-rrow{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:10px 16px 10px 12px;background:#fff;border:none;border-top:1px solid var(--line);text-align:left;cursor:pointer;color:var(--ink)}
+.ui-rrow:first-child{border-top:none}
+.ui-rrow:active{background:var(--off)}
+.ui-rrow.me{background:var(--gl);border-top-color:var(--gl)}
+.ui-rrow.me + .ui-rrow{border-top-color:transparent}
+.ui-rpos{width:16px;text-align:center;font-size:12.5px;color:var(--ink3);font-feature-settings:'tnum';flex-shrink:0}
+.ui-rbig{font-weight:500;font-size:29px;letter-spacing:-.06em;font-feature-settings:'tnum';white-space:nowrap}
+.ui-rbig.red{color:var(--red)}
+.ui-rbig.sm{font-size:20px;letter-spacing:-.04em}
+.ui-rk{width:92px;flex-shrink:0;font-size:12.5px;color:var(--ink2)}
+
+/* home */
+.ui-target{margin-top:18px;padding:13px 15px;border-radius:18px;background:#fff;box-shadow:var(--sh-card);font-size:14px;line-height:1.45;color:var(--ink)}
+.ui-target b{font-weight:600}
+.ui-target small{display:block;margin-top:4px;font-size:12px;color:var(--ink2)}
+.ui-target.gw{background:rgba(255,255,255,.13);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);color:#fff}
+.ui-target.gw small{color:rgba(255,255,255,.78)}
+.ui-duo.one{grid-template-columns:1fr}
+.ui-tbig{font-weight:500;font-size:30px;letter-spacing:-.05em;margin-right:4px}
+.ui-tile .v{display:flex;align-items:baseline;flex-wrap:wrap}
+.ui-live{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;text-align:left;background:#fff;border:none;border-radius:22px;box-shadow:var(--sh-card);padding:14px 16px;margin-bottom:10px;cursor:pointer;color:var(--ink)}
+.ui-live .ui-pill{height:22px;font-size:11px}
+.ui-live-t{font-weight:600;font-size:16px;letter-spacing:-.02em}
+.ui-live-n{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:34px;font-weight:500;letter-spacing:-.05em}
+.ui-live-n.red{color:var(--red)}
+.ui-live-go{position:absolute;right:16px;bottom:14px;font-size:13.5px;font-weight:600;color:var(--g)}
+.ui-home-body .ui-list .ui-row .ui-av.g svg{stroke:#fff}
+
+/* profile */
+.ui-phead{display:flex;align-items:center;gap:14px;margin:4px 2px 16px}
+.ui-hicard{border-radius:24px;padding:16px 18px 16px;box-shadow:var(--sh-card);position:relative}
+.ui-hic-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:rgba(255,255,255,.85)}
+.ui-hic-sub{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:6px}
+.ui-spark{display:block;width:100%;height:74px;margin-top:6px}
+.ui-hicard{overflow:hidden}
+.ui-spark-dot{position:absolute;width:9px;height:9px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);margin-left:0;pointer-events:none;display:none}
+.ui-stat3{display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border-radius:18px;box-shadow:inset 0 0 0 1px var(--line);margin-top:12px}
+.ui-stat3>div{padding:12px 14px;border-left:1px solid var(--line)}
+.ui-stat3>div:first-child{border-left:none}
+.ui-stat3 span{display:block;font-size:12px;color:var(--ink2)}
+.ui-stat3 b{display:block;font-weight:500;font-size:27px;letter-spacing:-.05em;margin-top:2px}
+.ui-badges{display:flex;flex-wrap:wrap;gap:7px}
+.ui-badge{height:34px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;font-size:13px;font-weight:500;background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+
+/* head to head */
+.ui-chips-x{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:-2px -2px 12px;padding:2px}
+.ui-chips-x::-webkit-scrollbar{display:none}
+.ui-chip.sm{height:32px;padding:0 12px;font-size:13px;flex-shrink:0}
+.ui-h2h{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;text-align:center;margin:4px 0 8px}
+.ui-h2h b{display:block;font-weight:500;font-size:44px;letter-spacing:-.06em;line-height:1}
+.ui-h2h span{display:block;font-size:12.5px;color:var(--ink2);margin-top:4px}
+.ui-h2h .mid{padding:0 18px}.ui-h2h .mid b{font-size:24px;color:var(--ink3)}
+.ui-h2hl{border-top:1px solid var(--line)}
+.ui-h2hr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ui-h2hr:last-child{border-bottom:none}
+.ui-h2hr .ui-mono{font-size:14px;color:var(--ink2)}
+.ui-h2hr .ui-mono b{font-weight:500;color:var(--ink2)}
+.ui-h2hr .ui-mono b.win{color:var(--g);font-weight:700}
+
+/* round history */
+.ui-alert{border-radius:16px;padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:12px;background:var(--off);color:var(--ink)}
+.ui-alert.red{background:var(--redl);color:#9E2A20}
+.ui-alert.red b{color:var(--red)}
+.ui-alert-i{margin-top:6px;font-size:12.5px}
+.ui-legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);margin:0 4px 10px}
+.ui-legend span{display:flex;align-items:center;gap:6px}
+.ui-legend i{width:10px;height:10px;border-radius:3px;background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.ui-legend i.g{background:var(--g);box-shadow:none}.ui-legend i.r{background:var(--red);box-shadow:none}
+.ui-hist{background:#fff;border-radius:20px;box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;padding:4px 0}
+.ui-hrow{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:9px 16px 9px 12px;background:none;border:none;text-align:left;cursor:pointer;color:var(--ink);position:relative;border-top:1px solid var(--line)}
+.ui-hist>.ui-hrow:first-child{border-top:none}
+.ui-hrow.cnt{background:var(--gl);border-top-color:#fff}
+.ui-hrow.cnt::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:var(--g)}
+.ui-hrow.bad{background:var(--redl);border-top-color:#fff}
+.ui-hrow.open{box-shadow:inset 0 -1px 0 var(--line)}
+.ui-hpos{width:18px;text-align:center;font-size:12px;color:var(--ink3);flex-shrink:0;font-feature-settings:'tnum'}
+.ui-hrow.cnt .ui-hpos{color:var(--g);font-weight:600}
+.ui-hrow.bad .ui-hpos{color:var(--red);font-weight:700}
+.ui-hrow em{font-style:normal;color:var(--red);font-weight:600}
+.ui-hsc{font-weight:500;font-size:18px;letter-spacing:-.03em;min-width:34px;text-align:right;font-feature-settings:'tnum'}
+.ui-hdf{font-family:'Geist Mono',monospace;font-size:13px;color:var(--ink2);min-width:42px;text-align:right}
+.ui-hrow.cnt .ui-hdf{color:var(--g);font-weight:600}
+.ui-hdet{padding:12px 16px 16px;background:var(--off)}
+.ui-hgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.ui-hgrid span{display:block;font-size:11.5px;color:var(--ink2)}
+.ui-hgrid b{display:block;font-weight:500;font-size:14px;margin-top:2px}
+.ui-bd{margin-top:12px;padding:12px 14px;background:#fff;border-radius:14px;font-size:12.5px;line-height:1.5}
+.ui-bd>b{display:block;font-weight:600;margin-bottom:6px}
+.ui-bd p{color:var(--ink2);margin-bottom:6px}
+.ui-bdr{display:flex;justify-content:space-between;gap:10px;padding:3px 0;color:var(--ink2)}
+.ui-bdr small{display:block;font-size:11px;color:var(--ink3)}
+.ui-bdr span:last-child{font-family:'Geist Mono',monospace;color:var(--ink)}
+.ui-bdr.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:7px;font-weight:600;color:var(--ink)}
+.ui-cnt{margin-top:12px;font-size:12.5px;font-weight:600;color:var(--g)}
+.ui-hact{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.ui-hact .ui-btn{width:auto}
+
+/* add player sheet */
+.ui-info{margin-top:10px;padding:12px 14px;border-radius:16px;background:var(--gl);color:#0B5A30;font-size:13px;line-height:1.5}
+.ui-info b{font-weight:600}
 </style>
 </head>
 <body>
@@ -2747,28 +2866,33 @@ function renderPlayerModal(){
   const rounds = e ? (e.scores||[]).length : 0;
   const live = e ? calcHI(e.scores,S.courses) : null;
   const computed = live && live.hi!==null;
+  const has = !!(e&&e.startIndex!=null);
   return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
-    <div class="mo-title">${e?'Edit Player':'Add a Player'}</div>
+    <div class="ui-sheet-h"><div class="mo-title">${e?'Edit player':'Add a player'}</div>
+      <button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
     <div class="fr"><label class="fl">Name</label>
-      <input type="text" id="plName" placeholder="e.g. Rui Costa" value="${e?e.name.replace(/"/g,'&quot;'):''}">
+      <input type="text" id="plName" placeholder="e.g. Rui Costa" autocomplete="off" value="${e?e.name.replace(/"/g,'&quot;'):''}">
     </div>
-    <div class="fr"><label class="fl">Do they already have a handicap?</label>
-      <select id="plHas" onchange="PL_TOGGLE()">
-        <option value="0"${!e||e.startIndex==null?' selected':''}>No — starting fresh</option>
-        <option value="1"${e&&e.startIndex!=null?' selected':''}>Yes — bringing an index with them</option>
+    <div class="fr"><label class="fl">Handicap</label>
+      <select id="plHas" onchange="PL_TOGGLE()" style="display:none">
+        <option value="0"${!has?' selected':''}>No — starting fresh</option>
+        <option value="1"${has?' selected':''}>Yes — bringing an index with them</option>
       </select>
+      <div class="ui-seg ui-seg-full" id="plSeg">
+        <button type="button" class="${!has?'on':''}" onclick="UI_PLHAS('0')">Starting fresh</button>
+        <button type="button" class="${has?'on':''}" onclick="UI_PLHAS('1')">Has an index</button>
+      </div>
     </div>
     <div class="fr" id="plIdxRow" style="display:none">
-      <label class="fl">Handicap Index</label>
-      <input type="number" step="0.1" id="plIdx" placeholder="e.g. 15.2" value="${e&&e.startIndex!=null?e.startIndex:''}">
-      <div class="pk-hint">Used until they have enough rounds here for the app to work it out themselves — then their own record takes over. ${computed?`<b>${e.name} already has ${rounds} rounds and a computed index of ${live.hi}, so this value is no longer in use.</b>`:''}</div>
+      <label class="fl">Index from previous club</label>
+      <input type="number" inputmode="decimal" step="0.1" id="plIdx" placeholder="e.g. 28.4" value="${e&&e.startIndex!=null?e.startIndex:''}">
+      <div class="ui-info">Used until ${e?e.name.split(' ')[0]:'they'} ${e?'has':'have'} posted enough rounds here for the app to work it out on its own. Shown with an asterisk until then.${computed?` <b>${e.name} already has ${rounds} rounds and a computed index of ${live.hi}, so this value is no longer used.</b>`:''}</div>
     </div>
-    ${!e?`<div class="cr-note">Starting fresh is normal. WHS needs 54 holes — three 18s, six 9s, or any mix — before an index exists. Until then they can post scores and everything else works.</div>`:''}
-    ${e?`<div class="cr-note">${rounds} round${rounds===1?'':'s'} posted.${computed?' Index is computed from their own record.':(e.startIndex!=null?' Still using the index they arrived with.':' No index yet — needs 54 holes.')}</div>`:''}
-    <div id="plErr" class="err" style="display:none"></div>
-    <button class="btn-p" onclick="PL_SAVE()">${e?'Save Changes':'Add Player'}</button>
-    ${e?`<button class="btn-s" style="color:#B4564B;border-color:rgba(180,86,75,.3)" onclick="PL_DELETE()">Remove from the club</button>`:''}
-    <button class="btn-s" onclick="CM()">Cancel</button>
+    ${!e?`<div class="ui-info" id="plFresh">Starting fresh is normal. WHS needs 54 holes — three 18s, six 9s, or any mix — before an index exists. Until then they can post scores and everything else works.</div>`:''}
+    ${e?`<div class="ui-note" style="margin:0 2px 14px">${rounds} round${rounds===1?'':'s'} posted.${computed?' Index is computed from their own record.':(e.startIndex!=null?' Still using the index they arrived with.':' No index yet — needs 54 holes.')}</div>`:''}
+    <div id="plErr" class="err ui-alert red" style="display:none"></div>
+    <button class="ui-btn ui-btn-g" style="margin-top:6px" onclick="PL_SAVE()">${e?'Save changes':'Add to the club'}</button>
+    ${e?`<button class="ui-btn ui-btn-w" style="margin-top:10px;color:var(--red)" onclick="PL_DELETE()">Remove from the club</button>`:''}
   </div></div>`;
 }
 
@@ -3772,17 +3896,18 @@ function render(){
   const R=ranked();
   // Profile tab = this phone's own player page
   if(V==='profile'&&!PID&&!TID&&UI_MEP()) PID=UI_ME;
+  if(UI_RH&&UI_RH!==PID) UI_RH=null;     // round history belongs to the player it was opened for
   const AP=S.players.find(p=>p.id===PID),AT=S.tournaments.find(t=>t.id===TID);
   const isProfile=V==='profile'&&AP&&AP.id===UI_ME;
 
   let h=renderTopBar(AP,AT);
 
-  if(AP) h+=isProfile?`<div class="ui-profile">${renderPlayerDetail(AP)}${renderProfileFoot(AP)}</div>`:renderPlayerDetail(AP);
+  if(AP) h+=isProfile?`<div class="ui-profile">${renderPlayerDetail(AP)}${UI_RH===AP.id?'':renderProfileFoot(AP)}</div>`:renderPlayerDetail(AP);
   else if(AT) h+=renderTournamentDetail(AT);
   else if(V==='home') h+=renderHome(R);
   else if(V==='profile') h+=renderProfilePick();
   else if(V==='settings') h+=renderSettings();
-  else if(V==='rankings') h+=renderCrownStrip()+renderRanking(R);
+  else if(V==='rankings') h+=renderRanking(R);
   else if(V==='play') h+=renderPlay();
   else if(V==='crown') h+=renderCrown();
   else if(V==='tournaments') h+=renderTournaments();
@@ -3830,188 +3955,196 @@ function render(){
 
 // ── RANKINGS ──────────────────────────────────────────────────────────────────
 function renderRanking(R){
-  const meds=['medal-1','medal-2','medal-3'];
-  const pos=['1st','2nd','3rd'];
-  let h=`<div class="sec-head">
-    <span class="sec-title">Member Rankings</span>
-    <button class="btn-p" onclick="PL_ADD()">+ Add Player</button>
-  </div>
-  <p style="font-size:11px;color:var(--text3);margin-bottom:12px">${R.length} member${R.length===1?'':'s'} &nbsp;·&nbsp; tap a name for their record</p>`;
-  return h+R.map((p,i)=>`
-    <div class="rank-row${i<3?' p'+(i+1):''}" onclick="OP('${p.id}')">
-      <div class="rank-medal-wrap">
-        <div class="rank-medal ${i<3?meds[i]:'medal-n'}">${i<3?['🥇','🥈','🥉'][i]:i+1}</div>
-        <div class="rank-pos">${i<3?pos[i]:i+1+'th'}</div>
-      </div>
-      <div class="rank-info">
-        <div class="rank-name">${p.name}</div>
-        <div class="rank-sub">${p.carried
-          ? `Index from previous club &nbsp;·&nbsp; ${p.count||0}/3 rounds here`
-          : (p.hi!==null?`${p.count} rounds &nbsp;·&nbsp; best ${p.n} avg`
-            :(p.count?`${p.count} round${p.count===1?'':'s'} &nbsp;·&nbsp; needs 54 holes for an index`:'No rounds yet'))}</div>
-      </div>
-      <div class="rank-hi">
-        <div class="hi-label">Index</div>
-        ${p.hi!==null?`<div class="hi-val">${p.hi.toFixed(1)}${p.carried?'<span class="hi-carried" title="carried from previous club">*</span>':''}</div>`:`<div class="hi-na">—</div>`}
-      </div>
-      <div class="rank-chev">›</div>
-    </div>`).join('');
+  const sort=UI_RSORT||'hi';
+  const rows=R.map(p=>{const st=uiStats(p);return {p,st};});
+  const hiOf=x=>x.p.hi;
+  let list=[...rows];
+  if(sort==='form'){
+    list.sort((a,b)=>(a.st.form==null)-(b.st.form==null)||(a.st.form??0)-(b.st.form??0));
+  }else if(sort==='rounds'){
+    list.sort((a,b)=>b.st.roundsYear-a.st.roundsYear||b.st.valid-a.st.valid);
+  }
+  const mov=v=>v==null||Math.abs(v)<0.05?'':v<0?`<span class="ui-mv dn">↓${Math.abs(v).toFixed(1)}</span>`:`<span class="ui-mv up">↑${v.toFixed(1)}</span>`;
+  let h=`<div class="ui-pagehead"><div class="ui-h1">Rankings</div>
+      <button class="ui-btn ui-btn-g ui-btn-sm" onclick="PL_ADD()">${uiSvg('plus')}Add player</button></div>
+    <div class="ui-seg" style="margin:4px 0 14px">
+      <button class="${sort==='hi'?'on':''}" onclick="UI_SORT('hi')">Handicap</button>
+      <button class="${sort==='form'?'on':''}" onclick="UI_SORT('form')">Form</button>
+      <button class="${sort==='rounds'?'on':''}" onclick="UI_SORT('rounds')">Rounds</button>
+    </div>`;
+  if(sort==='form') h+=`<div class="ui-note" style="margin:-4px 4px 12px">Last five rounds against each player’s own index. Minus means playing better than their handicap.</div>`;
+  if(sort==='rounds') h+=`<div class="ui-note" style="margin:-4px 4px 12px">Rounds posted in ${new Date().getFullYear()}.</div>`;
+  let pos=0;
+  h+=`<div class="ui-list">`+list.map((x,k)=>{
+    const p=x.p, st=x.st, me=p.id===UI_ME;
+    let big, sub;
+    if(sort==='form'){
+      big=st.form==null?'<span class="ui-na">—</span>':(st.form>0?'+':st.form<0?'−':'')+Math.abs(st.form).toFixed(1);
+      sub=st.form==null?'needs 3 rounds':`index ${p.hi!=null?p.hi.toFixed(1):'—'} · last 5`;
+    }else if(sort==='rounds'){
+      big=String(st.roundsYear);
+      sub=`${st.valid} in total`;
+    }else{
+      big=p.hi!==null?`${p.hi.toFixed(1)}${p.carried?'<i class="ui-star">*</i>':''}`:'<span class="ui-na">—</span>';
+      sub=p.carried?'carried from previous club'
+        :p.hi!==null?`${st.valid} rounds${mov(st.move)?' · '+mov(st.move):''}`
+        :(st.holes?`needs ${Math.max(0,54-st.holes)} holes for an index`:'no rounds yet');
+    }
+    const showPos=sort==='hi'?(p.hi!==null?++pos:''):(k+1);
+    return `<button class="ui-rrow${me?' me':''}" onclick="OP('${p.id}')">
+      <span class="ui-rpos">${showPos}</span>
+      <span class="ui-av${me?' g':''}">${uiInit(p.name)}</span>
+      <span class="ui-row-t">${p.name}<small>${sub}</small></span>
+      <span class="ui-rbig${sort==='form'&&st.form!=null&&st.form<0?' red':''}">${big}</span>
+    </button>`;
+  }).join('')+`</div>`;
+  h+=renderRecords(R);
+  return h;
 }
 
 // ── PLAYER DETAIL ─────────────────────────────────────────────────────────────
 function renderPlayerDetail(p){
-  const s=calcHI(p.scores,S.courses),L=lk();
-  const ls=calcPlayerStats(p,S.courses);
-  let h=`<div class="back-nav">
-    <button class="back-btn" onclick="CP()">&#8592; Rankings</button>
-    <span style="color:rgba(11,30,18,.2);font-size:12px">/</span>
-    <span class="breadcrumb">${p.name}</span>
-  </div>
-  <div class="stats">
-    <div class="scard hero"><div class="s-lbl">Handicap Index</div>
-      <div class="s-val" style="font-size:${s.hi!==null?34:20}px">${s.hi!==null?s.hi.toFixed(1):'N/A'}</div>
+  if(UI_RH===p.id) return renderRoundHistory(p);
+  const s=calcHI(p.scores,S.courses);
+  const st=uiStats(p);
+  const isMe=p.id===UI_ME;
+  const inProfileTab=V==='profile'&&isMe;
+  const ranked_=ranked(); const rp=ranked_.find(x=>x.id===p.id)||{};
+  const hi=rp.hi!=null?rp.hi:null;
+  const top2=st.courses.slice(0,2).map(c=>uiShort(c.name)).join(' & ');
+  let h=`<div class="ui-top">
+      ${inProfileTab?'<span style="width:40px"></span>':`<button class="ui-ico" onclick="CP()" aria-label="Back">${uiSvg('back')}</button>`}
+      <span></span>
+      <div class="ui-top-r"><button class="ui-ico" onclick="PL_EDIT('${p.id}')" aria-label="Edit player">${uiSvg('pen')}</button></div>
     </div>
-    <div class="scard normal"><div class="s-lbl">Rounds</div><div class="s-val">${s.count||0}</div></div>
-    <div class="scard normal"><div class="s-lbl">Best N</div><div class="s-val">${s.n||'—'}</div></div>
-    <div class="scard normal"><div class="s-lbl">Avg Diff</div><div class="s-val" style="font-size:18px">${s.avg!=null?s.avg.toFixed(2):'—'}</div></div>
+    <div class="ui-phead"><span class="ui-av g lg">${uiInit(p.name)}</span>
+      <div><div class="ui-h1" style="font-size:27px">${p.name}</div>
+      <div class="ui-s">${top2?top2+' · ':''}${st.valid} round${st.valid===1?'':'s'}</div></div></div>`;
+
+  // ── green index card with the trend drawn in ──
+  const yd=st.yearDelta;
+  h+=`<div class="ui-hicard ui-panel">
+    <div class="ui-hic-top"><span>Handicap index</span>${yd!=null&&Math.abs(yd)>=0.05?`<span class="ui-pill gw">${yd<0?'↓':'↑'} ${Math.abs(yd).toFixed(1)} this year</span>`:''}</div>
+    <div class="ui-xl" style="font-size:72px;margin-top:8px">${hi!=null?hi.toFixed(1):'—'}${rp.carried?'<i class="ui-star w">*</i>':''}</div>
+    ${uiSpark(st)}
+    <div class="ui-hic-sub">${hi==null?(st.holes?`Needs ${Math.max(0,54-st.holes)} more holes for a first index`:'No rounds yet'):rp.carried?`Carried from previous club · ${rp.count||0}/3 rounds here`:`Best ${s.n} of the last ${s.count} count${st.move!=null&&Math.abs(st.move)>=0.05?` · ${st.move<0?'↓':'↑'}${Math.abs(st.move).toFixed(1)} last round`:''}`}</div>
   </div>`;
 
-  // ── LIFETIME STATS ──
-  if(ls){
-    const bestG = ls.bestGross
-      ? `<div class="ls-val">${ls.bestGross.score}</div><div class="ls-sub">${ls.bestGross.course}</div>`
-      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">No 18-hole rounds yet</div>`;
-    const bestD = ls.bestDiff!==null && ls.bestDiff
-      ? `<div class="ls-val">${ls.bestDiff.d>=0?'+':''}${ls.bestDiff.d.toFixed(1)}</div><div class="ls-sub">${ls.bestDiff.course}</div>`
-      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">No data yet</div>`;
-    const lowHI = ls.lowestHI!==null
-      ? `<div class="ls-val">${ls.lowestHI.toFixed(1)}</div><div class="ls-sub">Round ${ls.lowestHIAt}</div>`
-      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">Need 3+ rounds</div>`;
-    const fav = ls.favCourse
-      ? `<div class="ls-val" style="font-size:14px;font-family:'Cormorant Garamond',serif;font-style:italic;line-height:1.15;display:flex;align-items:center;min-height:24px">${ls.favCourse}</div><div class="ls-sub">${ls.favCount} round${ls.favCount!==1?'s':''}${(ls.topCourses||[]).length>1?` · then ${ls.topCourses.slice(1).map(x=>`${x.name.split(' ').slice(0,2).join(' ')} ${x.n}`).join(', ')}`:''}</div>`
-      : `<div class="ls-val ls-empty">—</div><div class="ls-sub">—</div>`;
+  // ── three stats ──
+  h+=`<div class="ui-stat3">
+    <div><span>Low</span><b>${st.lowHI!=null?st.lowHI.toFixed(1):'—'}</b></div>
+    <div><span>Best</span><b>${st.bestGross?st.bestGross.score:'—'}</b></div>
+    <div><span>Crowns</span><b>${st.crowns}</b></div>
+  </div>`;
 
-    h+=`<div class="subsec">Lifetime</div>
-    <div class="lifestats">
-      <div class="ls-card"><div class="ls-lbl">Best Round</div>${bestG}</div>
-      <div class="ls-card"><div class="ls-lbl">Best Differential</div>${bestD}</div>
-      <div class="ls-card"><div class="ls-lbl">Lowest HI Ever</div>${lowHI}</div>
-      <div class="ls-card"><div class="ls-lbl">Most Played</div>${fav}</div>
+  // ── what it takes ──
+  const tg=uiTarget(p);
+  if(tg) h+=`<div class="ui-lbl">Next round</div>${uiTargetCard(tg,false)}`;
+
+  // ── round history entry ──
+  const nextOut=uiNextOut(p,s);
+  h+=`<div class="ui-lbl">Rounds</div><div class="ui-list">
+    <button class="ui-row" onclick="UI_RH_O('${p.id}')"><span class="ui-row-t">Round history<small>${s.hi!==null?`${s.n} of ${s.count} counting`:`${st.valid} posted`}${nextOut?` · next to drop out: ${uiShort(nextOut.course)} ${nextOut.score}${(()=>{const c=findCourse(S.courses,nextOut);return c&&isNineCfg(cfgOf(nextOut,c))?' (9)':'';})()}`:''}</small></span>${uiSvg('chev','ui-chev')}</button>
+    <button class="ui-row" onclick="OM('score')"><span class="ui-row-t" style="color:var(--g)">Add a round<small>Post a score to ${isMe?'your':p.name.split(' ')[0]+'’s'} record</small></span>${uiSvg('plus','ui-chev g')}</button>
+  </div>`;
+
+  // ── head to head ──
+  h+=renderH2H(p);
+
+  // ── most played ──
+  if(st.courses.length){
+    h+=`<div class="ui-lbl">Most played</div><div class="ui-list">${st.courses.slice(0,3).map(c=>`
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">${c.name}<small>${c.n} round${c.n===1?'':'s'}</small></span>
+      <span class="ui-row-v ui-mono">${c.avg!=null?'avg '+c.avg:''}${c.avg9!=null?`${c.avg!=null?' · ':''}${c.avg9} nine`:''}</span></div>`).join('')}</div>`;
+  }
+
+  // ── badges ──
+  const badges=potmBadges(p,S.courses);
+  if(badges.length){
+    h+=`<div class="ui-lbl">Badges</div><div class="ui-badges">${badges.map(b=>`<span class="ui-badge" title="${b.note.replace(/"/g,'&quot;')}">${b.name}</span>`).join('')}</div>`;
+  }
+  // ── lifetime detail (kept from the old page) ──
+  if(st.bestDiff||st.bestGross){
+    h+=`<div class="ui-lbl">Personal bests</div><div class="ui-list">
+      ${st.bestGross?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best full round<small>${st.bestGross.course}${st.bestGross.date?' · '+fmtDate(st.bestGross.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestGross.score}</span></div>`:''}
+      ${st.bestDiff?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best differential<small>${st.bestDiff.course}${st.bestDiff.date?' · '+fmtDate(st.bestDiff.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestDiff.d.toFixed(1)}</span></div>`:''}
+      ${st.lowHI!=null?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Lowest index ever<small>${st.lowHIDate?fmtDate(st.lowHIDate):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.lowHI.toFixed(1)}</span></div>`:''}
     </div>`;
-
-    // Handicap trend chart
-    h+=renderHITrendChart(p,S.courses);
   }
+  return h;
+}
 
-  // ── badges: non-competitive, so everyone collects at their own level ──
-  {
-    const badges=potmBadges(p,S.courses);
-    if(badges.length){
-      h+=`<div class="divider"></div>
-      <div class="sec-head"><span class="sec-title">Badges</span><span style="font-size:11px;color:var(--text3)">${badges.length}</span></div>
-      <div class="bdg-wrap">${badges.map(b=>`<div class="bdg"><span class="bdg-i">${b.icon}</span><span class="bdg-t"><b>${b.name}</b><span class="bdg-n">${b.note}</span></span></div>`).join('')}</div>`;
-    }
-  }
-
-  h+=`<div class="divider"></div>
-  <div class="sec-head">
-    <span class="sec-title">Round History</span>
-    <button class="btn-p" onclick="OM('score')">+ Add Round</button>
-  </div>
-  <p style="font-size:11px;color:var(--text3);margin-bottom:12px">🟡 Gold = counting toward Handicap Index &nbsp;·&nbsp; Tap row to expand &middot; Edit from there</p>`;
-  if(!p.scores||!p.scores.length)return h+`<div class="empty-state"><div class="empty-icon">⛳</div><div class="empty-title">No rounds recorded</div><div class="empty-sub">Add your first round above</div></div>`;
-  const hiRes=calcHI(p.scores,S.courses);
-  const issues=hiRes.issues||{};
-  // Position in the counting window: 1 = your most recent round, 20 = the one that falls
-  // out next. Rounds outside the window carry no number.
-  // Derived from PLAYING order, not from the engine's internal list. The engine holds
-  // nine-hole rounds back during the warm-up and appends them at the 54-hole crossover,
-  // so its ordering can differ from the order you actually played — which made these
-  // numbers appear shuffled. Numbering the window by playing order is monotonic by
-  // construction: 1 at the top of the list, counting down without gaps.
+function renderRoundHistory(p){
+  const s=calcHI(p.scores,S.courses);
+  let h=`<div class="ui-top">
+      <button class="ui-ico" onclick="UI_RH_X()" aria-label="Back">${uiSvg('back')}</button><span></span>
+      <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('score')">Add round</button></div>
+    <div style="margin:4px 4px 16px"><div class="ui-h1">Round history</div>
+      <div class="ui-s" style="margin-top:6px">${p.id===UI_ME?'Your':p.name.split(' ')[0]+'’s'} ${s.hi!==null?`best ${s.n} of the last ${s.count} set ${p.id===UI_ME?'your':'the'} index`:'rounds so far — an index needs 54 holes'}</div></div>`;
+  if(!p.scores||!p.scores.length)return h+`<div class="empty-state"><div class="empty-title">No rounds recorded</div><div class="empty-sub">Tap Add round to post the first one</div></div>`;
+  const issues=s.issues||{};
+  // Position in the counting window: 1 = most recent, 20 = the one that falls out next.
+  // Numbered by PLAYING order (same rule as before), so it counts down without gaps.
   const winPos={};
-  if(hiRes.window&&hiRes.window.length){
-    const inWindow=new Set(hiRes.window.map(x=>x.i));
-    const played=orderScores(p.scores).map(x=>x.i).filter(i=>inWindow.has(i)); // oldest → newest
+  if(s.window&&s.window.length){
+    const inWindow=new Set(s.window.map(x=>x.i));
+    const played=orderScores(p.scores).map(x=>x.i).filter(i=>inWindow.has(i));
     played.forEach((i,k)=>{ winPos[i]=played.length-k; });
   }
+  const maxPos=Math.max(0,...Object.values(winPos));
   const issueIdx=Object.keys(issues).map(Number);
-  if(issueIdx.length)h+=`<div style="border:0.5px solid rgba(207,107,92,.4);background:rgba(207,107,92,.08);border-radius:var(--r);padding:12px 13px;margin-bottom:10px;font-size:12px;color:#B4564B;line-height:1.6">
-    <b>${issueIdx.length} round${issueIdx.length>1?'s':''} excluded from your handicap.</b> Each one cannot be correct as recorded, so it is being left out rather than distorting your index. Tap it to fix the hole configuration.
-    <div style="margin-top:8px;display:grid;gap:5px">${issueIdx.map(i=>{const x=p.scores[i];return `<div style="font-size:11.5px;padding:6px 9px;background:rgba(255,255,255,.5);border-radius:6px"><b>${x.course} · ${x.tee} · ${x.holes||'?'} · ${x.score}</b><br>${issues[i]}</div>`;}).join('')}</div>
-  </div>`;
-  if(p.scores.length&&!scoresAllDated(p.scores)){
+  if(issueIdx.length)h+=`<div class="ui-alert red"><b>${issueIdx.length} round${issueIdx.length>1?'s':''} excluded</b> · ${issueIdx.length>1?'they cannot':'it cannot'} be right as recorded, so ${issueIdx.length>1?'they are':'it is'} left out rather than distorting the index. Tap to fix.
+    ${issueIdx.map(i=>{const x=p.scores[i];return `<div class="ui-alert-i"><b>${x.course} · ${x.tee} · ${x.holes||'?'} · ${x.score}</b> — ${issues[i]}</div>`;}).join('')}</div>`;
+  if(!scoresAllDated(p.scores)){
     const nd=p.scores.filter(x=>!x.date||isNaN(new Date(x.date).getTime())).length;
-    h+=`<div style="border:0.5px solid rgba(216,162,74,.32);background:rgba(216,162,74,.07);border-radius:var(--r);padding:10px 13px;margin-bottom:10px;font-size:12px;color:#8A6A22;line-height:1.55"><b>${nd} round${nd>1?'s':''} without a date.</b> Rounds are being sequenced in the order they were entered. Add the missing dates and the handicap will follow true playing order instead.</div>`;
+    h+=`<div class="ui-alert red"><b>${nd} round${nd>1?'s':''} without a date.</b> Rounds are sequenced in the order they were entered. Add the missing dates and the handicap follows true playing order instead.</div>`;
   }
-  h+=`<div class="ccard"><div class="sthead"><span>Course</span><span style="text-align:center">Date</span><span style="text-align:center">Score</span><span style="text-align:center">Diff</span><span></span></div>`;
-  // Show the rounds in the SAME order the handicap engine uses — by date when every round
-  // has one, otherwise by entry order. Listing by entry order while calculating by date
-  // made a fully-dated record look shuffled and put the window numbers out of sequence.
+  if(s.hi!==null) h+=`<div class="ui-legend"><span><i class="g"></i>Counting</span><span><i></i>In the last 20</span><span><i class="r"></i>Excluded</span></div>`;
+  h+=`<div class="ui-hist">`;
   [...orderScores(p.scores)].reverse().forEach(entry=>{
     const s2=entry.s, oi=entry.i, c=findCourse(S.courses,s2);
     const d=c?calcDiff(s2.score,c.rating,c.slope):null;
     const cfg=cfgOf(s2,c),is9=isNineCfg(cfg),isO=OPEN_SCORE&&OPEN_SCORE.pid===p.id&&OPEN_SCORE.idx===oi;
     const isCounting=s.countingIdx&&s.countingIdx.has(oi);
-    const m=s.meta&&s.meta[oi];   // breakdown metadata from calcHI
-    const rowStyle = isCounting
-      ? 'background:rgba(201,168,76,.07);border-left:2.5px solid var(--gold);margin:0 -18px;padding:10px 18px 10px 14px;'
-      : '';
-    const textColor = isCounting ? 'var(--gold-lt)' : 'var(--text)';
-    h+=`<div class="srow" onclick="TSC('${p.id}',${oi})" style="${rowStyle}">
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${isCounting?600:500};color:${textColor}">${winPos[oi]?`<span class="wpos">${winPos[oi]}</span>`:''}${s2.course}${cfg!=='18'?` <span class="pill p9" style="font-size:9px;padding:1px 5px">${cfg==='F9'?'Front 9':cfg==='L9'?'Back 9':cfg==='L9x2'?'Back 9 ×2':cfg==='F9x2'?'Front 9 ×2':cfg}</span>`:''}${(!c||issues[oi])?` <span class="pill" style="font-size:9px;padding:1px 5px;background:rgba(207,107,92,.18);color:#B4564B">${issues[oi]?'excluded':'not counting'}</span>`:''}</span>
-      <span style="text-align:center;font-size:11px;color:var(--text3)">${s2.date?fmtDate(s2.date):'—'}</span>
-      <span style="text-align:center;font-weight:600;color:${textColor}">${s2.score}</span>
-      <span style="text-align:center" class="${d!==null&&d<0?'under':''}${d!==null&&isCounting?' counting-diff':''}">${d!==null?d.toFixed(1):'—'}</span>
-      <button class="btn-ic" onclick="event.stopPropagation();DS('${p.id}',${oi})">&times;</button>
-    </div>`;
+    const m=s.meta&&s.meta[oi];
+    const bad=!c||issues[oi];
+    const cfgL=cfg==='18'?'18':cfg==='F9'?'front 9':cfg==='L9'?'back 9':cfg==='L9x2'?'back 9 ×2':cfg==='F9x2'?'front 9 ×2':cfg;
+    const eff=m&&m.eighteenhDiff!=null?m.eighteenhDiff:d;
+    h+=`<button class="ui-hrow${isCounting?' cnt':''}${bad?' bad':''}${isO?' open':''}" onclick="TSC('${p.id}',${oi})">
+      <span class="ui-hpos">${bad?'!':winPos[oi]||''}</span>
+      <span class="ui-row-t">${uiShort(s2.course)} · ${cfgL}<small>${s2.date?uiDay(s2.date):'no date'}${s2.tee?' · '+s2.tee:''}${winPos[oi]&&winPos[oi]===maxPos&&maxPos>=20?' · <em>drops out next</em>':''}${bad&&!issues[oi]?' · not counting':''}</small></span>
+      <span class="ui-hsc">${s2.score}</span>
+      <span class="ui-hdf">${bad?'–':eff!=null?eff.toFixed(1):'—'}</span>
+    </button>`;
     if(isO){
-      // Build the math-breakdown panel for 9-hole rounds. Three distinct states under official WHS:
-      //   1. Pending conversion — 9-hole round during initial 54 holes, stored unconverted
-      //   2. Retroactively converted at 54-hole crossover — initial HI just established
-      //   3. Post-warmup — normal 2024 expected-score formula
       let breakdown='';
-      if(is9 && m && m.is9){
+      if(is9&&m&&m.is9){
         if(m.pendingConversion){
-          // State 1: stored during warm-up, no conversion yet
-          breakdown=`<div style="grid-column:span 3;padding:10px 12px;background:rgba(160,160,160,.05);border-radius:6px;border:0.5px solid rgba(160,160,160,.22);font-size:11px;line-height:1.6">
-            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text2);font-size:13px;margin-bottom:6px;letter-spacing:.3px">Initial Handicap Index period — pending conversion</div>
-            <div style="font-size:10px;color:var(--text3)">Per official WHS guidance: the expected-score conversion does not apply until 54 holes have been posted. This 9-hole round will be converted to an 18-hole Score Differential when your initial Handicap Index is established.</div>
-            <div style="margin-top:8px;display:flex;justify-content:space-between;color:var(--text2)"><span>9-hole differential (stored)</span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.ninehDiff.toFixed(1)}</span></div>
-          </div>`;
-        } else {
-          // States 2 & 3: both show the expected-score math, with a different header label
-          const headerLabel = m.retroactivelyConverted
-            ? 'Initial Handicap Index established — retroactively converted'
-            : 'WHS 9-hole → 18-hole conversion';
-          breakdown=`<div style="grid-column:span 3;padding:10px 12px;background:rgba(201,168,76,.08);border-radius:6px;border:0.5px solid rgba(201,168,76,.22);font-size:11px;line-height:1.6">
-            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);font-size:13px;margin-bottom:6px;letter-spacing:.3px">${headerLabel}</div>
-            <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>9-hole differential (this round)</span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.ninehDiff.toFixed(1)}</span></div>
-            <div style="display:flex;justify-content:space-between;color:var(--text2)"><span>Expected differential for missing 9<br><span style="font-size:10px;color:var(--text3)">(HI ${m.hiAtTime.toFixed(1)} ${m.retroactivelyConverted?'at conversion':'at the time'} &times; 0.52 + 1.2)</span></span><span style="color:var(--text);font-weight:600;font-variant-numeric:tabular-nums">${m.expected.toFixed(1)}</span></div>
-            <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:0.5px solid rgba(201,168,76,.25);color:${isCounting?'var(--gold)':'var(--text)'};font-weight:700"><span>18-hole Score Differential${isCounting?' ✦ counting':''}</span><span style="font-variant-numeric:tabular-nums">${m.eighteenhDiff.toFixed(1)}</span></div>
-          </div>`;
+          breakdown=`<div class="ui-bd"><b>Initial index period — pending conversion</b>
+            <p>Under WHS the expected-score conversion starts once 54 holes are posted. This nine becomes an 18-hole differential when the first index is set.</p>
+            <div class="ui-bdr"><span>9-hole differential (stored)</span><span>${m.ninehDiff.toFixed(1)}</span></div></div>`;
+        }else{
+          breakdown=`<div class="ui-bd"><b>${m.retroactivelyConverted?'First index set — converted retroactively':'WHS 9-hole → 18-hole conversion'}</b>
+            <div class="ui-bdr"><span>9-hole differential</span><span>${m.ninehDiff.toFixed(1)}</span></div>
+            <div class="ui-bdr"><span>Expected for the missing nine<small>index ${m.hiAtTime.toFixed(1)} × 0.52 + 1.2</small></span><span>${m.expected.toFixed(1)}</span></div>
+            <div class="ui-bdr tot"><span>18-hole differential${isCounting?' · counting':''}</span><span>${m.eighteenhDiff.toFixed(1)}</span></div></div>`;
         }
-      }else if(isCounting){
-        breakdown=`<div style="grid-column:span 3;padding:8px 10px;background:rgba(201,168,76,.1);border-radius:6px;border:0.5px solid rgba(201,168,76,.25)"><div style="font-size:11px;color:var(--gold);font-weight:600">✦ Counting toward Handicap Index</div></div>`;
       }
-      h+=`<div class="icard">
-      <div class="ic-full" style="grid-column:span 3"><div class="ie-lbl">Course</div><div class="ie-val" style="font-size:13px">${s2.course}</div></div>
-      <div><div class="ie-lbl">Rating</div><div class="ie-val">${c?c.rating.toFixed(2):'—'}</div></div>
-      <div><div class="ie-lbl">Slope</div><div class="ie-val">${c?c.slope:'—'}</div></div>
-      <div><div class="ie-lbl">Holes</div><div class="ie-val">${is9?'9-hole':'18-hole'}</div></div>
-      ${s2.date?`<div style="grid-column:span 3"><div class="ie-lbl">Date played</div><div class="ie-val" style="font-size:13px">${fmtDate(s2.date)}</div></div>`:''}
-      ${breakdown}
-      <div class="icard-actions">
-        <button class="btn-edit" onclick="event.stopPropagation();ES('${p.id}',${oi})">
-          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11.5L3 8.5L9 2.5L11.5 5L5.5 11L2 11.5Z"/><path d="M8 3.5L10.5 6"/></svg>
-          Edit
-        </button>
-        <button class="btn-edit danger" onclick="event.stopPropagation();DS('${p.id}',${oi})">
-          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h8M5.5 4V2.5h3V4M4.5 4l.5 7h4l.5-7"/></svg>
-          Delete
-        </button>
-      </div>
-    </div>`;
+      h+=`<div class="ui-hdet">
+        ${bad&&issues[oi]?`<div class="ui-alert red" style="margin:0 0 10px">${issues[oi]}</div>`:''}
+        <div class="ui-hgrid">
+          <div><span>Course</span><b>${s2.course}</b></div>
+          <div><span>Rating / slope</span><b class="ui-mono">${c?c.rating.toFixed(1)+' / '+c.slope:'—'}</b></div>
+          <div><span>Holes</span><b>${is9?'9-hole':'18-hole'}</b></div>
+          <div><span>Date played</span><b>${s2.date?fmtDate(s2.date):'—'}</b></div>
+        </div>
+        ${breakdown}
+        ${isCounting&&!(is9&&m&&m.is9)?`<div class="ui-cnt">Counting toward the index</div>`:''}
+        <div class="ui-hact">
+          <button class="ui-btn ui-btn-w ui-btn-sm" onclick="event.stopPropagation();ES('${p.id}',${oi})">${uiSvg('pen')}Edit</button>
+          <button class="ui-btn ui-btn-sm ui-btn-red" onclick="event.stopPropagation();DS('${p.id}',${oi})">Delete</button>
+        </div>
+      </div>`;
     }
   });
   return h+`</div>`;
@@ -5804,7 +5937,8 @@ function uiSync(light){
 
 // ── top bar ──
 function renderTopBar(AP,AT){
-  if(!AP&&!AT&&V==='home') return '';           // Home has its own green header
+  if(AP) return '';                              // player pages draw their own header
+  if(!AT&&V==='home') return '';                 // Home has its own green header
   const menu=`<button class="ui-ico" onclick="UI_MENU_O()" aria-label="Menu">${uiSvg('more')}</button>`;
   if(!AP&&!AT&&UI_TITLES[V]){
     return `<div class="ui-top">
@@ -5834,42 +5968,6 @@ function renderMenu(){
       <button class="ui-ico" onclick="UI_MENU_X()" aria-label="Close">${uiSvg('x')}</button></div>
     ${uiTiles()}
   </div></div>`;
-}
-
-// ── Home ──
-function renderHome(R){
-  const hr=new Date().getHours();
-  const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
-  const me=UI_MEP()?R.find(p=>p.id===UI_ME):null;
-  const withHI=R.filter(p=>p.hi!==null);
-  let h=`<div class="ui-hero ui-panel">
-    <div class="ui-hero-top"><div class="ui-brand w">The Club</div>
-      <div class="ui-top-r">${uiSync(true)}
-        <button class="ui-ico gw" onclick="UI_MENU_O()" aria-label="Menu">${uiSvg('more')}</button>
-        ${me?`<button class="ui-av w" onclick="UI_GO('profile')" aria-label="My profile">${uiInit(me.name)}</button>`:''}
-      </div></div>`;
-  if(me){
-    const pos=me.hi!==null?withHI.findIndex(p=>p.id===me.id)+1:0;
-    h+=`<div class="ui-greet">${greet}, ${me.name.split(' ')[0]}</div>
-      <div class="ui-bigrow"><div class="ui-xl">${me.hi!==null?me.hi.toFixed(1):'—'}</div>${me.carried?'<span class="ui-pill gw" style="margin-bottom:10px">carried</span>':''}</div>
-      <div class="ui-hero-sub">${me.hi!==null?`Handicap index · ${uiOrd(pos)} in the club`:(me.count?`${me.count} round${me.count===1?'':'s'} · needs 54 holes for an index`:'No rounds yet')}</div>`;
-  }else{
-    h+=`<div class="ui-greet">${greet}</div>
-      <div class="ui-h1">Who’s this phone for?</div>
-      <div class="ui-hero-sub">Pick yourself once and Home shows your handicap.</div>
-      <button class="ui-btn ui-btn-w" onclick="UI_GO('profile')">Choose player</button>`;
-  }
-  h+=`</div><div class="ui-home-body">`;
-  h+=renderCrownStrip();
-  const now=new Date().toISOString().slice(0,10);
-  const next=[...(S.upcoming||[])].filter(t=>t&&t.date&&t.date>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  h+=`<div class="ui-duo">
-    <button class="ui-tile" onclick="UI_GO('play')">${uiSvg('play')}<span class="v">Play</span><span class="k">Live scoring · join or start</span></button>
-    ${next?`<button class="ui-tile" onclick="UI_GO('upcoming')">${uiSvg('cal')}<span class="v">${next.name||'Next event'}</span><span class="k">${fmtDate(next.date)}${next.course?' · '+next.course:''}</span></button>`
-      :`<button class="ui-tile" onclick="UI_POST()">${uiSvg('pen')}<span class="v">Post a round</span><span class="k">Add a score to your record</span></button>`}
-  </div>`;
-  h+=`<div class="ui-lbl">The club</div>${uiTiles()}</div>`;
-  return h;
 }
 
 // ── Profile ──
@@ -5902,14 +6000,14 @@ function renderSettings(){
     </div>
     <div class="ui-lbl">Install on your phone</div>
     <div class="ui-card ui-pad" style="font-size:14px;line-height:1.5">Safari → Share → <b>Add to Home Screen</b>. It opens full-screen like an app.</div>
-    <div class="ui-note">Preview 1 · new design, stage 1 of 7. Same live data as the main app.</div>`;
+    <div class="ui-note">Preview 1 · new design, stage 2 of 7. Same live data as the main app.</div>`;
 }
 
 // ── handlers ──
 window.UI_GO=v=>{
   UI_MENU=false;
   if(!UI_MAIN.includes(v)&&UI_MAIN.includes(V)) UI_FROM=V;
-  PID=null; TID=null;
+  PID=null; TID=null; UI_RH=null;
   if(v==='profile'&&UI_MEP()) PID=UI_ME;
   SV(v);
   try{ window.scrollTo(0,0); }catch(e){}
@@ -5929,6 +6027,306 @@ window.UI_ME_CLEAR=()=>{
 window.UI_POST=()=>{
   if(!UI_MEP()) return UI_GO('profile');
   UI_MENU=false; TID=null; PID=UI_ME; V='profile'; OM('score');
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REVAMP · STAGE 2 — Home, Rankings, Profile, Round history, Add player
+// New insights are READ-ONLY: they call the unchanged engine (calcHI, findCourse,
+// roundIssue, orderScores…) on copies of the data and never write anything.
+// ═══════════════════════════════════════════════════════════════════════════
+var UI_RSORT='hi', UI_RH=null, UI_H2H={}, UI_LIVE=null, UI_LIVE_AT=0, UI_LIVE_SIG='';
+const UI_STC=new WeakMap(), UI_TGC=new WeakMap();
+
+function uiShort(n){ return String(n||'').replace(/\s+(Golf Club|Golf Course|Golf|GC|Club)$/i,'').replace(/^Quinta da /,'').trim()||n; }
+function uiDay(d){ try{ const x=new Date(d+'T12:00:00'); return x.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+(x.getFullYear()!==new Date().getFullYear()?' '+x.getFullYear():''); }catch(e){ return fmtDate(d); } }
+function uiWeekday(d){ try{ const x=new Date(d+'T12:00:00'); return x.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }catch(e){ return fmtDate(d); } }
+function uiToday(){ return new Date().toISOString().slice(0,10); }
+
+// Everything the new screens need about one player, worked out once and cached until
+// that player's rounds (or the course list) change.
+function uiStats(p){
+  const sc=p.scores||[];
+  const hit=UI_STC.get(sc); if(hit&&hit.c===S.courses) return hit.v;
+  const ord=orderScores(sc);
+  const tl=[]; let prev=null;
+  for(let k=0;k<ord.length;k++){
+    const r=calcHI(ord.slice(0,k+1).map(x=>x.s),S.courses);
+    tl.push({s:ord[k].s,i:ord[k].i,hi:r.hi,before:prev}); prev=r.hi;
+  }
+  const yr=new Date().getFullYear(), y0=yr+'-01-01';
+  const dated=scoresAllDated(sc);
+  let valid=0, holes=0, roundsYear=0, bestGross=null, bestDiff=null; const byCourse={};
+  sc.forEach(s=>{
+    const c=findCourse(S.courses,s); if(!c||roundIssue(s,c)) return;
+    valid++; const nine=isNineCfg(cfgOf(s,c)); holes+=nine?9:18;
+    if(s.date&&s.date>=y0) roundsYear++;
+    const k=s.course; byCourse[k]=byCourse[k]||{name:k,n:0,g18:[],g9:[]}; byCourse[k].n++;
+    (nine?byCourse[k].g9:byCourse[k].g18).push(Number(s.score));
+    if(!nine){
+      if(!bestGross||s.score<bestGross.score) bestGross={score:s.score,course:s.course,date:s.date||null};
+      const d=calcDiff(s.score,c.rating,c.slope);
+      if(!bestDiff||d<bestDiff.d) bestDiff={d,course:s.course,date:s.date||null};
+    }
+  });
+  const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null;
+  const courses=Object.values(byCourse).sort((a,b)=>b.n-a.n).map(c=>({name:c.name,n:c.n,avg:avg(c.g18),avg9:avg(c.g9)}));
+  let lowHI=null, lowHIDate=null;
+  tl.forEach(t=>{ if(t.hi!=null&&(lowHI==null||t.hi<lowHI)){lowHI=t.hi;lowHIDate=t.s.date||null;} });
+  const last=tl.length?tl[tl.length-1]:null;
+  const move=last&&last.hi!=null&&last.before!=null?rd(last.hi-last.before,1):null;
+  let yearStart=null;
+  if(dated){ for(const t of tl){ if(t.s.date<y0) yearStart=t.hi; else break; } }
+  const now=calcHI(sc,S.courses);
+  const yearDelta=yearStart!=null&&now.hi!=null?rd(now.hi-yearStart,1):null;
+  let form=null;
+  if(now.hi!=null&&now.window&&now.window.length>=3){
+    const w=now.window.slice(-5); form=rd(w.reduce((a,x)=>a+x.d,0)/w.length-now.hi,1);
+  }
+  const res=(S.potm&&S.potm.results)||{};
+  const crowns=Object.values(res).filter(x=>x&&x.winnerId===p.id).length;
+  const v={tl,valid,holes,roundsYear,bestGross,bestDiff,courses,lowHI,lowHIDate,move,yearStart,yearDelta,form,crowns,spark:tl.filter(t=>t.hi!=null).map(t=>t.hi)};
+  UI_STC.set(sc,{c:S.courses,v});
+  return v;
+}
+
+// What the next round does to the index, on the course played most in the last year.
+function uiTarget(p){
+  const sc=p.scores||[];
+  const hit=UI_TGC.get(sc); if(hit&&hit.c===S.courses&&hit.d===uiToday()) return hit.v;
+  let v=null;
+  const cur=calcHI(sc,S.courses);
+  if(cur.hi!=null){
+    const cut=new Date(); cut.setFullYear(cut.getFullYear()-1); const cutS=cut.toISOString().slice(0,10);
+    const pick=all=>{ const n={}; sc.forEach(s=>{ if(!all&&!(s.date&&s.date>=cutS))return; const c=findCourse(S.courses,s); if(!c||roundIssue(s,c)||isNineCfg(cfgOf(s,c)))return; const k=s.course+'|'+s.tee; n[k]=(n[k]||0)+1; });
+      return Object.entries(n).sort((a,b)=>b[1]-a[1])[0]; };
+    const top=pick(false)||pick(true);
+    if(top){
+      const [course,tee]=top[0].split('|');
+      const c=findCourse(S.courses,{course,tee,holes:'18'});
+      if(c&&!isNineCfg(cfgOf({},c))){
+        const holes=c.holes||'18', date=uiToday();
+        const f=g=>calcHI([...sc,{course,tee,holes,score:g,date}],S.courses).hi;
+        // lowest score the engine accepts as a real full round (roundIssue rejects anything lower)
+        const par=c.par||72, lo=Math.max(par-10, Math.ceil(c.rating-5*c.slope/113)+1), hiG=Math.ceil(c.rating+90);
+        let drop=null, rise=null;
+        if(f(lo)!=null&&f(lo)<cur.hi){ let a=lo,b=hiG; while(a<b){ const m=Math.ceil((a+b)/2); if(f(m)<cur.hi)a=m; else b=m-1; } drop={g:a,to:f(a)}; }
+        if(f(hiG)!=null&&f(hiG)>cur.hi){ let a=lo,b=hiG; while(a<b){ const m=Math.floor((a+b)/2); if(f(m)>cur.hi)b=m; else a=m+1; } rise={g:a,to:f(a)}; }
+        v={course,tee,short:uiShort(course),hi:cur.hi,drop,rise};
+      }
+    }
+  }
+  UI_TGC.set(sc,{c:S.courses,d:uiToday(),v});
+  return v;
+}
+function uiTargetCard(t,onGreen){
+  if(!t) return '';
+  const main=t.drop?`Shoot <b>${t.drop.g} or better</b> at ${t.short} and you drop to <b>${t.drop.to.toFixed(1)}</b>.`
+                   :`Your index can’t drop on ${t.short} this time — the rounds counting are already very good.`;
+  const band=t.drop&&t.rise?(t.rise.g-t.drop.g>1?`${t.drop.g+1}–${t.rise.g-1} keeps it at ${t.hi.toFixed(1)} · ${t.rise.g}+ and it goes up to ${t.rise.to.toFixed(1)}`:`${t.rise.g}+ and it goes up to ${t.rise.to.toFixed(1)}`)
+             :t.rise?`${t.rise.g}+ and it goes up to ${t.rise.to.toFixed(1)}`:t.drop?`${t.drop.g+1} or more keeps it at ${t.hi.toFixed(1)} — a bad day won’t push it up`:'A bad day won’t push it up either.';
+  return `<div class="ui-target${onGreen?' gw':''}"><div>${main}</div><small>${band} · ${t.tee} tees, 18 holes</small></div>`;
+}
+// The round that leaves the 20-round window when the next one is posted.
+function uiNextOut(p,s){
+  if(!s||!s.window||s.window.length<20) return null;
+  const inW=new Set(s.window.map(x=>x.i));
+  const first=orderScores(p.scores).find(x=>inW.has(x.i));
+  return first?first.s:null;
+}
+
+function uiSpark(st){
+  const pts=st.spark.slice(-40);
+  if(pts.length<2) return '<div style="height:18px"></div>';
+  const W=320,H=74,pad=6, mn=Math.min(...pts), mx=Math.max(...pts), sp=Math.max(.5,mx-mn);
+  const x=i=>pad+i*(W-2*pad)/(pts.length-1), y=v=>pad+(mx-v)/sp*(H-2*pad);
+  const line=pts.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const L=pts.length-1;
+  return `<svg class="ui-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="${pad},${H} ${line} ${x(L).toFixed(1)},${H}" fill="rgba(255,255,255,.12)"/>
+    <polyline points="${line}" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+  </svg><div class="ui-spark-dot" style="left:${(x(L)/W*100).toFixed(1)}%;top:${(y(pts[L])/H*100).toFixed(1)}%"></div>`;
+}
+
+// ── head to head: rounds two players played on the same course, same day ──
+function uiEff(s){ const c=findCourse(S.courses,s); if(!c||roundIssue(s,c))return null; const d=calcDiff(s.score,c.rating,c.slope); return isNineCfg(cfgOf(s,c))?2*d:d; }
+function uiH2H(a,b){
+  const ta=uiStats(a).tl, tb=uiStats(b).tl;
+  const hiA=calcHI(a.scores,S.courses).hi, hiB=calcHI(b.scores,S.courses).hi;
+  const mb={}; tb.forEach(t=>{ if(t.s.date){ const k=t.s.date+'|'+t.s.course; if(!mb[k])mb[k]=t; } });
+  const rows=[]; let w=0,l=0,dr=0;
+  const seen=new Set();
+  ta.forEach(t=>{
+    if(!t.s.date)return; const k=t.s.date+'|'+t.s.course; if(seen.has(k))return; const u=mb[k]; if(!u)return; seen.add(k);
+    const ea=uiEff(t.s), eb=uiEff(u.s); if(ea==null||eb==null)return;
+    const ba=t.before!=null?t.before:hiA, bb=u.before!=null?u.before:hiB; if(ba==null||bb==null)return;
+    const na=rd(ea-ba,1), nb=rd(eb-bb,1);
+    const res=Math.abs(na-nb)<0.05?'d':na<nb?'w':'l';
+    if(res==='w')w++; else if(res==='l')l++; else dr++;
+    rows.push({date:t.s.date,course:t.s.course,a:t.s.score,b:u.s.score,na,nb,res});
+  });
+  rows.sort((x,y)=>y.date.localeCompare(x.date));
+  return {w,l,d:dr,rows};
+}
+function renderH2H(p){
+  const others=S.players.filter(o=>o.id!==p.id).map(o=>({o,r:uiH2H(p,o)})).filter(x=>x.r.rows.length);
+  if(!others.length) return '';
+  let pick=UI_H2H[p.id];
+  if(!others.some(x=>x.o.id===pick)){
+    const meX=others.find(x=>x.o.id===UI_ME);
+    pick=(meX?meX:[...others].sort((a,b)=>b.r.rows.length-a.r.rows.length)[0]).o.id;
+  }
+  const cur=others.find(x=>x.o.id===pick), r=cur.r, o=cur.o;
+  const fa=p.name.split(' ')[0], fo=o.name.split(' ')[0];
+  const lead=r.w>r.l?`${fa} leads`:r.l>r.w?`${fo} leads`:'All square';
+  return `<div class="ui-lbl">Head to head</div>
+  <div class="ui-card ui-pad">
+    <div class="ui-chips-x">${others.map(x=>`<button class="ui-chip sm${x.o.id===pick?' on':''}" onclick="UI_H2HP('${p.id}','${x.o.id}')">${x.o.name.split(' ')[0]}${x.o.name.split(' ').length>1?' '+x.o.name.split(' ').slice(-1)[0][0]+'.':''}</button>`).join('')}</div>
+    <div class="ui-h2h">
+      <div><b>${r.w}</b><span>${fa}</span></div>
+      <div class="mid"><b>${r.d}</b><span>halved</span></div>
+      <div><b>${r.l}</b><span>${fo}</span></div>
+    </div>
+    <div class="ui-s" style="text-align:center;margin-bottom:10px">${lead} · ${r.rows.length} round${r.rows.length===1?'':'s'} together, scored net against each player’s index at the time</div>
+    <div class="ui-h2hl">${r.rows.slice(0,5).map(x=>`<div class="ui-h2hr ${x.res}">
+      <span class="ui-row-t">${uiShort(x.course)}<small>${uiDay(x.date)}</small></span>
+      <span class="ui-mono"><b class="${x.res==='w'?'win':''}">${x.a}</b> – <b class="${x.res==='l'?'win':''}">${x.b}</b></span>
+    </div>`).join('')}</div>
+  </div>`;
+}
+
+// ── club records ──
+function renderRecords(R){
+  const yr=new Date().getFullYear();
+  let lowRound=null,bestDiff=null,lowIdx=null,mostYear=null,mover=null,hot=null,explorer=null;
+  R.forEach(p=>{
+    const st=uiStats(p), f=p.name;
+    if(st.bestGross&&(!lowRound||st.bestGross.score<lowRound.v)) lowRound={v:st.bestGross.score,who:f,sub:`${uiShort(st.bestGross.course)}${st.bestGross.date?' · '+uiDay(st.bestGross.date):''}`};
+    if(st.bestDiff&&(!bestDiff||st.bestDiff.d<bestDiff.v)) bestDiff={v:st.bestDiff.d,who:f,sub:uiShort(st.bestDiff.course)};
+    if(st.lowHI!=null&&(!lowIdx||st.lowHI<lowIdx.v)) lowIdx={v:st.lowHI,who:f,sub:st.lowHIDate?uiDay(st.lowHIDate):''};
+    if(st.roundsYear&&(!mostYear||st.roundsYear>mostYear.v)) mostYear={v:st.roundsYear,who:f,sub:`rounds in ${yr}`};
+    if(st.yearDelta!=null&&st.yearDelta<0&&(!mover||st.yearDelta<mover.v)) mover={v:st.yearDelta,who:f,sub:`since 1 January`};
+    if(st.form!=null&&(!hot||st.form<hot.v)) hot={v:st.form,who:f,sub:'last 5 rounds vs index'};
+    const nc=st.courses.length; if(nc&&(!explorer||nc>explorer.v)) explorer={v:nc,who:f,sub:'different courses'};
+  });
+  const rows=[
+    ['Lowest round',lowRound,x=>x.v],
+    ['Best differential',bestDiff,x=>x.v.toFixed(1)],
+    ['Lowest index',lowIdx,x=>x.v.toFixed(1)],
+    ['Biggest mover',mover,x=>'↓'+Math.abs(x.v).toFixed(1)],
+    ['In form',hot,x=>(x.v>0?'+':x.v<0?'−':'')+Math.abs(x.v).toFixed(1)],
+    ['Most rounds',mostYear,x=>x.v],
+    ['Explorer',explorer,x=>x.v],
+  ].filter(r=>r[1]);
+  if(!rows.length) return '';
+  return `<div class="ui-lbl">Club records</div><div class="ui-list">${rows.map(([k,x,fmt])=>`
+    <div class="ui-row" style="cursor:default"><span class="ui-rk">${k}</span>
+      <span class="ui-row-t">${x.who}<small>${x.sub}</small></span><span class="ui-rbig sm">${fmt(x)}</span></div>`).join('')}</div>`;
+}
+
+// ── live rounds on Home (read-only peek at the same list Play shows) ──
+function uiLivePeek(){
+  if(Date.now()-UI_LIVE_AT<20000) return;
+  UI_LIVE_AT=Date.now();
+  fetch(`${LRS_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{
+    UI_LIVE=d||{};
+    const sig=Object.keys(UI_LIVE).map(k=>k+':'+(UI_LIVE[k]&&UI_LIVE[k].active?lpThru(UI_LIVE[k]):'x')).join(',');
+    if(sig!==UI_LIVE_SIG){ UI_LIVE_SIG=sig; if(V==='home'&&!PID&&!TID&&!MOD&&!UI_MENU) render(); }
+  }).catch(()=>{});
+}
+setInterval(()=>{ if(V==='home'&&!PID&&!TID&&document.visibilityState!=='hidden') uiLivePeek(); },20000);
+function renderLiveCards(){
+  if(!UI_LIVE) return '';
+  const live=Object.entries(UI_LIVE).filter(([id,r])=>r&&r.active&&Array.isArray(r.players)&&r.players.length&&Array.isArray(r.parArr));
+  return live.map(([id,r])=>{
+    let thru=0, lead='', mine='';
+    try{
+      thru=lpThru(r);
+      const b=lpBoard(r).filter(x=>x.thru>0);
+      if(b.length){
+        lead=`${b[0].name.split(' ')[0]} leads`;
+        const mi=b.findIndex(x=>x.id===UI_ME);
+        if(mi===0) lead='You lead'; else if(mi>0) mine=` · you’re ${uiOrd(mi+1)}`;
+      }
+    }catch(e){}
+    const me=r.players.find(x=>x.id===UI_ME);
+    const nt=(()=>{ try{ const b=lpBoard(r); const x=b.find(y=>y.id===UI_ME); return x&&x.thru?x.netToPar:null; }catch(e){ return null; } })();
+    return `<button class="ui-live" onclick="UI_GO('play')">
+      <span class="ui-pill"><i class="ui-dot ok"></i>Live · thru ${thru}</span>
+      <span class="ui-live-t">${uiShort(r.course)} · ${r.tee}</span>
+      <span class="ui-s">${lead?lead+mine:r.players.map(x=>x.name.split(' ')[0]).join(' · ')}</span>
+      ${me&&nt!=null?`<span class="ui-live-n${nt<0?' red':''}">${nt===0?'E':(nt>0?'+':'−')+Math.abs(nt)}</span>`:`<span class="ui-live-go">${me?'Carry on':'Watch'} ›</span>`}
+    </button>`;
+  }).join('');
+}
+
+// ── Home ──
+function renderHome(R){
+  uiLivePeek();
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  const me=UI_MEP()?R.find(p=>p.id===UI_ME):null;
+  const withHI=R.filter(p=>p.hi!==null);
+  let h=`<div class="ui-hero ui-panel">
+    <div class="ui-hero-top"><div class="ui-brand w">The Club</div>
+      <div class="ui-top-r">${uiSync(true)}
+        <button class="ui-ico gw" onclick="UI_MENU_O()" aria-label="Menu">${uiSvg('more')}</button>
+        ${me?`<button class="ui-av w" onclick="UI_GO('profile')" aria-label="My profile">${uiInit(me.name)}</button>`:''}
+      </div></div>`;
+  if(me){
+    const st=uiStats(me);
+    const pos=me.hi!==null?withHI.findIndex(p=>p.id===me.id)+1:0;
+    const mv=st.move;
+    h+=`<div class="ui-greet">${greet}, ${me.name.split(' ')[0]}</div>
+      <div class="ui-bigrow"><div class="ui-xl">${me.hi!==null?me.hi.toFixed(1):'—'}</div>
+        ${me.carried?'<span class="ui-pill gw" style="margin-bottom:12px">carried</span>':mv!=null&&Math.abs(mv)>=0.05?`<span class="ui-pill gw" style="margin-bottom:12px">${mv<0?'↓':'↑'} ${Math.abs(mv).toFixed(1)}</span>`:''}</div>
+      <div class="ui-hero-sub">${me.hi!==null?`Handicap index · ${uiOrd(pos)} in the club`:(st.holes?`${54-st.holes>0?54-st.holes+' more holes':'One more round'} for your first index`:'No rounds yet — post one to get started')}</div>`;
+    if(!me.carried) h+=uiTargetCard(uiTarget(me),true);
+  }else{
+    h+=`<div class="ui-greet">${greet}</div>
+      <div class="ui-h1">Who’s this phone for?</div>
+      <div class="ui-hero-sub">Pick yourself once and Home shows your handicap, what you need to shoot, and your Crown position.</div>
+      <button class="ui-btn ui-btn-w" onclick="UI_GO('profile')">Choose player</button>`;
+  }
+  h+=`</div><div class="ui-home-body">`;
+  h+=renderLiveCards();
+  // Crown + next event
+  let crown='';
+  if(me){
+    try{
+      const ym=potmThisYM(), r=potmCompute(ym), e=r.entrants.find(x=>x.pid===me.id);
+      const mon=potmMonthName(ym).split(' ')[0];
+      if(potmSettledRecord(ym)) crown='';
+      else if(!e) crown=`<button class="ui-tile" onclick="UI_GO('crown')"><span class="k">${mon} Crown</span><span class="v">Not entered</span><span class="k">Tap to see the race</span></button>`;
+      else if(!e.qualified) crown=`<button class="ui-tile" onclick="UI_GO('crown')"><span class="k">${mon} Crown</span><span class="v">${e.rounds.length} of ${r.settings.minRounds}</span><span class="k">rounds to qualify</span></button>`;
+      else{
+        const i=r.qualified.findIndex(x=>x.pid===me.id), lead=r.qualified[0];
+        crown=`<button class="ui-tile" onclick="UI_GO('crown')"><span class="k">${mon} Crown</span><span class="v"><b class="ui-tbig">${uiOrd(i+1)}</b> ${i===0?(r.qualified[1]?`${rd(lead.total-r.qualified[1].total,1)} pts clear`:'leading'):`${rd(lead.total-e.total,1)} pts behind`}</span></button>`;
+      }
+    }catch(err){ crown=''; }
+  }
+  const now=uiToday();
+  const next=[...(S.upcoming||[])].filter(t=>t&&t.date&&t.date>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const ev=next?`<button class="ui-tile" onclick="UI_GO('upcoming')"><span class="k">${uiWeekday(next.date)}</span><span class="v">${next.name||'Next event'}</span><span class="k">${(next.players||[]).length} in${me&&(next.players||[]).includes(me.name)?' · you’re in':''}</span></button>`:'';
+  if(crown||ev) h+=`<div class="ui-duo${crown&&ev?'':' one'}">${crown||''}${ev}</div>`;
+  if(!me) h+=renderCrownStrip();
+  h+=`<div class="ui-list" style="margin-top:10px">
+      <button class="ui-row" onclick="UI_POST()"><span class="ui-av g">${uiSvg('plus')}</span><span class="ui-row-t">Post a round<small>Add a score you played today or earlier</small></span>${uiSvg('chev','ui-chev')}</button>
+      <button class="ui-row" onclick="UI_GO('play')"><span class="ui-av">${uiSvg('flag')}</span><span class="ui-row-t">Play live<small>Everyone scores on their own phone</small></span>${uiSvg('chev','ui-chev')}</button>
+    </div>`;
+  h+=`<div class="ui-lbl">The club</div>${uiTiles()}</div>`;
+  return h;
+}
+
+// ── handlers (view state only) ──
+window.UI_SORT=v=>{UI_RSORT=v;render();};
+window.UI_RH_O=pid=>{UI_RH=pid;OPEN_SCORE=null;render();try{window.scrollTo(0,0);}catch(e){}};
+window.UI_RH_X=()=>{UI_RH=null;OPEN_SCORE=null;render();try{window.scrollTo(0,0);}catch(e){}};
+window.UI_H2HP=(pid,oid)=>{UI_H2H[pid]=oid;render();};
+window.UI_PLHAS=v=>{
+  const sel=document.getElementById('plHas'); if(sel) sel.value=v;
+  PL_TOGGLE();
+  document.querySelectorAll('#plSeg button').forEach((b,i)=>b.classList.toggle('on',String(i)===v));
+  const fr=document.getElementById('plFresh'); if(fr) fr.style.display=v==='1'?'none':'block';
 };
 </script>
 </body>
