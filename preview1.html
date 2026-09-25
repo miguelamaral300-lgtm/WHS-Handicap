@@ -1991,6 +1991,16 @@ a.ui-btn{color:#fff}
 .ui-phead>.ui-pheadt{flex:1;min-width:0}
 .ui-pheadt .ui-h1{font-size:25px;line-height:1.1;overflow-wrap:break-word}
 .ui-pheadt .ui-s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* The close button must never scroll away. On a long sheet (Crown settings is over
+   1300px of scrolling) the ✕ used to disappear off the top, leaving no visible way
+   out — you had to know that tapping the dimmed strip above closed it. */
+.mo .ui-sheet-h{position:sticky;top:0;z-index:3;background:var(--off);
+  margin:0 -20px;padding:0 20px 10px;align-items:flex-start}
+.mo .ui-sheet-h::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:var(--line);opacity:0;transition:opacity .15s}
+.mo.scrolled .ui-sheet-h::after{opacity:1}
+.mo .ui-sheet-h .ui-ico{position:sticky;top:8px}
 </style>
 </head>
 <body>
@@ -3292,7 +3302,7 @@ function renderHoleModal(){
   const board=lpBoard(rec);
   const before=board.find(x=>x.id===EDIT_HOLE.pid);
   return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
-    <div class="mo-title">Correct Hole ${realH}</div>
+    <div class="ui-sheet-h"><div class="mo-title">Correct hole ${realH}</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
     <div class="cr-note" style="margin-bottom:12px">${p?p.name:''} · ${rec.course} · ${rec.tee} · ${rec.date.split('-').reverse().join('/')}${par?` · par ${par}`:''}</div>
     <div class="lp-stepper" style="margin-bottom:12px">
       <button class="st-btn" onclick="HOLE_STEP(-1)">−</button>
@@ -4463,6 +4473,14 @@ function render(){
   if(MOD==='player'){
     setTimeout(()=>{ try{ PL_TOGGLE(); }catch(e){} }, 0);
   }
+  // a sheet with a sticky header shows a hairline once you scroll it
+  if(MOD||UI_MENU||UI_DONE){
+    setTimeout(()=>{ try{
+      const mo=document.querySelector('.mo'); if(!mo||mo.dataset.sc) return;
+      mo.dataset.sc='1';
+      mo.addEventListener('scroll',()=>{ mo.classList.toggle('scrolled',mo.scrollTop>4); },{passive:true});
+    }catch(e){} }, 0);
+  }
 }
 
 // ── RANKINGS ──────────────────────────────────────────────────────────────────
@@ -4930,7 +4948,7 @@ function renderTournamentModal(){
   const numRounds=TRN_ROUNDS||1;
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
-    <div class="mo-title">New Tournament</div>
+    <div class="ui-sheet-h"><div class="mo-title">New tournament</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
     <div class="fr"><label class="fl">Tournament Name</label><input type="text" id="tn" placeholder="e.g. The Benamor Open"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div><label class="fl">Date</label><input type="date" id="td"></div>
@@ -4986,7 +5004,7 @@ function renderUpcomingModal(){
   const playerNames=S.players.map(p=>p.name);
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
-    <div class="mo-title">Add Upcoming Event</div>
+    <div class="ui-sheet-h"><div class="mo-title">New event</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
     <div class="fr"><label class="fl">Event Name</label><input type="text" id="un" placeholder="e.g. The British Invitational 2026"></div>
     <div class="fr"><label class="fl">Date</label><input type="date" id="ud"></div>
     <div class="fr">
@@ -5014,7 +5032,7 @@ function renderContestModal(){
   const un=[...new Set(S.courses.map(c=>c.name))].sort();
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
-    <div class="mo-title">Add Contest Result</div>
+    <div class="ui-sheet-h"><div class="mo-title">Add a contest result</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
     <div class="fr"><label class="fl">Contest Type</label>
       <select id="ctype">
         <option value="drive">💥 Longest Drive</option>
@@ -5052,7 +5070,7 @@ function renderPurseEditModal(){
     // Show list of tournaments to pick from
     return`<div class="ov" onclick="if(event.target===this)CM()">
     <div class="mo">
-      <div class="mo-title">💰 Record Winnings</div>
+      <div class="ui-sheet-h"><div class="mo-title">Record winnings</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
       <p style="font-size:12px;color:var(--text3);margin-bottom:16px">Choose a tournament to enter each player's winnings</p>
       ${trns.map(t=>`
       <div class="tp-row" style="cursor:pointer" onclick="SET_PURSE('${t.id}')">
@@ -5110,7 +5128,7 @@ function renderPredictModal(){
   if(!t)return'';
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
-    <div class="mo-title">🎲 Place Your Bet</div>
+    <div class="ui-sheet-h"><div class="mo-title">Place your bet</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
     <p style="font-size:12px;color:var(--text3);margin-bottom:18px">${t.name} &middot; ${fmtDate(t.date)}</p>
     <div class="fr">
       <label class="fl">Your name</label>
