@@ -3691,6 +3691,7 @@ onValue(dbRef,snap=>{
     try{lpMigrateOeiras();}catch(e){}
     try{lpMigrateCrewsHill();}catch(e){}
     try{lpMigrateLondon();}catch(e){}
+    try{lpMigrateStEstevao();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -6513,11 +6514,32 @@ function lpMigrateLondon(){
   if(add.length) upd({...S,courses:[...S.courses,...add]});
 }
 
+// COURSE CARD · Santo Estevão Golf (Benavente)
+// The club's tees and ratings were already in the app from the FPG import; this adds the
+// hole-by-hole card so it can be used for live scoring. Pars and stroke indexes are taken
+// from the Federação Portuguesa de Golfe's own scorecard (scoring-pt.datagolf.pt, course
+// 071-1). Nothing is estimated. The same card's men's ratings — White 73.4/132,
+// Yellow 71.7/128, Blue 69.1/123, Red 66.8/118, Green 60.4/105, Purple 58.3/99 — match
+// the rows already in the club list exactly, which is how this was checked.
+//   out 36 · in 37 · par 73
+function lpMigrateStEstevao(){
+  if(!S.courseHoles)return;
+  const NAME='Santo Estevão Golf';
+  if(S.courseHoles[NAME])return;
+  S.courseHoles[NAME]={
+    holes:18,
+    par:[4,4,5,3,4,3,4,5,4, 4,4,3,5,4,3,5,4,5],
+    si: [18,6,4,16,8,12,2,10,14, 13,3,9,5,7,17,11,1,15],
+    source:'Federação Portuguesa de Golfe official scorecard, verified 2026-09'
+  };
+  upd(S);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='B-20260925-b · London courses · A–Z jump · search fix';
+const UI_BUILD='B-20260925-c · Santo Estevão live scoring';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
