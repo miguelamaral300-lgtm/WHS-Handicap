@@ -1913,9 +1913,9 @@ a.ui-btn{color:#fff}
 .ui-pbar i.up{background:var(--g)}.ui-pbar i.dn{background:var(--red)}
 .ui-pnl{flex-shrink:0;font-weight:500;font-size:20px;letter-spacing:-.04em;font-feature-settings:'tnum'}
 .ui-pnl.up{color:var(--g)}.ui-pnl.dn{color:var(--red)}
-.ui-phead,.ui-prow{display:grid;grid-template-columns:1fr 62px 62px 68px;gap:8px;align-items:center}
-.ui-phead{font-size:11px;color:var(--ink2);padding-bottom:6px;border-bottom:1px solid var(--line)}
-.ui-phead span:not(:first-child),.ui-prow span:not(:first-child){text-align:right}
+.ui-pursehead,.ui-prow{display:grid;grid-template-columns:1fr 62px 62px 68px;gap:8px;align-items:center}
+.ui-pursehead{font-size:11px;color:var(--ink2);padding-bottom:6px;border-bottom:1px solid var(--line)}
+.ui-pursehead span:not(:first-child),.ui-prow span:not(:first-child){text-align:right}
 .ui-prow{padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
 .ui-prow:last-child{border-bottom:none}
 .ui-prow b{display:block;font-size:13.5px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
@@ -1953,6 +1953,44 @@ a.ui-btn{color:#fff}
 /* one Events section, four tabs */
 .ui-evtabs{margin-bottom:16px}
 .ui-evtabs button{flex:1;font-size:12.5px;padding:0 6px}
+
+/* ════════ One screen, one thing · tabs + the head-to-head matrix ════════ */
+.ui-evtabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.ui-evtabs::-webkit-scrollbar{display:none}
+.ui-evtabs button{white-space:nowrap;flex:1 0 auto;min-width:0}
+.ui-crtabs{margin-bottom:14px}
+.ui-seg.ui-seg-full.ui-evtabs{display:flex}
+.ui-phead + .ui-evtabs{margin-bottom:16px}
+
+/* head-to-head matrix — the whole club at a glance */
+.ui-h2hsum{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;text-align:center;
+  background:#fff;border-radius:20px;box-shadow:var(--sh-card);padding:16px 12px;margin-bottom:12px}
+.ui-h2hsum b{display:block;font-weight:500;font-size:40px;letter-spacing:-.06em;line-height:1}
+.ui-h2hsum span{display:block;font-size:12.5px;color:var(--ink2);margin-top:4px}
+.ui-h2hsum .mid{padding:0 16px}.ui-h2hsum .mid b{font-size:24px;color:var(--ink3)}
+.ui-matrix{background:#fff;border-radius:20px;box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.ui-mxh,.ui-mxr{display:grid;grid-template-columns:1fr 34px 34px 34px 62px;gap:4px;align-items:center}
+.ui-mxh{padding:10px 14px 8px;font-size:11.5px;color:var(--ink2);border-bottom:1px solid var(--line)}
+.ui-mxh span:not(:first-child){text-align:center}
+.ui-mxh span:last-child{text-align:right}
+.ui-mxr{width:100%;background:none;border:none;border-top:1px solid var(--line);padding:11px 14px;cursor:pointer;text-align:left;color:var(--ink);min-height:54px}
+.ui-matrix .ui-mxr:first-of-type{border-top:none}
+.ui-mxr:active{background:var(--off)}
+.ui-mxr.open{background:var(--gl)}
+.ui-mxn{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14.5px;letter-spacing:-.02em;min-width:0}
+.ui-av.sm{width:26px;height:26px;font-size:10.5px;font-style:normal;flex-shrink:0}
+.ui-mxv{text-align:center;font-family:'Geist Mono',monospace;font-size:14px;color:var(--ink2)}
+.ui-mxv.w{color:var(--g);font-weight:700}
+.ui-mxv.l{color:var(--red);font-weight:700}
+.ui-mxm{text-align:right;font-family:'Geist Mono',monospace;font-size:13.5px;color:var(--ink2)}
+.ui-mxm.up{color:var(--g);font-weight:600}.ui-mxm.dn{color:var(--red);font-weight:600}
+.ui-mxres{width:26px;height:26px;flex-shrink:0;border-radius:8px;display:grid;place-items:center;
+  font-size:12px;font-weight:700;background:var(--off);color:var(--ink2)}
+.ui-mxres.w{background:var(--gl);color:var(--g)}
+.ui-mxres.l{background:var(--redl);color:var(--red)}
+.ui-phead>.ui-pheadt{flex:1;min-width:0}
+.ui-pheadt .ui-h1{font-size:25px;line-height:1.1;overflow-wrap:break-word}
+.ui-pheadt .ui-s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -2991,14 +3029,19 @@ function renderCrown(){
       <button class="ui-ico" onclick="CROWN_STEP(-1)" aria-label="Previous month">${uiSvg('back')}</button>
       <div class="ui-crhead-t"><div class="ui-h1" style="font-size:24px">${mon}</div><div class="ui-s">${subtitle}</div></div>
       <button class="ui-ico" ${ym>=potmThisYM()?'disabled':''} onclick="CROWN_STEP(1)" aria-label="Next month">${uiSvg('chev')}</button>
+      <button class="ui-ico" onclick="OM('crownset')" aria-label="Crown settings">${uiSvg('gear')}</button>
     </div>`;
 
-  // a detail page (head to head, fairness, honours, entries, declared, rules) takes over
-  if(UI_CRD) return renderCrownDetail(ym,st);
+  const tabs=`<div class="ui-seg ui-seg-full ui-evtabs ui-crtabs">
+      ${[['race','Race'],['declared','Declared'],['h2h','Head to head'],['fair','Fairness'],['honour','Honours']]
+        .map(([k,l])=>`<button class="${(UI_CRD||'race')===k?'on':''}" onclick="UI_CRD_O('${k}')">${l}</button>`).join('')}
+    </div>`;
+  // one subject per tab — nothing is reached by scrolling past something else
+  if(UI_CRD&&UI_CRD!=='race') return renderCrownDetail(ym,st,head,tabs);
 
   // ── a settled month is shown exactly as it was settled ──
   if(frozen&&ym<potmThisYM()){
-    let fh=`<div class="cr-wrap">`+head('Final');
+    let fh=`<div class="cr-wrap">`+head('Final')+tabs;
     if(frozen.void){
       fh+=`<div class="ui-alert">Void — too few players reached the minimum. The pot rolled forward.</div>`;
     }else{
@@ -3013,16 +3056,14 @@ function renderCrown(){
         <span class="ui-rbig sm">${x.total.toFixed(1)}</span></div>`).join('')}</div>`;
       fh+=`<button class="ui-btn ui-btn-w" style="margin-top:12px" onclick="CROWN_SHARE('${ym}')">Share result</button>`;
     }
-    fh+=uiCrownRows(ym,st,null);
     return fh+`</div>`;
   }
 
   const r=uiCrown(ym);
-  let h=`<div class="cr-wrap">`+head(r.locked?'Final':'Live');
+  let h=`<div class="cr-wrap">`+head(r.locked?'Final':'Live')+tabs;
 
   if(!r.entrants.length){
-    return h+`<div class="ui-crempty">Nobody has entered ${mon.split(' ')[0]} yet.</div>`
-      +uiCrownRows(ym,st,r)+`</div>`;
+    return h+`<div class="ui-crempty">Nobody has entered ${mon.split(' ')[0]} yet. Open the settings to say who is in.</div></div>`;
   }
 
   // ── hero: who is winning ──
@@ -3070,7 +3111,6 @@ function renderCrown(){
         <span class="ui-row-t">${e.name}<small>${e.rounds.length} of ${st.minRounds} round${st.minRounds===1?'':'s'}</small></span></div>`).join('')}</div>`;
   }
   if(r.winner)h+=`<button class="ui-btn ui-btn-w" style="margin-top:14px" onclick="CROWN_SHARE('${ym}')">Share standings</button>`;
-  h+=uiCrownRows(ym,st,r);
   return h+`</div>`;
 }
 
@@ -3109,22 +3149,14 @@ function uiCrownRows(ym,st,r){
 }
 
 // ── the detail page: one subject at a time ──
-function renderCrownDetail(ym,st){
-  const TABS=[['h2h','Head to head'],['fair','Fairness'],['honour','Honours']];
-  const TITLE={h2h:'Head to head',fair:'Fairness',honour:'Roll of honour',entries:'Entries',declared:'Declared rounds',rules:'How it is scored'};
+function renderCrownDetail(ym,st,head,tabs){
   let r=null; try{ r=uiCrown(ym); }catch(e){}
   let body='';
   if(UI_CRD==='h2h') body=r?crownMatrix(r):'';
   else if(UI_CRD==='fair') body=r?crownFair(r,st):'';
   else if(UI_CRD==='honour') body=crownHonour();
-  else if(UI_CRD==='entries') body=r?crownEntries(r,st,ym):'';
   else if(UI_CRD==='declared') body=crownDeclared(ym);
-  else if(UI_CRD==='rules') body=crownRules(st);
-  const showTabs=['h2h','fair','honour'].includes(UI_CRD);
-  return `<div class="cr-wrap">
-    <div class="ui-top"><button class="ui-ico" onclick="UI_CRD_X()" aria-label="Back">${uiSvg('back')}</button>
-      <div class="ui-top-t">${TITLE[UI_CRD]||'Crown'}</div><span style="width:40px"></span></div>
-    ${showTabs?`<div class="ui-seg ui-seg-full" style="margin-bottom:14px">${TABS.map(([k,l])=>`<button class="${UI_CRD===k?'on':''}" onclick="UI_CRD_O('${k}')">${l}</button>`).join('')}</div>`:''}
+  return `<div class="cr-wrap">${head(r&&r.locked?'Final':'Live')}${tabs}
     <div class="ui-crdetail">${body}</div>
   </div>`;
 }
@@ -3411,6 +3443,9 @@ function renderCrownSettings(){
         <select id="cSpoon" class="ui-sel"><option value="last"${st.spoonBasis==='last'?' selected':''}>Bottom</option><option value="fewest"${st.spoonBasis==='fewest'?' selected':''}>Fewest rounds</option></select></div>
     </div>
     <div class="pk-hint">Three rounds prove less than twelve, so the correction stops a lucky short month winning. Benefit is capped at ${st.shrinkCap} rounds, so volume cannot buy a win either.</div>
+
+    <div class="fl" style="margin-top:18px">How it works</div>
+    <div class="ui-list"><button class="ui-row" onclick="UI_RULES()"><span class="ui-row-t">How it is scored<small>What each category measures, and ties</small></span>${uiSvg('chev','ui-chev')}</button></div>
 
     <div id="cErr" class="err ui-alert red" style="display:none"></div>
     <button class="ui-btn ui-btn-g" style="margin-top:8px" onclick="CROWN_SAVE()">Save settings</button>
@@ -4372,13 +4407,13 @@ function render(){
   const R=ranked();
   // Profile tab = this phone's own player page
   if(V==='profile'&&!PID&&!TID&&UI_MEP()) PID=UI_ME;
-  if(UI_RH&&UI_RH!==PID) UI_RH=null;     // round history belongs to the player it was opened for
+  if(UI_PID_LAST!==PID){ UI_PTAB='overview'; UI_PID_LAST=PID; }   // a new player always opens on Overview
   const AP=S.players.find(p=>p.id===PID),AT=S.tournaments.find(t=>t.id===TID);
   const isProfile=V==='profile'&&AP&&AP.id===UI_ME;
 
   let h=renderTopBar(AP,AT);
 
-  if(AP) h+=isProfile?`<div class="ui-profile">${renderPlayerDetail(AP)}${UI_RH===AP.id?'':renderProfileFoot(AP)}</div>`:renderPlayerDetail(AP);
+  if(AP) h+=isProfile?`<div class="ui-profile">${renderPlayerDetail(AP)}${UI_PTAB==='overview'?renderProfileFoot(AP):''}</div>`:renderPlayerDetail(AP);
   else if(AT) h+=renderTournamentDetail(AT);
   else if(V==='home') h+=renderHome(R);
   else if(V==='profile') h+=renderProfilePick();
@@ -4432,33 +4467,32 @@ function render(){
 
 // ── RANKINGS ──────────────────────────────────────────────────────────────────
 function renderRanking(R){
-  const sort=UI_RSORT||'hi';
-  const rows=R.map(p=>{const st=uiStats(p);return {p,st};});
-  const hiOf=x=>x.p.hi;
-  let list=[...rows];
-  if(sort==='form'){
-    list.sort((a,b)=>(a.st.form==null)-(b.st.form==null)||(a.st.form??0)-(b.st.form??0));
-  }else if(sort==='rounds'){
-    list.sort((a,b)=>b.st.roundsYear-a.st.roundsYear||b.st.valid-a.st.valid);
-  }
-  const mov=v=>v==null||Math.abs(v)<0.05?'':v<0?`<span class="ui-mv dn">↓${Math.abs(v).toFixed(1)}</span>`:`<span class="ui-mv up">↑${v.toFixed(1)}</span>`;
+  const tab=['hi','form','rounds','records'].includes(UI_RSORT)?UI_RSORT:'hi';
   let h=`<div class="ui-pagehead"><div class="ui-h1">Rankings</div>
       <button class="ui-btn ui-btn-g ui-btn-sm" onclick="PL_ADD()">${uiSvg('plus')}Add player</button></div>
-    <div class="ui-seg" style="margin:4px 0 14px">
-      <button class="${sort==='hi'?'on':''}" onclick="UI_SORT('hi')">Handicap</button>
-      <button class="${sort==='form'?'on':''}" onclick="UI_SORT('form')">Form</button>
-      <button class="${sort==='rounds'?'on':''}" onclick="UI_SORT('rounds')">Rounds</button>
+    <div class="ui-seg ui-seg-full ui-evtabs">
+      ${[['hi','Handicap'],['form','Form'],['rounds','Rounds'],['records','Records']]
+        .map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="UI_SORT('${k}')">${l}</button>`).join('')}
     </div>`;
-  if(sort==='form') h+=`<div class="ui-note" style="margin:-4px 4px 12px">Last five rounds against each player’s own index. Minus means playing better than their handicap.</div>`;
-  if(sort==='rounds') h+=`<div class="ui-note" style="margin:-4px 4px 12px">Rounds posted in ${new Date().getFullYear()}.</div>`;
+  if(tab==='records') return h+renderRecords(R);
+
+  const rows=R.map(p=>({p,st:uiStats(p)}));
+  let list=[...rows];
+  if(tab==='form') list.sort((a,b)=>(a.st.form==null)-(b.st.form==null)||(a.st.form??0)-(b.st.form??0));
+  else if(tab==='rounds') list.sort((a,b)=>b.st.roundsYear-a.st.roundsYear||b.st.valid-a.st.valid);
+  const mov=v=>v==null||Math.abs(v)<0.05?'':v<0?`<span class="ui-mv dn">↓${Math.abs(v).toFixed(1)}</span>`:`<span class="ui-mv up">↑${v.toFixed(1)}</span>`;
+  h+=`<div class="ui-note" style="margin:0 4px 12px">${
+    tab==='form'?'Last five rounds against each player’s own index. Minus means playing better than their handicap.'
+    :tab==='rounds'?`Rounds posted in ${new Date().getFullYear()}.`
+    :'Best 8 of the last 20 rounds set each index.'}</div>`;
   let pos=0;
   h+=`<div class="ui-list">`+list.map((x,k)=>{
     const p=x.p, st=x.st, me=p.id===UI_ME;
     let big, sub;
-    if(sort==='form'){
+    if(tab==='form'){
       big=st.form==null?'<span class="ui-na">—</span>':(st.form>0?'+':st.form<0?'−':'')+Math.abs(st.form).toFixed(1);
       sub=st.form==null?'needs 3 rounds':`index ${p.hi!=null?p.hi.toFixed(1):'—'} · last 5`;
-    }else if(sort==='rounds'){
+    }else if(tab==='rounds'){
       big=String(st.roundsYear);
       sub=`${st.valid} in total`;
     }else{
@@ -4467,164 +4501,95 @@ function renderRanking(R){
         :p.hi!==null?`${st.valid} rounds${mov(st.move)?' · '+mov(st.move):''}`
         :(st.holes?`needs ${Math.max(0,54-st.holes)} holes for an index`:'no rounds yet');
     }
-    const showPos=sort==='hi'?(p.hi!==null?++pos:''):(k+1);
+    const showPos=tab==='hi'?(p.hi!==null?++pos:''):(k+1);
     return `<button class="ui-rrow${me?' me':''}" onclick="OP('${p.id}')">
       <span class="ui-rpos">${showPos}</span>
       <span class="ui-av${me?' g':''}">${uiInit(p.name)}</span>
       <span class="ui-row-t">${p.name}<small>${sub}</small></span>
-      <span class="ui-rbig${sort==='form'&&st.form!=null&&st.form<0?' red':''}">${big}</span>
+      <span class="ui-rbig${tab==='form'&&st.form!=null&&st.form<0?' red':''}">${big}</span>
     </button>`;
   }).join('')+`</div>`;
-  h+=renderRecords(R);
   return h;
 }
 
 // ── PLAYER DETAIL ─────────────────────────────────────────────────────────────
 function renderPlayerDetail(p){
-  if(UI_RH===p.id) return renderRoundHistory(p);
   const s=calcHI(p.scores,S.courses);
   const st=uiStats(p);
   const isMe=p.id===UI_ME;
   const inProfileTab=V==='profile'&&isMe;
-  const ranked_=ranked(); const rp=ranked_.find(x=>x.id===p.id)||{};
+  const rp=ranked().find(x=>x.id===p.id)||{};
   const hi=rp.hi!=null?rp.hi:null;
-  const top2=st.courses.slice(0,2).map(c=>uiShort(c.name)).join(' & ');
+  const home=st.courses.length?uiShort(st.courses[0].name):'';
+  const tab=UI_PTAB||'overview';
   let h=`<div class="ui-top">
       ${inProfileTab?'<span style="width:40px"></span>':`<button class="ui-ico" onclick="CP()" aria-label="Back">${uiSvg('back')}</button>`}
       <span></span>
       <div class="ui-top-r"><button class="ui-ico" onclick="PL_EDIT('${p.id}')" aria-label="Edit player">${uiSvg('pen')}</button></div>
     </div>
     <div class="ui-phead"><span class="ui-av g lg">${uiInit(p.name)}</span>
-      <div><div class="ui-h1" style="font-size:27px">${p.name}</div>
-      <div class="ui-s">${top2?top2+' · ':''}${st.valid} round${st.valid===1?'':'s'}</div></div></div>`;
+      <div class="ui-pheadt"><div class="ui-h1">${p.name}</div>
+      <div class="ui-s">${home?home+' · ':''}${st.valid} round${st.valid===1?'':'s'}</div></div></div>
+    <div class="ui-seg ui-seg-full ui-evtabs">
+      ${[['overview','Overview'],['rounds','Rounds'],['h2h','Head to head'],['stats','Stats']]
+        .map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="UI_PTAB_O('${k}')">${l}</button>`).join('')}
+    </div>`;
 
-  // ── green index card with the trend drawn in ──
+  if(tab==='rounds')  return h+renderRoundsTab(p,s,st);
+  if(tab==='h2h')     return h+renderH2H(p);
+  if(tab==='stats')   return h+renderStatsTab(p,st);
+
+  // ── Overview ──
   const yd=st.yearDelta;
   h+=`<div class="ui-hicard ui-panel">
     <div class="ui-hic-top"><span>Handicap index</span>${yd!=null&&Math.abs(yd)>=0.05?`<span class="ui-pill gw">${yd<0?'↓':'↑'} ${Math.abs(yd).toFixed(1)} this year</span>`:''}</div>
     <div class="ui-xl" style="font-size:72px;margin-top:8px">${hi!=null?hi.toFixed(1):'—'}${rp.carried?'<i class="ui-star w">*</i>':''}</div>
     ${uiSpark(st)}
     <div class="ui-hic-sub">${hi==null?(st.holes?`Needs ${Math.max(0,54-st.holes)} more holes for a first index`:'No rounds yet'):rp.carried?`Carried from previous club · ${rp.count||0}/3 rounds here`:`Best ${s.n} of the last ${s.count} count${st.move!=null&&Math.abs(st.move)>=0.05?` · ${st.move<0?'↓':'↑'}${Math.abs(st.move).toFixed(1)} last round`:''}`}</div>
-  </div>`;
-
-  // ── three stats ──
-  h+=`<div class="ui-stat3">
+  </div>
+  <div class="ui-stat3">
     <div><span>Low</span><b>${st.lowHI!=null?st.lowHI.toFixed(1):'—'}</b></div>
     <div><span>Best</span><b>${st.bestGross?st.bestGross.score:'—'}</b></div>
     <div><span>Crowns</span><b>${st.crowns}</b></div>
   </div>`;
-
-  // ── what it takes ──
   const tg=uiTarget(p);
-  if(tg) h+=`<div class="ui-lbl">Next round</div>${uiTargetCard(tg,false)}`;
+  if(tg) h+=uiTargetCard(tg,false);
+  h+=`<button class="ui-btn ui-btn-g" style="margin-top:14px" onclick="OM('score')">${uiSvg('plus')}Add a round</button>`;
+  return h;
+}
 
-  // ── round history entry ──
+// ── Rounds tab: the full history, nothing else ──
+function renderRoundsTab(p,s,st){
   const nextOut=uiNextOut(p,s);
-  h+=`<div class="ui-lbl">Rounds</div><div class="ui-list">
-    <button class="ui-row" onclick="UI_RH_O('${p.id}')"><span class="ui-row-t">Round history<small>${s.hi!==null?`${s.n} of ${s.count} counting`:`${st.valid} posted`}${nextOut?` · next to drop out: ${uiShort(nextOut.course)} ${nextOut.score}${(()=>{const c=findCourse(S.courses,nextOut);return c&&isNineCfg(cfgOf(nextOut,c))?' (9)':'';})()}`:''}</small></span>${uiSvg('chev','ui-chev')}</button>
-    <button class="ui-row" onclick="OM('score')"><span class="ui-row-t" style="color:var(--g)">Add a round<small>Post a score to ${isMe?'your':p.name.split(' ')[0]+'’s'} record</small></span>${uiSvg('plus','ui-chev g')}</button>
-  </div>`;
+  let h=`<div class="ui-note" style="margin:0 4px 12px">${s.hi!==null
+      ? `Best ${s.n} of the last ${s.count} set ${p.id===UI_ME?'your':'the'} index${nextOut?` · next to drop out: ${uiShort(nextOut.course)} ${nextOut.score}`:''}`
+      : `${st.valid} round${st.valid===1?'':'s'} posted — an index needs 54 holes`}</div>`;
+  h+=`<button class="ui-btn ui-btn-g" style="margin-bottom:14px" onclick="OM('score')">${uiSvg('plus')}Add a round</button>`;
+  return h+renderRoundList(p,s);
+}
 
-  // ── head to head ──
-  h+=renderH2H(p);
-
-  // ── most played ──
+// ── Stats tab: most played, badges, personal bests ──
+function renderStatsTab(p,st){
+  let h='';
   if(st.courses.length){
-    h+=`<div class="ui-lbl">Most played</div><div class="ui-list">${st.courses.slice(0,3).map(c=>`
+    h+=`<div class="ui-lbl" style="margin-top:0">Most played</div><div class="ui-list">${st.courses.slice(0,6).map(c=>`
       <div class="ui-row" style="cursor:default"><span class="ui-row-t">${c.name}<small>${c.n} round${c.n===1?'':'s'}</small></span>
       <span class="ui-row-v ui-mono">${c.avg!=null?'avg '+c.avg:''}${c.avg9!=null?`${c.avg!=null?' · ':''}${c.avg9} nine`:''}</span></div>`).join('')}</div>`;
   }
-
-  // ── badges ──
-  const badges=potmBadges(p,S.courses);
-  if(badges.length){
-    h+=`<div class="ui-lbl">Badges</div><div class="ui-badges">${badges.map(b=>`<span class="ui-badge" title="${b.note.replace(/"/g,'&quot;')}">${b.name}</span>`).join('')}</div>`;
-  }
-  // ── lifetime detail (kept from the old page) ──
-  if(st.bestDiff||st.bestGross){
+  if(st.bestGross||st.bestDiff||st.lowHI!=null){
     h+=`<div class="ui-lbl">Personal bests</div><div class="ui-list">
       ${st.bestGross?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best full round<small>${st.bestGross.course}${st.bestGross.date?' · '+fmtDate(st.bestGross.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestGross.score}</span></div>`:''}
       ${st.bestDiff?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best differential<small>${st.bestDiff.course}${st.bestDiff.date?' · '+fmtDate(st.bestDiff.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestDiff.d.toFixed(1)}</span></div>`:''}
       ${st.lowHI!=null?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Lowest index ever<small>${st.lowHIDate?fmtDate(st.lowHIDate):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.lowHI.toFixed(1)}</span></div>`:''}
     </div>`;
   }
-  return h;
-}
-
-function renderRoundHistory(p){
-  const s=calcHI(p.scores,S.courses);
-  let h=`<div class="ui-top">
-      <button class="ui-ico" onclick="UI_RH_X()" aria-label="Back">${uiSvg('back')}</button><span></span>
-      <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('score')">Add round</button></div>
-    <div style="margin:4px 4px 16px"><div class="ui-h1">Round history</div>
-      <div class="ui-s" style="margin-top:6px">${p.id===UI_ME?'Your':p.name.split(' ')[0]+'’s'} ${s.hi!==null?`best ${s.n} of the last ${s.count} set ${p.id===UI_ME?'your':'the'} index`:'rounds so far — an index needs 54 holes'}</div></div>`;
-  if(!p.scores||!p.scores.length)return h+`<div class="empty-state"><div class="empty-title">No rounds recorded</div><div class="empty-sub">Tap Add round to post the first one</div></div>`;
-  const issues=s.issues||{};
-  // Position in the counting window: 1 = most recent, 20 = the one that falls out next.
-  // Numbered by PLAYING order (same rule as before), so it counts down without gaps.
-  const winPos={};
-  if(s.window&&s.window.length){
-    const inWindow=new Set(s.window.map(x=>x.i));
-    const played=orderScores(p.scores).map(x=>x.i).filter(i=>inWindow.has(i));
-    played.forEach((i,k)=>{ winPos[i]=played.length-k; });
+  const badges=potmBadges(p,S.courses);
+  if(badges.length){
+    h+=`<div class="ui-lbl">Badges</div><div class="ui-list">${badges.map(b=>`
+      <div class="ui-row" style="cursor:default"><span class="ui-fairtick">${uiSvg('tick')}</span>
+        <span class="ui-row-t">${b.name}<small>${b.note}</small></span></div>`).join('')}</div>`;
   }
-  const maxPos=Math.max(0,...Object.values(winPos));
-  const issueIdx=Object.keys(issues).map(Number);
-  if(issueIdx.length)h+=`<div class="ui-alert red"><b>${issueIdx.length} round${issueIdx.length>1?'s':''} excluded</b> · ${issueIdx.length>1?'they cannot':'it cannot'} be right as recorded, so ${issueIdx.length>1?'they are':'it is'} left out rather than distorting the index. Tap to fix.
-    ${issueIdx.map(i=>{const x=p.scores[i];return `<div class="ui-alert-i"><b>${x.course} · ${x.tee} · ${x.holes||'?'} · ${x.score}</b> — ${issues[i]}</div>`;}).join('')}</div>`;
-  if(!scoresAllDated(p.scores)){
-    const nd=p.scores.filter(x=>!x.date||isNaN(new Date(x.date).getTime())).length;
-    h+=`<div class="ui-alert red"><b>${nd} round${nd>1?'s':''} without a date.</b> Rounds are sequenced in the order they were entered. Add the missing dates and the handicap follows true playing order instead.</div>`;
-  }
-  if(s.hi!==null) h+=`<div class="ui-legend"><span><i class="g"></i>Counting</span><span><i></i>In the last 20</span><span><i class="r"></i>Excluded</span></div>`;
-  h+=`<div class="ui-hist">`;
-  [...orderScores(p.scores)].reverse().forEach(entry=>{
-    const s2=entry.s, oi=entry.i, c=findCourse(S.courses,s2);
-    const d=c?calcDiff(s2.score,c.rating,c.slope):null;
-    const cfg=cfgOf(s2,c),is9=isNineCfg(cfg),isO=OPEN_SCORE&&OPEN_SCORE.pid===p.id&&OPEN_SCORE.idx===oi;
-    const isCounting=s.countingIdx&&s.countingIdx.has(oi);
-    const m=s.meta&&s.meta[oi];
-    const bad=!c||issues[oi];
-    const cfgL=cfg==='18'?'18':cfg==='F9'?'front 9':cfg==='L9'?'back 9':cfg==='L9x2'?'back 9 ×2':cfg==='F9x2'?'front 9 ×2':cfg;
-    const eff=m&&m.eighteenhDiff!=null?m.eighteenhDiff:d;
-    h+=`<button class="ui-hrow${isCounting?' cnt':''}${bad?' bad':''}${isO?' open':''}" onclick="TSC('${p.id}',${oi})">
-      <span class="ui-hpos">${bad?'!':winPos[oi]||''}</span>
-      <span class="ui-row-t">${uiShort(s2.course)} · ${cfgL}<small>${s2.date?uiDay(s2.date):'no date'}${s2.tee?' · '+s2.tee:''}${winPos[oi]&&winPos[oi]===maxPos&&maxPos>=20?' · <em>drops out next</em>':''}${bad&&!issues[oi]?' · not counting':''}</small></span>
-      <span class="ui-hsc">${s2.score}</span>
-      <span class="ui-hdf">${bad?'–':eff!=null?eff.toFixed(1):'—'}</span>
-    </button>`;
-    if(isO){
-      let breakdown='';
-      if(is9&&m&&m.is9){
-        if(m.pendingConversion){
-          breakdown=`<div class="ui-bd"><b>Initial index period — pending conversion</b>
-            <p>Under WHS the expected-score conversion starts once 54 holes are posted. This nine becomes an 18-hole differential when the first index is set.</p>
-            <div class="ui-bdr"><span>9-hole differential (stored)</span><span>${m.ninehDiff.toFixed(1)}</span></div></div>`;
-        }else{
-          breakdown=`<div class="ui-bd"><b>${m.retroactivelyConverted?'First index set — converted retroactively':'WHS 9-hole → 18-hole conversion'}</b>
-            <div class="ui-bdr"><span>9-hole differential</span><span>${m.ninehDiff.toFixed(1)}</span></div>
-            <div class="ui-bdr"><span>Expected for the missing nine<small>index ${m.hiAtTime.toFixed(1)} × 0.52 + 1.2</small></span><span>${m.expected.toFixed(1)}</span></div>
-            <div class="ui-bdr tot"><span>18-hole differential${isCounting?' · counting':''}</span><span>${m.eighteenhDiff.toFixed(1)}</span></div></div>`;
-        }
-      }
-      h+=`<div class="ui-hdet">
-        ${bad&&issues[oi]?`<div class="ui-alert red" style="margin:0 0 10px">${issues[oi]}</div>`:''}
-        <div class="ui-hgrid">
-          <div><span>Course</span><b>${s2.course}</b></div>
-          <div><span>Rating / slope</span><b class="ui-mono">${c?c.rating.toFixed(1)+' / '+c.slope:'—'}</b></div>
-          <div><span>Holes</span><b>${is9?'9-hole':'18-hole'}</b></div>
-          <div><span>Date played</span><b>${s2.date?fmtDate(s2.date):'—'}</b></div>
-        </div>
-        ${breakdown}
-        ${isCounting&&!(is9&&m&&m.is9)?`<div class="ui-cnt">Counting toward the index</div>`:''}
-        <div class="ui-hact">
-          <button class="ui-btn ui-btn-w ui-btn-sm" onclick="event.stopPropagation();ES('${p.id}',${oi})">${uiSvg('pen')}Edit</button>
-          <button class="ui-btn ui-btn-sm ui-btn-red" onclick="event.stopPropagation();DS('${p.id}',${oi})">Delete</button>
-        </div>
-      </div>`;
-    }
-  });
-  return h+`</div>`;
+  return h||`<div class="ui-crempty">Nothing to show yet — post a few rounds and this fills up.</div>`;
 }
 
 // ── TOURNAMENTS ───────────────────────────────────────────────────────────────
@@ -4741,7 +4706,7 @@ function renderPurse(){
     if(open){
       h+=`<div class="ui-hdet">`;
       if(p.history.length){
-        h+=`<div class="ui-phead"><span>Event</span><span>Buy-in</span><span>Won</span><span>P&amp;L</span></div>`;
+        h+=`<div class="ui-pursehead"><span>Event</span><span>Buy-in</span><span>Won</span><span>P&amp;L</span></div>`;
         h+=p.history.map(x=>`<div class="ui-prow">
           <span><b>${x.tournament}</b><small>${uiDay(x.date)}</small></span>
           <span class="ui-mono">${x.buyin>0?fmtCurrency(x.buyin):'—'}</span>
@@ -6268,7 +6233,7 @@ window.SC2=()=>{
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
 // ═══════════════════════════════════════════════════════════════════════════
-var UI_MENU=false, UI_FROM='home', UI_ME=null;
+var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
 
@@ -6380,14 +6345,14 @@ function renderSettings(){
     </div>
     <div class="ui-lbl">Install on your phone</div>
     <div class="ui-card ui-pad" style="font-size:14px;line-height:1.5">Safari → Share → <b>Add to Home Screen</b>. It opens full-screen like an app.</div>
-    <div class="ui-note">Preview 1 · new design, stage 6 of 7. Same live data as the main app.</div>`;
+    <div class="ui-note">Preview 1 · new design, clean navigation update. Same live data as the main app.</div>`;
 }
 
 // ── handlers ──
 window.UI_GO=v=>{
   UI_MENU=false;
   if(!UI_MAIN.includes(v)&&UI_MAIN.includes(V)) UI_FROM=V;
-  PID=null; TID=null; UI_RH=null;
+  PID=null; TID=null; UI_PTAB='overview';
   if(v==='profile'&&UI_MEP()) PID=UI_ME;
   SV(v);
   try{ window.scrollTo(0,0); }catch(e){}
@@ -6423,7 +6388,7 @@ window.UI_POST=()=>{
 // New insights are READ-ONLY: they call the unchanged engine (calcHI, findCourse,
 // roundIssue, orderScores…) on copies of the data and never write anything.
 // ═══════════════════════════════════════════════════════════════════════════
-var UI_RSORT='hi', UI_RH=null, UI_H2H={}, UI_LIVE=null, UI_LIVE_AT=0, UI_LIVE_SIG='';
+var UI_RSORT='hi', UI_PTAB='overview', UI_RH=null, UI_H2H={}, UI_LIVE=null, UI_LIVE_AT=0, UI_LIVE_SIG='';
 const UI_STC=new Map(), UI_TGC=new Map();
 // Cache key. It must change whenever ANYTHING in the record changes — including an edit
 // to a round in the middle of the list, which a count-and-last-round fingerprint misses.
@@ -6448,6 +6413,13 @@ function uiCrown(ym){
 function uiCacheGet(m,k){ return m.get(k); }
 function uiCacheSet(m,k,v){ if(m.size>60) m.clear(); m.set(k,v); return v; }
 
+function uiName(p){
+  const first=String(p.name||'').split(' ')[0];
+  const clash=(S.players||[]).some(x=>x.id!==p.id&&String(x.name||'').split(' ')[0]===first);
+  if(!clash) return first;
+  const last=String(p.name||'').split(' ').slice(-1)[0];
+  return first+' '+(last?last[0]+'.':'');
+}
 function uiShort(n){ return String(n||'').replace(/\s+(Golf Club|Golf Course|Golf|GC|Club)$/i,'').replace(/^Quinta da /,'').trim()||n; }
 function uiDay(d){ try{ const x=new Date(d+'T12:00:00'); return x.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+(x.getFullYear()!==new Date().getFullYear()?' '+x.getFullYear():''); }catch(e){ return fmtDate(d); } }
 function uiWeekday(d){ try{ const x=new Date(d+'T12:00:00'); return x.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }catch(e){ return fmtDate(d); } }
@@ -6579,33 +6551,6 @@ function uiH2H(a,b){
   rows.sort((x,y)=>y.date.localeCompare(x.date));
   return {w,l,d:dr,rows};
 }
-function renderH2H(p){
-  const others=S.players.filter(o=>o.id!==p.id).map(o=>({o,r:uiH2H(p,o)})).filter(x=>x.r.rows.length);
-  if(!others.length) return '';
-  let pick=UI_H2H[p.id];
-  if(!others.some(x=>x.o.id===pick)){
-    const meX=others.find(x=>x.o.id===UI_ME);
-    pick=(meX?meX:[...others].sort((a,b)=>b.r.rows.length-a.r.rows.length)[0]).o.id;
-  }
-  const cur=others.find(x=>x.o.id===pick), r=cur.r, o=cur.o;
-  const fa=p.name.split(' ')[0], fo=o.name.split(' ')[0];
-  const lead=r.w>r.l?`${fa} leads`:r.l>r.w?`${fo} leads`:'All square';
-  return `<div class="ui-lbl">Head to head</div>
-  <div class="ui-card ui-pad">
-    <div class="ui-chips-x">${others.map(x=>`<button class="ui-chip sm${x.o.id===pick?' on':''}" onclick="UI_H2HP('${p.id}','${x.o.id}')">${x.o.name.split(' ')[0]}${x.o.name.split(' ').length>1?' '+x.o.name.split(' ').slice(-1)[0][0]+'.':''}</button>`).join('')}</div>
-    <div class="ui-h2h">
-      <div><b>${r.w}</b><span>${fa}</span></div>
-      <div class="mid"><b>${r.d}</b><span>halved</span></div>
-      <div><b>${r.l}</b><span>${fo}</span></div>
-    </div>
-    <div class="ui-s" style="text-align:center;margin-bottom:10px">${lead} · ${r.rows.length} round${r.rows.length===1?'':'s'} together, scored net against each player’s index at the time</div>
-    <div class="ui-h2hl">${r.rows.slice(0,5).map(x=>`<div class="ui-h2hr ${x.res}">
-      <span class="ui-row-t">${uiShort(x.course)}<small>${uiDay(x.date)}</small></span>
-      <span class="ui-mono"><b class="${x.res==='w'?'win':''}">${x.a}</b> – <b class="${x.res==='l'?'win':''}">${x.b}</b></span>
-    </div>`).join('')}</div>
-  </div>`;
-}
-
 // ── club records ──
 function renderRecords(R){
   const yr=new Date().getFullYear();
@@ -6630,7 +6575,7 @@ function renderRecords(R){
     ['Explorer',explorer,x=>x.v],
   ].filter(r=>r[1]);
   if(!rows.length) return '';
-  return `<div class="ui-lbl">Club records</div><div class="ui-list">${rows.map(([k,x,fmt])=>`
+  return `<div class="ui-list">${rows.map(([k,x,fmt])=>`
     <div class="ui-row" style="cursor:default"><span class="ui-rk">${k}</span>
       <span class="ui-row-t">${x.who}<small>${x.sub}</small></span><span class="ui-rbig sm">${fmt(x)}</span></div>`).join('')}</div>`;
 }
@@ -6732,8 +6677,9 @@ function renderHome(R){
 
 // ── handlers (view state only) ──
 window.UI_SORT=v=>{UI_RSORT=v;render();};
-window.UI_RH_O=pid=>{UI_RH=pid;OPEN_SCORE=null;render();try{window.scrollTo(0,0);}catch(e){}};
-window.UI_RH_X=()=>{UI_RH=null;OPEN_SCORE=null;render();try{window.scrollTo(0,0);}catch(e){}};
+window.UI_PTAB_O=k=>{UI_PTAB=k;OPEN_SCORE=null;render();try{window.scrollTo(0,0);}catch(e){}};
+window.UI_RH_O=pid=>{UI_PTAB='rounds';OPEN_SCORE=null;render();try{window.scrollTo(0,0);}catch(e){}};
+window.UI_RH_X=()=>{UI_PTAB='overview';OPEN_SCORE=null;render();try{window.scrollTo(0,0);}catch(e){}};
 window.UI_H2HP=(pid,oid)=>{UI_H2H[pid]=oid;render();};
 window.UI_PLHAS=v=>{
   const sel=document.getElementById('plHas'); if(sel) sel.value=v;
@@ -6892,7 +6838,9 @@ function renderPosted(){
 // settling through CROWN_SETTLE, exactly as before.
 // ═══════════════════════════════════════════════════════════════════════════
 var UI_CRD=null;
-window.UI_CRD_O=k=>{UI_CRD=k;render();try{window.scrollTo(0,0);}catch(e){}};
+window.UI_CRD_O=k=>{UI_CRD=(k==='race'?null:k);render();try{window.scrollTo(0,0);}catch(e){}};
+// the scoring rules are reference, not a screen of their own
+window.UI_RULES=()=>{ try{ alert(crownRulesText(potmSettings())); }catch(e){} };
 window.UI_CRD_X=()=>{UI_CRD=null;render();try{window.scrollTo(0,0);}catch(e){}};
 // live total for the weight boxes, so "must total 100" is obvious before saving
 window.UI_WSUM=()=>{
@@ -6906,6 +6854,17 @@ window.UI_WSUM=()=>{
     const bar=row.querySelector('.ui-wbar i'); if(bar)bar.style.width=Math.max(0,Math.min(100,isFinite(v)?v:0))+'%';
   });
 };
+
+function crownRulesText(st){
+  const W={scoring:['Scoring','your rounds averaged against your own handicap, worst dropped from 4+, a nine counting as half'],
+           h2h:['Head to head','win rate against others in the same round'],
+           form:['Form','how much your index came down'],
+           bonus:['Bonus','share of rounds inside your handicap, plus personal bests']};
+  return 'How the Crown is scored\n\n'
+    +Object.keys(W).map(k=>`${st.weights[k]} — ${W[k][0]}: ${W[k][1]}`).join('\n')
+    +'\n\nIf two finish level it is settled like a league table: the head to head between those two, then net margin across all their matches, then who played better against their own handicap, then rounds played.'
+    +`\n\nEvery category is ranked, so all handicaps compete equally. Last place still scores ${Math.round(st.floorShare*100)}%. Rounds are averaged, never cherry-picked — playing more cannot improve your score.`;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 6 — Tournaments, Events, Contests, Purse, Courses, Roll of honour
@@ -6953,6 +6912,123 @@ function renderEvents(){
   else if(tab==='contests') h+=renderContests();
   else h+=renderWinners();
   return h;
+}
+function renderH2H(p){
+  const all=S.players.filter(o=>o.id!==p.id).map(o=>({o,r:uiH2H(p,o)}));
+  const played=all.filter(x=>x.r.rows.length);
+  if(!played.length) return `<div class="ui-crempty">No rounds played alongside anyone yet. A pairing is found automatically whenever two of you post the same course on the same day.</div>`;
+  const fa=uiName(p);
+  // ── the matrix: every opponent, all at once ──
+  const tot=played.reduce((a,x)=>({w:a.w+x.r.w,d:a.d+x.r.d,l:a.l+x.r.l,n:a.n+x.r.rows.length}),{w:0,d:0,l:0,n:0});
+  const marginOf=r=>r.rows.reduce((a,x)=>a+(x.nb-x.na),0);
+  const sorted=[...played].sort((a,b)=>(b.r.w-b.r.l)-(a.r.w-a.r.l)||b.r.rows.length-a.r.rows.length);
+  let h=`<div class="ui-h2hsum">
+      <div><b>${tot.w}</b><span>won</span></div>
+      <div class="mid"><b>${tot.d}</b><span>halved</span></div>
+      <div><b>${tot.l}</b><span>lost</span></div>
+    </div>
+    <div class="ui-note" style="text-align:center;margin:0 4px 14px">${tot.n} round${tot.n===1?'':'s'} alongside ${played.length} player${played.length===1?'':'s'}, scored net against each player’s index on the day.</div>
+    <div class="ui-matrix">
+      <div class="ui-mxh"><span>Opponent</span><span>W</span><span>H</span><span>L</span><span>Margin</span></div>
+      ${sorted.map(x=>{
+        const r=x.r, mg=marginOf(r), lead=r.w>r.l?'win':r.l>r.w?'loss':'draw';
+        return `<button class="ui-mxr ${lead}${UI_H2H[p.id]===x.o.id?' open':''}" onclick="UI_H2HP('${p.id}','${x.o.id}')">
+          <span class="ui-mxn"><i class="ui-av sm">${uiInit(x.o.name)}</i>${uiName(x.o)}</span>
+          <span class="ui-mxv w">${r.w}</span><span class="ui-mxv">${r.d}</span><span class="ui-mxv l">${r.l}</span>
+          <span class="ui-mxm ${mg>0?'up':mg<0?'dn':''}">${mg>0?'+':mg<0?'−':''}${Math.abs(mg).toFixed(1)}</span>
+        </button>`;}).join('')}
+    </div>
+    <div class="ui-note" style="margin:10px 4px 0">Margin is the net shots across all your rounds together — golf’s goal difference. Tap a name for the rounds.</div>`;
+
+  // ── the detail for whichever opponent is open ──
+  const pick=UI_H2H[p.id];
+  const cur=sorted.find(x=>x.o.id===pick);
+  if(cur){
+    const r=cur.r, o=cur.o, fo=uiName(o);
+    const lead=r.w>r.l?`${fa} leads`:r.l>r.w?`${fo} leads`:'All square';
+    h+=`<div class="ui-lbl">${fa} v ${fo} · ${lead}</div>
+      <div class="ui-list">${r.rows.map(x=>`
+        <div class="ui-row" style="cursor:default">
+          <span class="ui-mxres ${x.res}">${x.res==='w'?'W':x.res==='l'?'L':'H'}</span>
+          <span class="ui-row-t">${uiShort(x.course)}<small>${uiDay(x.date)} · net ${x.na>0?'+':''}${x.na.toFixed(1)} v ${x.nb>0?'+':''}${x.nb.toFixed(1)}</small></span>
+          <span class="ui-mono ui-row-v"><b class="${x.res==='w'?'win':''}">${x.a}</b> – <b class="${x.res==='l'?'win':''}">${x.b}</b></span>
+        </div>`).join('')}</div>`;
+  }
+  return h;
+}
+function renderRoundHistory(p){
+  // kept so any older link still works — the Rounds tab is the real home now
+  UI_PTAB='rounds'; return renderPlayerDetail(p);
+}
+function renderRoundList(p,s){
+  if(!p.scores||!p.scores.length)return `<div class="ui-crempty">No rounds recorded. Tap Add a round to post the first one.</div>`;
+  const issues=s.issues||{};
+  // Position in the counting window: 1 = most recent, 20 = the one that falls out next.
+  // Numbered by PLAYING order, so it counts down without gaps.
+  const winPos={};
+  if(s.window&&s.window.length){
+    const inWindow=new Set(s.window.map(x=>x.i));
+    const played=orderScores(p.scores).map(x=>x.i).filter(i=>inWindow.has(i));
+    played.forEach((i,k)=>{ winPos[i]=played.length-k; });
+  }
+  const maxPos=Math.max(0,...Object.values(winPos));
+  const issueIdx=Object.keys(issues).map(Number);
+  let h='';
+  if(issueIdx.length)h+=`<div class="ui-alert red"><b>${issueIdx.length} round${issueIdx.length>1?'s':''} excluded</b> · ${issueIdx.length>1?'they cannot':'it cannot'} be right as recorded, so ${issueIdx.length>1?'they are':'it is'} left out rather than distorting the index. Tap to fix.
+    ${issueIdx.map(i=>{const x=p.scores[i];return `<div class="ui-alert-i"><b>${x.course} · ${x.tee} · ${x.holes||'?'} · ${x.score}</b> — ${issues[i]}</div>`;}).join('')}</div>`;
+  if(!scoresAllDated(p.scores)){
+    const nd=p.scores.filter(x=>!x.date||isNaN(new Date(x.date).getTime())).length;
+    h+=`<div class="ui-alert red"><b>${nd} round${nd>1?'s':''} without a date.</b> Rounds are sequenced in the order they were entered. Add the missing dates and the handicap follows true playing order instead.</div>`;
+  }
+  if(s.hi!==null) h+=`<div class="ui-legend"><span><i class="g"></i>Counting</span><span><i></i>In the last 20</span><span><i class="r"></i>Excluded</span></div>`;
+  h+=`<div class="ui-hist">`;
+  [...orderScores(p.scores)].reverse().forEach(entry=>{
+    const s2=entry.s, oi=entry.i, c=findCourse(S.courses,s2);
+    const d=c?calcDiff(s2.score,c.rating,c.slope):null;
+    const cfg=cfgOf(s2,c),is9=isNineCfg(cfg),isO=OPEN_SCORE&&OPEN_SCORE.pid===p.id&&OPEN_SCORE.idx===oi;
+    const isCounting=s.countingIdx&&s.countingIdx.has(oi);
+    const m=s.meta&&s.meta[oi];
+    const bad=!c||issues[oi];
+    const cfgL=cfg==='18'?'18':cfg==='F9'?'front 9':cfg==='L9'?'back 9':cfg==='L9x2'?'back 9 ×2':cfg==='F9x2'?'front 9 ×2':cfg;
+    const eff=m&&m.eighteenhDiff!=null?m.eighteenhDiff:d;
+    h+=`<button class="ui-hrow${isCounting?' cnt':''}${bad?' bad':''}${isO?' open':''}" onclick="TSC('${p.id}',${oi})">
+      <span class="ui-hpos">${bad?'!':winPos[oi]||''}</span>
+      <span class="ui-row-t">${uiShort(s2.course)} · ${cfgL}<small>${s2.date?uiDay(s2.date):'no date'}${s2.tee?' · '+s2.tee:''}${winPos[oi]&&winPos[oi]===maxPos&&maxPos>=20?' · <em>drops out next</em>':''}${bad&&!issues[oi]?' · not counting':''}</small></span>
+      <span class="ui-hsc">${s2.score}</span>
+      <span class="ui-hdf">${bad?'–':eff!=null?eff.toFixed(1):'—'}</span>
+    </button>`;
+    if(isO){
+      let breakdown='';
+      if(is9&&m&&m.is9){
+        if(m.pendingConversion){
+          breakdown=`<div class="ui-bd"><b>Initial index period — pending conversion</b>
+            <p>Under WHS the expected-score conversion starts once 54 holes are posted. This nine becomes an 18-hole differential when the first index is set.</p>
+            <div class="ui-bdr"><span>9-hole differential (stored)</span><span>${m.ninehDiff.toFixed(1)}</span></div></div>`;
+        }else{
+          breakdown=`<div class="ui-bd"><b>${m.retroactivelyConverted?'First index set — converted retroactively':'WHS 9-hole → 18-hole conversion'}</b>
+            <div class="ui-bdr"><span>9-hole differential</span><span>${m.ninehDiff.toFixed(1)}</span></div>
+            <div class="ui-bdr"><span>Expected for the missing nine<small>index ${m.hiAtTime.toFixed(1)} × 0.52 + 1.2</small></span><span>${m.expected.toFixed(1)}</span></div>
+            <div class="ui-bdr tot"><span>18-hole differential${isCounting?' · counting':''}</span><span>${m.eighteenhDiff.toFixed(1)}</span></div></div>`;
+        }
+      }
+      h+=`<div class="ui-hdet">
+        ${bad&&issues[oi]?`<div class="ui-alert red" style="margin:0 0 10px">${issues[oi]}</div>`:''}
+        <div class="ui-hgrid">
+          <div><span>Course</span><b>${s2.course}</b></div>
+          <div><span>Rating / slope</span><b class="ui-mono">${c?c.rating.toFixed(1)+' / '+c.slope:'—'}</b></div>
+          <div><span>Holes</span><b>${is9?'9-hole':'18-hole'}</b></div>
+          <div><span>Date played</span><b>${s2.date?fmtDate(s2.date):'—'}</b></div>
+        </div>
+        ${breakdown}
+        ${isCounting&&!(is9&&m&&m.is9)?`<div class="ui-cnt">Counting toward the index</div>`:''}
+        <div class="ui-hact">
+          <button class="ui-btn ui-btn-w ui-btn-sm" onclick="event.stopPropagation();ES('${p.id}',${oi})">${uiSvg('pen')}Edit</button>
+          <button class="ui-btn ui-btn-sm ui-btn-red" onclick="event.stopPropagation();DS('${p.id}',${oi})">Delete</button>
+        </div>
+      </div>`;
+    }
+  });
+  return h+`</div>`;
 }
 </script>
 </body>
