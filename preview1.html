@@ -1956,7 +1956,16 @@ a.ui-btn{color:#fff}
 
 /* The search bar stays put while the list scrolls — with 200+ clubs you should never
    have to scroll back to the top to look something up. */
-.ui-csearch{position:sticky;top:6px;z-index:4;box-shadow:0 0 0 7px var(--off),0 6px 14px -10px rgba(12,26,18,.35)}
+/* The bar stays put while the list scrolls — with 200+ clubs you should never have to
+   scroll back to the top to look something up. The WRAPPER is what sticks: iOS Safari
+   mishandles a sticky form control and can stop passing taps to it. */
+.ui-csearchwrap{position:sticky;top:6px;z-index:4;background:var(--off);padding:6px 0;
+  box-shadow:0 0 0 7px var(--off);border-radius:14px}
+.ui-csearchwrap .ui-csearch{position:relative;z-index:1;padding-right:44px}
+.ui-csearchx{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;
+  display:none;align-items:center;justify-content:center;border:none;background:transparent;
+  color:var(--ink2);border-radius:50%;z-index:2}
+.ui-csearchx svg{width:16px;height:16px}
 
 /* ════════ One screen, one thing · tabs + the head-to-head matrix ════════ */
 .ui-evtabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -2111,7 +2120,37 @@ a.ui-btn{color:#fff}
 })();
 </script>
 
-<!-- PWA service worker: intentionally OFF in preview1 so it always loads fresh (re-enable at the swap) -->
+<!-- PWA service worker: intentionally OFF in preview1 so it always loads fresh (re-enable at the swap) --><script>
+/* The live site registered a service worker back when the old app shipped, and that worker
+   answers for the WHOLE site — including this file. It serves its cached copy first, so a
+   freshly uploaded preview1.html can still come back as the version you loaded weeks ago:
+   every fix looks like nothing changed. A preview build must always be the file that was
+   just uploaded, so tear the worker and its caches down on the way in, then reload once
+   (and only once) so this load is served straight from the network. */
+(function(){
+  var reloaded=false;
+  try{ reloaded=sessionStorage.getItem('club_sw_cleared')==='1'; }catch(e){}
+  var wasControlled=!!(navigator.serviceWorker&&navigator.serviceWorker.controller);
+  var jobs=[];
+  try{
+    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)
+      jobs.push(navigator.serviceWorker.getRegistrations()
+        .then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); }));
+  }catch(e){}
+  try{
+    if(window.caches&&caches.keys)
+      jobs.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); }));
+  }catch(e){}
+  if(!jobs.length) return;
+  Promise.all(jobs).then(function(){
+    if(wasControlled&&!reloaded){
+      try{ sessionStorage.setItem('club_sw_cleared','1'); }catch(e){}
+      location.reload();
+    }
+  }).catch(function(){});
+})();
+</script>
+
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
@@ -4501,6 +4540,8 @@ function render(){
   if(MOD==='player'){
     setTimeout(()=>{ try{ PL_TOGGLE(); }catch(e){} }, 0);
   }
+  if(V==='courses'&&!AP&&!AT){ setTimeout(()=>{ try{ csrBind(); }catch(e){} }, 0); }
+
   // a sheet with a sticky header shows a hairline once you scroll it
   if(MOD||UI_MENU||UI_DONE){
     setTimeout(()=>{ try{
@@ -4910,18 +4951,22 @@ function coursesBody(){
 }
 
 // ── Courses: search that does not fight the keyboard ────────────────────────
-// Typing used to re-render the whole screen, which threw away the search box and
-// built a new one. On a desktop the re-focus hid it; on a phone the keyboard shut
-// itself every keystroke, so the field felt dead to the touch. Now the search box
-// is painted once and only the list underneath it is repainted — the input is never
-// removed from the page while you are typing in it. Expanding a club does the same.
+// Typing used to re-render the whole screen, which threw the search box away and built
+// a new one. On a desktop the re-focus hid it; on a phone the keyboard shut itself every
+// keystroke and the field felt dead. Now the box is painted once, the listener is a real
+// addEventListener (an inline oninput on a re-created node is the fragile part), and only
+// the list underneath is repainted. The sticky wrapper is a plain div, not the input
+// itself — a sticky form control is one of the things iOS Safari mishandles.
 function renderCourses(){
   const el=document.getElementById('csr');
   const raw=el?el.value:'';
   const total=new Set(S.courses.map(c=>c.name)).size;
   return `<div class="ui-pagehead"><div class="ui-h1">Courses</div>
       <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('course')">${uiSvg('plus')}Add</button></div>
-    <input type="search" id="csr" placeholder="Search all ${total} courses…" value="${(raw||'').replace(/"/g,'&quot;')}" oninput="CSR_TYPE()" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" class="ui-csearch">
+    <div class="ui-csearchwrap"><input type="text" inputmode="search" enterkeyhint="search" id="csr"
+      placeholder="Search all ${total} courses…" value="${(raw||'').replace(/"/g,'&quot;')}"
+      autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" class="ui-csearch">
+      <button type="button" class="ui-csearchx" id="csrx" aria-label="Clear">${uiSvg('x')}</button></div>
     <div id="cglist">${coursesBody()}</div>`;
 }
 
@@ -6458,6 +6503,7 @@ function lpMigrateLondon(){
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
 // ═══════════════════════════════════════════════════════════════════════════
+const UI_BUILD='B-20260925-a · London courses + search fix';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -6570,7 +6616,9 @@ function renderSettings(){
     </div>
     <div class="ui-lbl">Install on your phone</div>
     <div class="ui-card ui-pad" style="font-size:14px;line-height:1.5">Safari → Share → <b>Add to Home Screen</b>. It opens full-screen like an app.</div>
-    <div class="ui-note">Preview 1 · new design, clean navigation update. Same live data as the main app.</div>`;
+    <div class="ui-lbl">This build</div>
+    <div class="ui-list"><div class="ui-row" style="cursor:default"><span class="ui-row-t">Version<small>${UI_BUILD}</small></span></div></div>
+    <div class="ui-note">Preview 1 · new design, clean navigation update. Same live data as the main app.<br>If the version above is not the one you just uploaded, the phone is showing a cached copy — close the tab completely and open it again.</div>`;
 }
 
 // ── handlers ──
@@ -7119,8 +7167,25 @@ function coursesRepaint(){
   const box=document.getElementById('cglist');
   if(!box) return render();
   box.innerHTML=coursesBody();
+  const x=document.getElementById('csrx'), el=document.getElementById('csr');
+  if(x&&el) x.style.display=el.value?'flex':'none';
 }
-window.CSR_TYPE=()=>{ OPEN_COURSE=null; coursesRepaint(); };
+var CSR_T=null;
+function csrRun(){ OPEN_COURSE=null; coursesRepaint(); }
+// Bind once per painted field. The listener lives on the node, so it cannot be lost to a
+// repaint of the list, and three event names are watched because a phone keyboard, a
+// dictation insert and a paste do not all fire the same one.
+function csrBind(){
+  const el=document.getElementById('csr');
+  if(!el||el.dataset.bound) return;
+  el.dataset.bound='1';
+  const go=()=>{ clearTimeout(CSR_T); CSR_T=setTimeout(csrRun,110); };
+  ['input','keyup','change','search','paste','cut'].forEach(ev=>el.addEventListener(ev,go));
+  const x=document.getElementById('csrx');
+  if(x){ x.style.display=el.value?'flex':'none';
+         x.addEventListener('click',e=>{ e.preventDefault(); el.value=''; csrRun(); el.focus(); }); }
+}
+window.CSR_TYPE=()=>{ clearTimeout(CSR_T); csrRun(); };
 window.COURSES_SCOPE=v=>{ COURSES_ALL=!!v; coursesRepaint(); };
 window.TC=n=>{ OPEN_COURSE=(OPEN_COURSE===n?null:n); coursesRepaint(); };
 
