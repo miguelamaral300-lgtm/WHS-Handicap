@@ -3639,6 +3639,8 @@ onValue(dbRef,snap=>{
     try{lpMigrate();}catch(e){}
     try{lpMigrateBoavista();}catch(e){}
     try{lpMigrateOeiras();}catch(e){}
+    try{lpMigrateCrewsHill();}catch(e){}
+    try{lpMigrateLondon();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -4828,6 +4830,16 @@ function renderCourses(){
 
   const CFGL={'18':'18 holes','F9':'Front 9','L9':'Back 9','F9x2':'Front 9 ×2','L9x2':'Back 9 ×2'};
   const TEEC={White:'#F2EFE4',Yellow:'#E8C544',Blue:'#5C97B8',Red:'#C4544B',Green:'#6E9E5C',Purple:'#8E6BA8',Black:'#2A2A2A',Gold:'#C9A84C',Orange:'#D98A3C'};
+  // London clubs name their tees all sorts of things — Claret, Burgundy, Emerald, Regal.
+  // Match the swatch on the words in the name so the list still reads at a glance.
+  const TEEW=[['claret','#7B2436'],['burgundy','#7B2436'],['ruby','#9B2242'],['cerise','#C7386B'],
+    ['emerald','#1F7A4C'],['sapphire','#2B5EA8'],['navy','#26406B'],['diamond','#BFD7E8'],
+    ['silver','#C9CCC8'],['platinum','#D8DAD5'],['grey','#9AA09A'],['gray','#9AA09A'],
+    ['composite','#A8A196'],['regal','#6B4C9A'],['winter','#8FA7B5'],['academy','#8FA0A8'],
+    ['walpole','#6E9E5C'],['waldegrave','#C9A84C']];
+  const teeCol=t=>{ if(TEEC[t])return TEEC[t]; const l=String(t).toLowerCase();
+    for(const k in TEEC){ if(l.includes(k.toLowerCase()))return TEEC[k]; }
+    for(const [w,c] of TEEW){ if(l.includes(w))return c; } return '#BBB'; };
 
   let h=`<div class="ui-pagehead"><div class="ui-h1">Courses</div>
     <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('course')">${uiSvg('plus')}Add</button></div>
@@ -4838,7 +4850,7 @@ function renderCourses(){
   </div>`:`<div class="ui-note" style="margin:10px 4px 12px">${names.length} club${names.length===1?'':'s'} matching</div>`}
   <div class="ui-list">`;
 
-  names.slice(0,120).forEach(n=>{
+  names.slice(0,400).forEach(n=>{
     const rows=groups[n];
     const tees=[...new Set(rows.map(r=>r.tee))];
     const isFpg=rows.some(r=>r.src==='fpg');
@@ -4857,7 +4869,7 @@ function renderCourses(){
           .forEach(r=>{
             const cfg=r.holes||(r.rating<40?'F9':'18');
             h+=`<div class="ui-teerow">
-              <span class="ui-teen"><i class="pk-sw" style="background:${TEEC[te]||'#BBB'}"></i>${te}<small>${CFGL[cfg]||cfg}</small></span>
+              <span class="ui-teen"><i class="pk-sw" style="background:${teeCol(te)}"></i>${te}<small>${CFGL[cfg]||cfg}</small></span>
               <span class="ui-mono">${r.rating}</span><span class="ui-mono">${r.slope}</span>
               <span class="ui-teeact">
                 <button class="ui-ico sm" onclick="event.stopPropagation();EC(${r.i})" aria-label="Edit tee">${uiSvg('pen')}</button>
@@ -4870,7 +4882,7 @@ function renderCourses(){
   });
   if(!names.length)h+=`<div class="ui-row" style="cursor:default;justify-content:center;color:var(--ink2)">${q?`No club matches “${raw}”`:'No courses played yet'}</div>`;
   h+=`</div>`;
-  if(names.length>120)h+=`<div class="ui-note" style="text-align:center">Showing 120 of ${names.length} — keep typing to narrow it.</div>`;
+  if(names.length>400)h+=`<div class="ui-note" style="text-align:center">Showing 400 of ${names.length} — keep typing to narrow it.</div>`;
   return h;
 }
 
@@ -6246,6 +6258,162 @@ window.SC2=()=>{
   }
   MOD=null;
 };
+
+// COURSE IMPORT · Crews Hill Golf Club (Enfield) — hole-by-hole card
+// The London ratings import gives Crews Hill its White and Yellow tees. This adds the
+// per-hole pars and stroke indexes so a live round there scores properly, taken from the
+// club's own published course card (crewshillgolfclub.com/course-card). Nothing estimated.
+function lpMigrateCrewsHill(){
+  if(!S.courseHoles)return;
+  const NAME='Crews Hill Golf Club';
+  if(S.courseHoles[NAME])return;
+  S.courseHoles[NAME]={
+    holes:18,
+    par:   [4,4,3,5,4,5,3,4,4, 3,4,4,3,4,3,5,4,4],            // out 36 · in 34 · 70
+    parRed:[5,4,3,5,4,5,3,4,4, 3,4,4,3,4,3,5,4,5],            // out 37 · in 35 · 72
+    si:    [4,13,17,5,15,11,7,2,9, 12,3,10,14,1,18,6,16,8],
+    source:'Crews Hill GC official course card, verified 2026-09'
+  };
+  upd(S);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COURSE IMPORT · Greater London
+// 102 clubs, 331 rated tees. Course Rating, Slope and par are the published
+// WHS figures for each tee as listed by golfhandicapcalculator.co, checked
+// against the club cards we already had (Hendon and Mill Hill match our own
+// verified rows exactly, tee for tee). MEN'S RATINGS ONLY — a ladies' rating
+// posted by a man would quietly corrupt his index, so the women's rows are
+// deliberately left out.
+// Nothing here is estimated. Tees carrying a "(TEMP)" label were skipped.
+// Format:  Club name | Tee~rating~par~slope[~9]     ("~9" = a rated single nine)
+// ═══════════════════════════════════════════════════════════════════════════
+const LDN_SRC='Greater London WHS course ratings, imported 2026-09';
+const LDN=[
+  "Denham Golf Club|White~72~70~129;Yellow~70.7~70~127;Blue~69.7~70~126;Red~67.6~70~118",
+  "Fulwell Golf Club|Claret~72.7~71~130;Green~72.1~71~127;White~70.4~71~126;Grey Composite~69.2~71~123;Gold~67.3~71~118;Regal~62.4~66~102",
+  "Pinner Hill Golf Club|White~71.7~71~132;Yellow~70.8~71~129;Blue~69.6~71~125;Red~68.6~71~123",
+  "South Herts Golf Club - Rees|Gold~28~28~85~9",
+  "Dukes Meadows Golf & Tennis|White~26.5~27~86~9",
+  "Orpington Golf Centre - Cray Valley 9|White~30.1~32~100~9",
+  "Addington Court Golf Centre - Championship Course|White~67~68~119;Yellow~65.2~68~116",
+  "Addington Court Golf Centre - Falconwood|White~66.4~68~115;Yellow~65.3~68~113",
+  "Addington Palace Golf Club|White~71.7~71~136;Yellow~70.8~71~129;Red~68~68~121",
+  "Arkley Golf Club|Black~69.6~69~126;White~68.8~69~124;Gold~67.7~67~119",
+  "Banstead Downs Golf Club|White~72.4~71~132;Composite~71.1~71~128;Yellow~69.8~71~124;Blue~63.8~71~112",
+  "Bexleyheath Golf Club|White~66.8~68~111;Yellow~66.2~68~106;Blue Winter~65.8~68~106;Red~64.2~66~106",
+  "Brent Valley Municipal Golf Club|White~67.2~67~121;Yellow~66.1~67~117;Perivale White 9~34~34~121~9;The Loop White 9~33.5~34~121~9;Perivale Yellow 9~33.5~34~113~9;The Loop Yellow 9~33~34~117~9",
+  "Bromley Golf Centre|White~67.6~70~111;Yellow~65.6~70~111",
+  "Bush Hill Park Golf Club|White~68.5~70~126;Yellow~67.7~70~125;Red~65.6~70~118;White Mixed 9~32.9~34~117~9",
+  "Chelsfield Lakes Golf Centre|White~69~71~126;White Winter~67.9~70~123;Yellow~67.5~71~121;Yellow Winter~66.6~70~118;Blue~65.6~68~115;Blue Winter~64.9~70~114",
+  "Cherry Lodge Golf Club|64~72.1~72~138;61~70.7~72~135",
+  "Chislehurst Golf Club|White~65.5~66~124;Yellow~64.7~66~120",
+  "Coombe Hill Golf Club|White~71.5~71~127;Yellow~69.8~71~125;Blue~68.2~69~124",
+  "Coombe Wood Golf Club|White~65.7~66~116;Yellow~65~66~115;Red~63.1~66~111",
+  "Coulsdon Manor Hotel and Golf Club|White~68.9~70~120;Yellow~67.1~70~117",
+  "Crews Hill Golf Club|White~70.9~70~132;Yellow~69.8~70~131",
+  "Croham Hurst Golf Club|White~70.2~70~121;Yellow~69.2~70~118;Blue~67.5~69~114;Red~67.4~69~114",
+  "Crowlands Heath Golf Club|White~66.4~66~123;White/Yellow~65.6~66~117;Yellow~64.8~66~110",
+  "David Lloyd Club [hampton]|White~67~68~125;Yellow~65.8~66~125",
+  "Dulwich & Sydenham Hill Golf Club|Black~69.1~69~119;Blue~60.5~61~93",
+  "Dyrham Park Golf & Country Club|White~71.8~72~136;Yellow~70~72~126;Red~69.1~71~121",
+  "Ealing Golf Club|Gold~70.5~70~132;Green~69.3~70~132;Silver~68.4~68~126",
+  "Eltham Warren Golf Club|White~68.8~69~113;Yellow~67.8~69~111;Red~66.5~70~109",
+  "Enfield Golf Club Limited|White~70.9~72~133;Yellow~70.2~72~130;Green~67.7~72~116;Red~67.3~72~121;Purple~65.2~72~113",
+  "Finchley Golf Club|White~70.9~71~126;Yellow~69.1~71~125;Blue~67.9~72~113;Red~67.4~72~112",
+  "Grims Dyke Golf Club|White~65.9~68~112;Yellow~65.2~68~106;Red~64~68~105",
+  "Hadley Wood Golf Course|Blue~71.6~72~128;Burgundy~70.8~72~130",
+  "Hampstead Golf Club|White~68.6~68~129;Yellow~67.8~68~126",
+  "Hampton Court Palace Golf Club|Black~71.4~71~128;White~70.1~71~125",
+  "Harrow School Golf Club|White~61~60~93;Red~60.8~60~88;Yellow~60.6~60~95",
+  "Haste Hill Golf Course|White~68.3~68~131;Yellow~66.9~68~122",
+  "Hendon Golf Club|White~70.5~70~127;Yellow~69.5~70~124;Red~68.3~70~125",
+  "High Elms Golf Course|White~70.4~71~124;Yellow~69~71~123;Blue~66.7~69~114",
+  "Highgate Golf Club|White Championship~70.3~69~128;White Members~70.1~69~128;Yellow~68.9~69~126;Red~67.2~69~119",
+  "Hillingdon Golf Club|White~67~68~119;Yellow~66~66~116;Red~64.9~66~114",
+  "Ilford Golf Club|White~65.7~68~116",
+  "Ingrebourne Links Golf and Country Club - East 9|Black~36.4~35~116~9;White~34.8~35~110~9;Yellow~33.6~35~107~9",
+  "Ingrebourne Links Golf and Country Club - North 9|Black~37.9~37~123~9;White~37~37~112~9;Yellow~36~37~116~9",
+  "Ingrebourne Links Golf and Country Club - North/East 18|Black~74.3~72~120;White~71.8~72~111;Yellow~69.6~72~112",
+  "Langdon Hills Golf Club|Black~72.6~72~127;Blue~70.3~72~120;Platinum~68.8~73~117",
+  "Langley Park Golf Club|White~72.5~70~133;Yellow~71.5~70~131;White 9 (12-2)~36.5~35~131~9;Yellow 9 (12-2)~35.7~35~128~9",
+  "Lee Valley Sport Complex|White~65.9~67~123;Yellow~64.7~67~124;Red~63.4~67~119",
+  "London Airlinks Golf Course|White~63.4~68~102;Yellow~62~68~98;Red~61.1~68~92",
+  "London Scottish Golf Club|White WCGC~67.3~68~110;White LSGC~67.2~68~110;Yellow WCGC~66~68~107;Yellow LSGC~66~68~107;Red WCGC~65.7~68~106;Red LSGC~65.7~68~106",
+  "Malden Golf Club|White~71.3~71~131;Yellow~69.6~71~126",
+  "Maylands Golf Club|White~70~72~121;Yellow~68.4~72~121;Blue Winter~67.1~71~118",
+  "Mill Hill Golf Club|White~72.1~70~130;Yellow~71~70~131",
+  "Mitcham Golf Club|White~69.4~69~131;Yellow~67.4~69~125",
+  "Muswell Hill Golf Club|White~72~71~139;Yellow~70.3~71~133;Academy~62.4~64~102",
+  "North Middlesex Golf Club|Gold~67.7~69~130;White~67.3~69~129;Yellow~66.3~69~126",
+  "Northwood Golf Club Ltd|White~71.5~71~128;Yellow~70.4~71~126",
+  "Oaks Golf Centre|White~69.1~70~119;Yellow~67~70~118;Winter~64.8~70~108",
+  "Old Fold Manor Golf Club|Black~71.6~72~128;White~71~71~128;Yellow~70.3~71~125;White Winter~68.7~71~120;Red 2019~67.8~71~122;Green~62.3~63~105",
+  "Orpington Golf Centre - Cray Valley 18|White~67.9~70~124;Yellow~66.7~70~122",
+  "Orpington Golf Centre - Ruxley Park 9|White~33.6~34~118~9",
+  "Purley Downs Golf Club|White~71.1~70~124;Yellow~70.1~70~123;Red~67.7~67~119",
+  "Richmond Golf Club|Blue~69.5~70~127;White~68.7~69~122",
+  "Richmond Park Golf Course - Dukes|White~70.7~71~126;Yellow~68.2~70~119;Red~67.7~70~116",
+  "Richmond Park Golf Course - Princes|White~66.2~68~117;Yellow~65~68~111;Red~64.3~66~110",
+  "Risebridge Golf Club|White~71~73~129;Yellow~69.6~73~127",
+  "Roehampton Club|White~69.7~71~119;Yellow~68.7~71~117;Red~67.6~70~111",
+  "Romford Golf Club|White~70.9~72~133;Yellow~70~70~129;Red~68~71~127",
+  "Royal Blackheath Golf Club|Purple~71.5~71~128;Gold.~70~71~125;Gold~69.9~71~124;Composite~69.3~71~123;Blue~67.8~71~124",
+  "Royal Epping Forest Golf Club|White~70.1~71~118;Yellow~68.1~71~117;Blue~66.7~70~110;Blue Short~66.1~70~109",
+  "Royal Mid Surrey Golf Club - Jh Taylor|Black~71.1~69~128;Burgundy~69.3~69~125;Green~68.1~69~119;Navy Blue~62.7~65~100",
+  "Royal Mid Surrey Golf Club - Jht/Pb Composite Course|Black~67.8~68~122;Burgundy~66.9~68~122;Green~65.8~68~116;Navy Blue~61.3~65~98",
+  "Royal Mid Surrey Golf Club - Pam Barton|Burgundy~66.7~68~118;Green~66.1~68~117;Navy Blue~61.1~68~105",
+  "Royal Wimbledon Golf Club|Black~71.6~71~123;Black & White~70.4~71~121;White~69.5~71~119;White & Green~68.4~70~117;Green~67.8~69~118;Green & Purple~65.8~69~115;Purple~63.8~69~109",
+  "Sandy Lodge Golf Club|Blue~71.7~70~132;White~70.7~71~129;Yellow~69.8~71~127;Red~68~71~116;Green~65.2~71~108",
+  "Shirley Park Golf Club Ltd|Blue~70.2~71~129;Yellow~68.9~71~124",
+  "Shooters Hill Golf Club Ltd|White~69.2~69~122;Yellow~67.9~69~118;White 9 hole 7th Tee Loop~34.9~35~125~9;White 9 Hole 1st Tee Loop~34.4~34~117~9;Yellow 9 Hole 7th Tee Loop~34.1~35~119~9;Yellow 9 Hole 1st Tee Loop~33.9~34~114~9",
+  "Shortlands Golf Club|White~65.6~67~114;White Winter~65.4~67~113;Yellow~64.8~67~114;Yellow Winter~64.7~67~114;Blue~59.6~62~104",
+  "Sidcup Golf Club|White~67.3~68~125;Yellow~66.5~68~120;Red~65.7~68~116",
+  "South Herts Golf Club - Vardon|Purple~71.8~73~136;Green~70.4~71~133",
+  "Stanmore Golf Club|White~69.7~69~129;Yellow~68.8~69~127;Red~66.8~68~121",
+  "Stockley Park Golf Course|White~72~72~128;Yellow~68.9~71~123",
+  "Strawberry Hill Golf Club|The Walpole~63.7~64~117;The Waldegrave~62.6~62~111",
+  "Sudbury Golf Club Ltd|Blue~71.3~69~131;Gold~69.9~69~127;Silver~68~68~123",
+  "Sundridge Park Golf Club - East|Black~73.4~71~135;White~72.8~71~134;Yellow~71.2~71~131",
+  "Sundridge Park Golf Club - West|Black~70~69~134;Black Waterford~70~69~134;White~69.4~69~130;White Waterford~69.4~69~130;Yellow~68.6~69~129;Red~66.7~67~122",
+  "Surbiton Golf Club|White~69.4~70~124;Yellow~68.1~70~121;Red~66.1~69~112;Blue~64.9~69~110",
+  "The Addington Golf Club|White - Colt~71.9~70~135;White~71.6~69~137;White/Yellow - Colt~71.1~70~133;White / Yellow Composite~70.8~69~134;Yellow - Colt~70.1~70~128;Yellow~69.8~69~129",
+  "The Inspiration Golf Club|Black~71.7~72~127;Black/Orange Combo~70.3~72~123;Orange~69.5~72~117;Cerise~65.9~72~115",
+  "The Shire London|Emerald~74.4~73~141;Diamond~72.1~72~138;Combo~71.1~73~129;Sapphire~70.3~72~130;Ruby~67.6~72~124",
+  "Top Meadow Golf Club and Hotel|White~70.9~72~137;Yellow~70.2~72~131;Red~67.3~68~125",
+  "Upminster Golf Club|White~69.7~69~122;Yellow~68.2~69~119;Blue~67.5~69~118;Red~67.3~69~117",
+  "Uxbridge Golf Course|White~69.2~70~124;Yellow~67.8~70~123;Red~66.2~68~108",
+  "Wanstead Golf Club|White~69.3~69~125;Yellow~68.5~69~120;Red~67.6~68~117;Winter Composite Yellow 9~34.4~35~124~9;Winter Composite Red 9~33.5~34~121~9",
+  "West Essex Golf Club|Black~70.9~71~127;White~69.6~71~123;Blue~67.7~71~115;Gold~67.4~71~116",
+  "West Kent Golf Club|White~71.9~71~130;Yellow~70.4~71~129;Red~69.4~71~125;Blue~65.3~67~113",
+  "West London Golf Centre|White~70.7~72~129;Blue~68.1~72~123",
+  "West Middlesex Golf Club|White~69.5~69~124;Yellow~68.3~69~124;Red~66.4~67~117",
+  "Wimbledon Park Golf Club|White Composite~68.8~68~124;White~67.8~66~122;Yellow Composite~67.4~68~123;Yellow~66.6~66~121",
+  "Woodcote Park Golf Club|White~73.4~72~135;Yellow~71.9~72~129;Green~70.2~71~129;Blue Men 2019~66.8~72~114",
+  "Woodford Golf Club|White~69.4~70~119;Yellow~67.8~68~113;Red~66.3~69~105",
+  "Wyke Green Golf Club|White~69.9~69~119;Yellow~68.8~69~116;Red~68~69~115;Blue~65.3~69~113"
+];
+function lpMigrateLondon(){
+  if(!S||!Array.isArray(S.courses))return;
+  // one pass over what is already there — name + tee + configuration is the identity
+  const have=new Set(S.courses.map(c=>c.name+'\u0000'+c.tee+'\u0000'+(c.holes||(c.rating<40?'F9':'18'))));
+  const add=[];
+  LDN.forEach(line=>{
+    const i=line.indexOf('|'); if(i<0)return;
+    const name=line.slice(0,i);
+    line.slice(i+1).split(';').forEach(t=>{
+      const f=t.split('~'); if(f.length<4)return;
+      const tee=f[0], rating=parseFloat(f[1]), par=parseInt(f[2],10), slope=parseInt(f[3],10);
+      const holes=f[4]==='9'?'F9':'18';
+      if(!isFinite(rating)||!isFinite(slope))return;
+      const key=name+'\u0000'+tee+'\u0000'+holes;
+      if(have.has(key))return;
+      have.add(key);
+      add.push({name,tee,holes,rating,slope,par,src:'verified',imported:LDN_SRC});
+    });
+  });
+  if(add.length) upd({...S,courses:[...S.courses,...add]});
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
