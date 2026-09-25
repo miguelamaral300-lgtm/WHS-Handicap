@@ -1967,6 +1967,13 @@ a.ui-btn{color:#fff}
   color:var(--ink2);border-radius:50%;z-index:2}
 .ui-csearchx svg{width:16px;height:16px}
 
+/* A–Z jump: finding a club must never depend on the keyboard working. */
+.ui-az{display:flex;flex-wrap:wrap;gap:5px;margin:0 2px 4px}
+.ui-azb{flex:1 0 auto;min-width:32px;min-height:38px;padding:0 4px;border:none;border-radius:11px;
+  background:#fff;box-shadow:var(--sh-card);font-weight:600;font-size:13.5px;color:var(--ink);
+  letter-spacing:-.02em;display:flex;align-items:center;justify-content:center}
+.ui-azb.on{background:var(--g);color:#fff;box-shadow:none}
+
 /* ════════ One screen, one thing · tabs + the head-to-head matrix ════════ */
 .ui-evtabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .ui-evtabs::-webkit-scrollbar{display:none}
@@ -4892,7 +4899,10 @@ function coursesBody(){
   (S.players||[]).forEach(p=>(p.scores||[]).forEach(x=>{ roundsBy[x.course]=(roundsBy[x.course]||0)+1; }));
   let names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
   const totalClubs=names.length;
+  // Three ways in, so finding a club never depends on the keyboard: type, tap a letter,
+  // or stay on the short list of courses you actually play.
   if(q) names=names.filter(n=>n.toLowerCase().includes(q));
+  else if(CSR_LETTER) names=names.filter(n=>uiFirstLetter(n)===CSR_LETTER);
   else if(!COURSES_ALL) names=names.filter(n=>played.has(n));
 
   const CFGL={'18':'18 holes','F9':'Front 9','L9':'Back 9','F9x2':'Front 9 ×2','L9x2':'Back 9 ×2'};
@@ -4908,10 +4918,14 @@ function coursesBody(){
     for(const k in TEEC){ if(l.includes(k.toLowerCase()))return TEEC[k]; }
     for(const [w,c] of TEEW){ if(l.includes(w))return c; } return '#BBB'; };
 
-  let h=`${!q?`<div class="ui-chips-x" style="margin:12px 0 14px">
-    <button class="ui-chip sm${!COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(0)">Courses you play</button>
-    <button class="ui-chip sm${COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(1)">All ${totalClubs}</button>
-  </div>`:`<div class="ui-note" style="margin:10px 4px 12px">${names.length} club${names.length===1?'':'s'} matching</div>`}
+  const letters=[...new Set(Object.keys(groups).map(uiFirstLetter))].sort();
+  let h=`${!q?`<div class="ui-chips-x" style="margin:12px 0 10px">
+    <button class="ui-chip sm${(!COURSES_ALL&&!CSR_LETTER)?' on':''}" onclick="COURSES_SCOPE(0)">Courses you play</button>
+    <button class="ui-chip sm${(COURSES_ALL&&!CSR_LETTER)?' on':''}" onclick="COURSES_SCOPE(1)">All ${totalClubs}</button>
+  </div>
+  <div class="ui-az">${letters.map(L=>`<button class="ui-azb${CSR_LETTER===L?' on':''}" onclick="CSR_L('${L}')">${L}</button>`).join('')}</div>
+  ${CSR_LETTER?`<div class="ui-note" style="margin:6px 4px 12px">${names.length} club${names.length===1?'':'s'} starting with ${CSR_LETTER} · <button class="ui-link sm" style="display:inline;padding:0" onclick="CSR_L('')">show all again</button></div>`:'<div style="height:6px"></div>'}`
+  :`<div class="ui-note" style="margin:10px 4px 12px">${names.length} club${names.length===1?'':'s'} matching “${raw}”</div>`}
   <div class="ui-list">`;
 
   names.slice(0,400).forEach(n=>{
@@ -7170,8 +7184,9 @@ function coursesRepaint(){
   const x=document.getElementById('csrx'), el=document.getElementById('csr');
   if(x&&el) x.style.display=el.value?'flex':'none';
 }
-var CSR_T=null;
-function csrRun(){ OPEN_COURSE=null; coursesRepaint(); }
+var CSR_T=null, CSR_LETTER='';
+function uiFirstLetter(n){ const m=String(n).toUpperCase().match(/[A-Z]/); return m?m[0]:'#'; }
+function csrRun(){ OPEN_COURSE=null; CSR_LETTER=''; coursesRepaint(); }
 // Bind once per painted field. The listener lives on the node, so it cannot be lost to a
 // repaint of the list, and three event names are watched because a phone keyboard, a
 // dictation insert and a paste do not all fire the same one.
@@ -7186,6 +7201,10 @@ function csrBind(){
          x.addEventListener('click',e=>{ e.preventDefault(); el.value=''; csrRun(); el.focus(); }); }
 }
 window.CSR_TYPE=()=>{ clearTimeout(CSR_T); csrRun(); };
+// Tapping a letter is the way in that needs no keyboard at all.
+window.CSR_L=L=>{ CSR_LETTER=(CSR_LETTER===L?'':L); OPEN_COURSE=null;
+  const el=document.getElementById('csr'); if(el&&el.value){ el.value=''; }
+  coursesRepaint(); try{ window.scrollTo(0,0); }catch(e){} };
 window.COURSES_SCOPE=v=>{ COURSES_ALL=!!v; coursesRepaint(); };
 window.TC=n=>{ OPEN_COURSE=(OPEN_COURSE===n?null:n); coursesRepaint(); };
 
