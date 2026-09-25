@@ -1954,6 +1954,10 @@ a.ui-btn{color:#fff}
 .ui-evtabs{margin-bottom:16px}
 .ui-evtabs button{flex:1;font-size:12.5px;padding:0 6px}
 
+/* The search bar stays put while the list scrolls — with 200+ clubs you should never
+   have to scroll back to the top to look something up. */
+.ui-csearch{position:sticky;top:6px;z-index:4;box-shadow:0 0 0 7px var(--off),0 6px 14px -10px rgba(12,26,18,.35)}
+
 /* ════════ One screen, one thing · tabs + the head-to-head matrix ════════ */
 .ui-evtabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .ui-evtabs::-webkit-scrollbar{display:none}
@@ -4457,7 +4461,29 @@ function render(){
   // Floating bottom bar: Home · Rankings · Crown · Profile + green Play
   h+=renderDock(AP?(isProfile?'profile':V):AT?'':V);
 
+  // A repaint must never eat what you are typing. If the focus is in a field, remember
+  // which field and where the caret was, and put it back once the page is rebuilt —
+  // otherwise a background sync from someone else's phone closes your keyboard mid-word.
+  const ae=document.activeElement;
+  const keep=(ae&&root.contains(ae)&&ae.id&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))
+    ? {id:ae.id, v:ae.value,
+       s:(()=>{try{return ae.selectionStart}catch(e){return null}})(),
+       e:(()=>{try{return ae.selectionEnd}catch(e){return null}})()} : null;
+
   root.innerHTML=h;
+
+  if(keep){
+    const el=document.getElementById(keep.id);
+    if(el&&el!==document.activeElement){
+      // A half-typed score lives in the box, not in the saved round, so a repaint would
+      // rebuild the field empty. Put the typing back — but only into a field the rebuild
+      // left blank, so anything the app deliberately filled in still wins.
+      try{ if(keep.v&&!el.value) el.value=keep.v; }catch(e){}
+      try{ el.focus({preventScroll:true});
+           if(keep.s!=null&&el.setSelectionRange) el.setSelectionRange(keep.s,keep.e);
+      }catch(e){}
+    }
+  }
   root.className='ui-v-'+(AP?(isProfile?'profile':'player'):AT?'event':V);
 
   // Whenever the score modal is open, paint the course picker and let UM() fill in tee,
@@ -4810,7 +4836,7 @@ function renderWinners(){
 }
 
 // ── COURSES ───────────────────────────────────────────────────────────────────
-function renderCourses(){
+function coursesBody(){
   const el=document.getElementById('csr');
   const raw=el?el.value:'';
   const q=(raw||'').trim().toLowerCase();
@@ -4841,10 +4867,7 @@ function renderCourses(){
     for(const k in TEEC){ if(l.includes(k.toLowerCase()))return TEEC[k]; }
     for(const [w,c] of TEEW){ if(l.includes(w))return c; } return '#BBB'; };
 
-  let h=`<div class="ui-pagehead"><div class="ui-h1">Courses</div>
-    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('course')">${uiSvg('plus')}Add</button></div>
-  <input type="search" id="csr" placeholder="Search all ${totalClubs} courses…" value="${(raw||'').replace(/"/g,'&quot;')}" oninput="CSR_TYPE()" class="ui-csearch">
-  ${!q?`<div class="ui-chips-x" style="margin:12px 0 14px">
+  let h=`${!q?`<div class="ui-chips-x" style="margin:12px 0 14px">
     <button class="ui-chip sm${!COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(0)">Courses you play</button>
     <button class="ui-chip sm${COURSES_ALL?' on':''}" onclick="COURSES_SCOPE(1)">All ${totalClubs}</button>
   </div>`:`<div class="ui-note" style="margin:10px 4px 12px">${names.length} club${names.length===1?'':'s'} matching</div>`}
@@ -4884,6 +4907,22 @@ function renderCourses(){
   h+=`</div>`;
   if(names.length>400)h+=`<div class="ui-note" style="text-align:center">Showing 400 of ${names.length} — keep typing to narrow it.</div>`;
   return h;
+}
+
+// ── Courses: search that does not fight the keyboard ────────────────────────
+// Typing used to re-render the whole screen, which threw away the search box and
+// built a new one. On a desktop the re-focus hid it; on a phone the keyboard shut
+// itself every keystroke, so the field felt dead to the touch. Now the search box
+// is painted once and only the list underneath it is repainted — the input is never
+// removed from the page while you are typing in it. Expanding a club does the same.
+function renderCourses(){
+  const el=document.getElementById('csr');
+  const raw=el?el.value:'';
+  const total=new Set(S.courses.map(c=>c.name)).size;
+  return `<div class="ui-pagehead"><div class="ui-h1">Courses</div>
+      <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('course')">${uiSvg('plus')}Add</button></div>
+    <input type="search" id="csr" placeholder="Search all ${total} courses…" value="${(raw||'').replace(/"/g,'&quot;')}" oninput="CSR_TYPE()" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" class="ui-csearch">
+    <div id="cglist">${coursesBody()}</div>`;
 }
 
 // ── MODALS ────────────────────────────────────────────────────────────────────
@@ -7075,6 +7114,15 @@ window.UI_EVENT_IN=id=>{
   });
   upd({...S,upcoming:list});
 };
+
+function coursesRepaint(){
+  const box=document.getElementById('cglist');
+  if(!box) return render();
+  box.innerHTML=coursesBody();
+}
+window.CSR_TYPE=()=>{ OPEN_COURSE=null; coursesRepaint(); };
+window.COURSES_SCOPE=v=>{ COURSES_ALL=!!v; coursesRepaint(); };
+window.TC=n=>{ OPEN_COURSE=(OPEN_COURSE===n?null:n); coursesRepaint(); };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // AUDIT · one Events section instead of four menu entries
