@@ -2082,6 +2082,26 @@ a.ui-btn{color:#fff}
 .lp-tabs button{font-size:13px;padding:0 8px}
 .gm-stabs{margin-bottom:14px}
 .gm-stabs button{font-size:12.5px;padding:0 8px}
+/* whose strokes are on the card, and this hole worked out */
+.lp-gnote{font-size:12px;color:var(--ink2);margin:-2px 2px 10px;line-height:1.45}
+.gm-hb{background:#fff;border-radius:20px;box-shadow:var(--sh-card);padding:12px 15px 13px;margin-bottom:12px}
+.gm-hb-h{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin-bottom:9px}
+.gm-hb-rows{display:flex;flex-direction:column}
+.gm-hb-r{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.gm-hb-r:last-child{border-bottom:none}
+.gm-hb-nm{flex:1;min-width:0;font-weight:600;font-size:14px;letter-spacing:-.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gm-hb-eq{font-size:12.5px;color:var(--ink2);font-feature-settings:'tnum'}
+.gm-hb-net{min-width:30px;text-align:right;font-weight:600;font-size:17px;letter-spacing:-.03em;font-feature-settings:'tnum'}
+.gm-hb-r.win .gm-hb-nm,.gm-hb-r.win .gm-hb-net{color:var(--g)}
+.gm-hb-n{font-size:12.5px;color:var(--ink2);margin-top:9px;line-height:1.45}
+/* skins, hole by hole */
+.gm-strip{display:flex;flex-wrap:wrap;gap:5px;border-top:1px solid var(--line);margin-top:8px;padding-top:11px}
+.gm-sk{flex:0 0 auto;min-width:52px;border-radius:11px;padding:5px 7px;text-align:center;background:var(--off)}
+.gm-sk b{display:block;font-size:11px;font-weight:600;color:var(--ink2);letter-spacing:.02em}
+.gm-sk span{display:block;font-size:11.5px;font-weight:600;letter-spacing:-.02em;margin-top:1px}
+.gm-sk.won{background:var(--gl)}.gm-sk.won span{color:var(--g)}
+.gm-sk.tied span{color:var(--ink2);font-weight:400}
 </style>
 </head>
 <body>
@@ -4417,13 +4437,19 @@ function renderPlay(){
     const halfN=Math.floor(n/2);
     h+=`<div class="lp-strip">${Array.from({length:n},(_,i)=>i+1).map(x=>
       `${(n>9&&x===halfN+1)?'<div class="lp-turn">turn</div>':''}<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${(LR.holeNums&&LR.holeNums[x-1])||x}</div>`).join('')}</div>`;
+    const isScr=LR.game&&LR.game.fmt==='scramble';
+    // When a game is on, the strokes on this row are the GAME's strokes. Showing
+    // the card's own net here was the thing that made a won hole look drawn: the
+    // card gives everyone their full handicap, while a match or a skin is played
+    // off the difference. One number on the screen, and it is the one that decides.
+    const _GPH=(LR.game&&LR.game.fmt&&LR.game.fmt!=='none'&&!isScr)?gmPlaying(LR,LR.game.fmt):null;
     const realH=(LR.holeNums&&LR.holeNums[LRHOLE-1])||LRHOLE;
     const cfgLbl=LR.cfg&&LPCFG[LR.cfg]?LPCFG[LR.cfg][0]:`${n} holes`;
     h+=`<div class="lp-hole"><div class="lp-hh"><div><div class="lbl">${LR.course} · ${LR.tee} · ${cfgLbl}</div><div class="big">Hole ${realH}</div><div class="lbl" style="letter-spacing:1px">${LRHOLE} of ${n}</div></div><div class="meta">Par <b>${par}</b><br>S.I. <b>${si}</b></div></div>`;
-    const isScr=LR.game&&LR.game.fmt==='scramble';
+    if(_GPH) h+=`<div class="lp-gnote">${gmStrokeNote(LR)}</div>`;
     h+=isScr?gmTeamRows(LR,LRHOLE,par,si,n):LR.players.map(p=>{
       const g=lpHasScore(LR.scores,LRHOLE,p.id)?LR.scores[LRHOLE][p.id]:null;
-      const stk=lpStrokes(p.ch,si,n);
+      const stk=_GPH?gmStroke(_GPH[p.id],si,n):lpStrokes(p.ch,si,n);
       const empty=g==null;
       const note=empty?'':lpNote(g,par);
       return `<div class="lp-pl"><div class="top"><span class="pnm">${p.name}${p.guest?' <span class="gtag">guest</span>':''} <span class="pstk">· ${stk>0?stk+' stroke'+(stk>1?'s':''):'no stroke'}</span></span><span class="pnet">net <b>${empty?'–':g-stk}</b></span></div>
@@ -4441,6 +4467,7 @@ function renderPlay(){
     h+=gmRoundTabs(LR);
     const _tab=gmTab(LR);
     if(_tab==='game'){
+      h+=gmHoleBreak(LR,LRHOLE);
       h+=gmCapLine(LR);
       h+=gmPanel(LR);
       if(!LR.game||LR.game.fmt==='none'){
@@ -6623,7 +6650,7 @@ function lpMigrateStEstevao(){
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='B-20260926-g · Tabs + correct skins money';
+const UI_BUILD='B-20260926-i · Skins hole by hole';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7583,6 +7610,10 @@ function gmSkins(r,PH,ids,stake){
   for(let h=1;h<=r.holes;h++){
     if(!gmHoleDone(r,ids,h)){ holes.push({h,status:'pending'}); continue; }
     const nets=ids.map(id=>({id,net:gmNet(r,h,id,PH[id])}));
+    // A net that is not a real number means the hole cannot be judged. Treat it as
+    // not yet played rather than silently calling it a draw, which would quietly
+    // take a skin off whoever actually won it.
+    if(nets.some(x=>!isFinite(x.net))){ holes.push({h,status:'pending'}); continue; }
     const best=Math.min(...nets.map(x=>x.net));
     const winners=nets.filter(x=>x.net===best);
     const pot=carry+1;                       // how many holes' worth is riding
@@ -7932,6 +7963,14 @@ function gmPanel(r){
     body=`<div class="gm-rows">${s.rows.map((x,i)=>`<div class="gm-row${i===0&&x.skins?' lead':''}">
       <span class="gm-pos">${x.skins}</span><span class="gm-nm">${x.name}<small>off ${x.ph}</small></span>
       <span class="gm-val ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':''}${x.pnl===0?'£0':'£'+Math.abs(x.pnl)*(x.pnl<0?-1:1)}<small>${x.skins} skin${x.skins===1?'':'s'}</small></span></div>`).join('')}</div>`;
+    // Hole by hole, so a carry is never a mystery: you can see exactly which hole
+    // was halved and which hole somebody took.
+    const done=s.holes.filter(x=>x.status!=='pending');
+    if(done.length) body+=`<div class="gm-strip">${done.map(x=>{
+      const real=(r.holeNums&&r.holeNums[x.h-1])||x.h;
+      if(x.status==='won') return `<div class="gm-sk won"><b>${real}</b><span>${gmFirst(r,x.winner)}</span></div>`;
+      return `<div class="gm-sk tied"><b>${real}</b><span>halved</span></div>`;
+    }).join('')}</div>`;
     if(s.carry>0) body+=`<div class="gm-carry">${s.carry} skin${s.carry>1?'s':''} riding — £${s.pot} on the next hole</div>`;
     else if(s.played) body+=`<div class="gm-carry">£${(g.stake||0)*ids.length} a hole · ${s.settledHoles} of ${s.played} decided</div>`;
   }
@@ -8238,6 +8277,44 @@ function gmFormatStep(step){
     ${GM_STAB==='scoring'?gmRulesStep(step):gmSetupStep(step)}`;
   const done=g.fmt!=='none'||R.cap!=='none';
   return step(5,'Format',done,body,done?`${gl} · ${rl}`:'optional');
+}
+
+// ── whose strokes are on the card right now ────────────────────────────────
+function gmStrokeNote(r){
+  const g=r.game, F=GM_FORMATS[g.fmt];
+  const pct=gmAllowFor(r,g.fmt);
+  return F.fromLow
+    ? `Strokes and nets below are for the ${F.name.toLowerCase()} — ${pct}%, lowest handicap off scratch.`
+    : `Strokes and nets below are for the ${F.name.toLowerCase()} — ${pct}% of your course handicap.`;
+}
+
+// ── this hole, worked out ──────────────────────────────────────────────────
+// So a halved hole is never a mystery: gross, strokes and net for everyone, and
+// who it went to.
+function gmHoleBreak(r,hole){
+  const g=r.game; if(!g||g.fmt==='none'||g.fmt==='scramble'||!GM_FORMATS[g.fmt])return '';
+  const ids=gmIds(r);
+  if(!ids.every(id=>lpHasScore(r.scores,hole,id)))
+    return `<div class="gm-hb"><div class="gm-hb-h">This hole</div>
+      <div class="gm-hb-n">Waiting on the rest of the scores before this hole counts.</div></div>`;
+  const PH=gmPlaying(r,g.fmt), si=r.siArr[hole-1], par=r.parArr[hole-1];
+  const rows=ids.map(id=>{
+    const stk=gmStroke(PH[id],si,r.holes);
+    return {id,name:gmFirst(r,id),gross:r.scores[hole][id],stk,net:r.scores[hole][id]-stk};
+  });
+  const best=Math.min(...rows.map(x=>x.net));
+  const winners=rows.filter(x=>x.net===best);
+  const drew=winners.length>1;
+  const real=(r.holeNums&&r.holeNums[hole-1])||hole;
+  rows.sort((a,b)=>a.net-b.net);
+  return `<div class="gm-hb"><div class="gm-hb-h">Hole ${real} · par ${par} · S.I. ${si}</div>
+    <div class="gm-hb-rows">${rows.map(x=>`<div class="gm-hb-r${x.net===best?' win':''}">
+      <span class="gm-hb-nm">${x.name}</span>
+      <span class="gm-hb-eq">${x.gross}${x.stk?` − ${x.stk}`:''}</span>
+      <span class="gm-hb-net">${x.net}</span></div>`).join('')}</div>
+    <div class="gm-hb-n">${drew
+      ? `Halved on ${best} by ${winners.map(x=>x.name).join(' and ')}${g.fmt==='skins'?' — the skin carries.':'.'}`
+      : `${winners[0].name} takes it with ${best}.`}</div></div>`;
 }
 </script>
 </body>
