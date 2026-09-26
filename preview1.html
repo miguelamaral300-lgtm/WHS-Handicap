@@ -2071,6 +2071,17 @@ a.ui-btn{color:#fff}
   font-size:13.5px;font-weight:600;color:var(--ink2);letter-spacing:-.02em}
 .gm-ctp-b.on{background:var(--g);color:#fff}
 .gm-ctp-w{font-size:12.5px;color:var(--g);font-weight:600;margin-top:8px}
+/* who hands what to whom */
+.gm-pays{border-top:1px solid var(--line);margin-top:8px;padding-top:11px}
+.gm-pays-h{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin-bottom:8px}
+.gm-pay{display:flex;align-items:center;gap:8px;font-size:14.5px;padding:6px 0}
+.gm-pay b{font-weight:600}
+.gm-pay span{margin-left:auto;font-weight:600;font-size:16px;letter-spacing:-.03em;font-feature-settings:'tnum'}
+.gm-pays-n{font-size:12px;color:var(--ink2);margin-top:6px}
+.lp-tabs{margin:18px 0 14px}
+.lp-tabs button{font-size:13px;padding:0 8px}
+.gm-stabs{margin-bottom:14px}
+.gm-stabs button{font-size:12.5px;padding:0 8px}
 </style>
 </head>
 <body>
@@ -4393,7 +4404,7 @@ function renderPlay(){
       h+=step(4,'Who’s playing',false,`<div class="ui-pllist">${rows}${grows}</div><button class="ui-link" onclick="LP_GADD()">+ Add a guest</button>`);
       const cnt=Object.keys(LRSEL.players).filter(k=>LRSEL.players[k]).length+LRSEL.guests.length;
       // 5 · Game — optional, and only worth offering once somebody is playing
-      if(cnt>=1){ h+=gmRulesStep(step); h+=gmSetupStep(step); }
+      if(cnt>=1) h+=gmFormatStep(step);
       h+=`<button class="ui-btn ui-btn-g ui-teeoff" ${cnt<1?'disabled':''} onclick="LP_GO()">Tee off · ${LPCFG[cfg]?LPCFG[cfg][0]:cfg} · ${cnt} player${cnt===1?'':'s'}</button>`;
     }
   }
@@ -4423,19 +4434,31 @@ function renderPlay(){
         <button class="st-clr"${empty?' style="visibility:hidden"':''} onclick="LP_CLR('${p.id}')">✕</button>
       </div></div>`;
     }).join('');
-    h+=gmContestRow(LR,LRHOLE);
-    h+=renderGPS();
-    h+=`<div class="lp-turnline">${LR.players.map(p=>{
-      const sp=lpSplit(LR,p.id);
-      return `<div class="lp-tl"><span class="lp-tl-n">${p.name.split(' ')[0]}</span>
-        <span><b>${sp.oN?sp.out:'–'}</b>${sp.single?'':` · <b>${sp.iN?sp.inn:'–'}</b>`} <i>${sp.total||'–'}</i></span></div>`;
-    }).join('')}<div class="lp-tl-h">${n>9?'out · in · total':'out · total'}</div></div>`;
     h+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
-    // ── live results: leaderboard ↔ full scorecard, in three formats ──
-    h+=gmCapLine(LR);
-    h+=gmPanel(LR);
-    h+=`<div class="lp-sec" style="margin-top:22px">Live results</div>`;
-    h+=lpResults(LR);   // renders its own view + format toggles (dark, on-theme)
+    // Everything below the hole lives behind tabs. Standing on a tee in the wind
+    // you want the scorecard and nothing else; the game, the card and the extras
+    // are each one tap away rather than all stacked down the same screen.
+    h+=gmRoundTabs(LR);
+    const _tab=gmTab(LR);
+    if(_tab==='game'){
+      h+=gmCapLine(LR);
+      h+=gmPanel(LR);
+      if(!LR.game||LR.game.fmt==='none'){
+        if(!LR.rules||LR.rules.cap==='none') h+=`<div class="ui-card ui-pad" style="margin-top:12px;font-size:14px;color:var(--ink2)">No game on this round — just handicaps and the card. You can set one up on the next round.</div>`;
+      }
+    }
+    if(_tab==='card'){
+      h+=`<div class="lp-turnline">${LR.players.map(p=>{
+        const sp=lpSplit(LR,p.id);
+        return `<div class="lp-tl"><span class="lp-tl-n">${p.name.split(' ')[0]}</span>
+          <span><b>${sp.oN?sp.out:'–'}</b>${sp.single?'':` · <b>${sp.iN?sp.inn:'–'}</b>`} <i>${sp.total||'–'}</i></span></div>`;
+      }).join('')}<div class="lp-tl-h">${n>9?'out · in · total':'out · total'}</div></div>`;
+      h+=lpResults(LR);   // leaderboard ↔ full scorecard, in three formats
+    }
+    if(_tab==='extras'){
+      h+=gmContestRow(LR,LRHOLE);
+      h+=renderGPS();
+    }
     if(LPQ.length) h+=`<div class="lp-offline">⟳ ${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
     // finished only when every player has a score on every hole
     const _board=lpBoard(LR);
@@ -6600,7 +6623,7 @@ function lpMigrateStEstevao(){
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='B-20260925-f · Full games: fourball, betterball, scramble, money';
+const UI_BUILD='B-20260926-g · Tabs + correct skins money';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7545,20 +7568,30 @@ function gmStableford(r,PH,ids){
 // ── Skins ──────────────────────────────────────────────────────────────────
 // Lowest net on the hole takes the pot. A tie carries it to the next hole, so a
 // hole late in the round can be worth six. Only holes everyone has finished count.
+// Every player puts a stake into the pot on every hole, so one hole is worth
+// stake x however many are playing. Win it and you take the LOT, not your own
+// stake back — that was the bug that left a winner showing nothing.
+// A hole still riding at the end was never won by anybody, so those stakes are
+// handed back rather than quietly disappearing. The result always balances:
+// what everyone wins adds up to exactly what everyone put in.
 function gmSkins(r,PH,ids,stake){
   const holes=[]; let carry=0;
+  const n=ids.length, st=stake||0;
   const won={}; ids.forEach(id=>won[id]=0);
   const value={}; ids.forEach(id=>value[id]=0);
+  let settledHoles=0;
   for(let h=1;h<=r.holes;h++){
     if(!gmHoleDone(r,ids,h)){ holes.push({h,status:'pending'}); continue; }
     const nets=ids.map(id=>({id,net:gmNet(r,h,id,PH[id])}));
     const best=Math.min(...nets.map(x=>x.net));
     const winners=nets.filter(x=>x.net===best);
-    const pot=carry+1;
+    const pot=carry+1;                       // how many holes' worth is riding
     if(winners.length===1){
       const w=winners[0].id;
-      won[w]+=pot; value[w]+=pot*(stake||0); carry=0;
-      holes.push({h,status:'won',winner:w,skins:pot,net:best});
+      won[w]+=pot;
+      value[w]+=pot*st*n;                    // the whole pot: every player's stake
+      settledHoles+=pot; carry=0;
+      holes.push({h,status:'won',winner:w,skins:pot,net:best,pot:pot*st*n});
     }else{
       carry=pot;
       holes.push({h,status:'tied',skins:pot,net:best,tiedBy:winners.map(x=>x.id)});
@@ -7567,11 +7600,34 @@ function gmSkins(r,PH,ids,stake){
   const rows=ids.map(id=>{
     const p=r.players.find(x=>x.id===id)||{id,name:'?'};
     return {id,name:p.name,guest:p.guest,ph:PH[id],skins:won[id],won:value[id]};
-  }).sort((a,b)=>b.skins-a.skins);
-  // Everyone puts in a stake a hole; what you take out is what you won.
+  }).sort((a,b)=>b.skins-a.skins||b.won-a.won);
   const played=holes.filter(x=>x.status!=='pending').length;
-  rows.forEach(x=>{ x.staked=played*(stake||0); x.pnl=x.won-x.staked; });
-  return {rows,holes,carry,played};
+  // You only paid for the holes that were actually decided.
+  rows.forEach(x=>{ x.staked=settledHoles*st; x.pnl=x.won-x.staked; });
+  return {rows,holes,carry,played,settledHoles,pot:carry*st*n,n};
+}
+
+// ── who actually hands money to whom ───────────────────────────────────────
+// A table of profits and losses is not a settlement: with four players it can
+// have three people paying each other in a circle. This turns the net position
+// into the fewest possible payments — biggest loser pays biggest winner, repeat.
+function gmNetting(pnl){
+  const owe=[],due=[];
+  Object.keys(pnl).forEach(id=>{
+    const v=Math.round((pnl[id]||0)*100)/100;
+    if(v<0)owe.push({id,amt:-v}); else if(v>0)due.push({id,amt:v});
+  });
+  owe.sort((a,b)=>b.amt-a.amt); due.sort((a,b)=>b.amt-a.amt);
+  const out=[]; let i=0,j=0;
+  let guard=0;
+  while(i<owe.length&&j<due.length&&guard++<500){
+    const amt=Math.min(owe[i].amt,due[j].amt);
+    if(amt>0.004) out.push({from:owe[i].id,to:due[j].id,amt:Math.round(amt*100)/100});
+    owe[i].amt-=amt; due[j].amt-=amt;
+    if(owe[i].amt<=0.004)i++;
+    if(due[j].amt<=0.004)j++;
+  }
+  return out;
 }
 
 // ── Match play ─────────────────────────────────────────────────────────────
@@ -7791,7 +7847,7 @@ function gmSettle(r){
 // attaches the game to it.
 var GM_DEF={fmt:'none',stake:2,sides:null};
 
-window.LP_NEW=()=>{ LPV='setup'; LRMSG=null;
+window.LP_NEW=()=>{ LPV='setup'; LRMSG=null; GM_TAB=null; GM_STAB='game';
   LRSEL={course:null,tee:null,cfg:null,players:{},guests:[],game:{...GM_DEF},rules:{...GM_RDEF}};
   render(); };
 
@@ -7847,7 +7903,7 @@ function gmSetupStep(step){
   }
   if(g.fmt==='scramble') body+=`<div class="ui-note" style="margin:8px 2px 0"><b>One score a hole per team.</b> A scramble produces no individual scores, so this round is kept in your history but never counts towards anybody's handicap.</div>`;
   if(g.fmt==='none') body+=`<div class="ui-note" style="margin:8px 2px 0">No game — just handicaps and the card, exactly as before.</div>`;
-  return step(6,'Game',g.fmt!=='none',body,g.fmt==='none'?'optional':GM_FORMATS[g.fmt].name);
+  return body;
 }
 function gmSideNote(fmt,s){
   const A=s.A.length,B=s.B.length;
@@ -7876,7 +7932,8 @@ function gmPanel(r){
     body=`<div class="gm-rows">${s.rows.map((x,i)=>`<div class="gm-row${i===0&&x.skins?' lead':''}">
       <span class="gm-pos">${x.skins}</span><span class="gm-nm">${x.name}<small>off ${x.ph}</small></span>
       <span class="gm-val ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':''}${x.pnl===0?'£0':'£'+Math.abs(x.pnl)*(x.pnl<0?-1:1)}<small>${x.skins} skin${x.skins===1?'':'s'}</small></span></div>`).join('')}</div>`;
-    if(s.carry>0) body+=`<div class="gm-carry">£${s.carry*(g.stake||0)*ids.length ? '' : ''}${s.carry} skin${s.carry>1?'s':''} riding on the next hole</div>`;
+    if(s.carry>0) body+=`<div class="gm-carry">${s.carry} skin${s.carry>1?'s':''} riding — £${s.pot} on the next hole</div>`;
+    else if(s.played) body+=`<div class="gm-carry">£${(g.stake||0)*ids.length} a hole · ${s.settledHoles} of ${s.played} decided</div>`;
   }
   if(g.fmt==='match'){
     const S=gmResolveSides(r), m=gmMatch(r,PH,S.A,S.B);
@@ -7915,6 +7972,7 @@ function gmPanel(r){
 
 // Start the round exactly as the app always has, then attach the game to it.
 window.LP_GO=async()=>{
+  GM_TAB=null;
   const g={...gmSel()};
   await LP_START();
   if(!LR||!LRID) return;
@@ -7964,7 +8022,7 @@ function gmRulesStep(step){
   }
   body+=`<div class="ui-note" style="margin:10px 2px 0">This decides <b>the match only</b>. Your handicap always uses the official adjusted score — every hole capped at net double bogey — exactly as England Golf does it. Both numbers are kept.</div>`;
   const lbl=R.cap==='none'?'Medal':R.cap==='mult'?`${R.mult}× net double bogey`:GM_RULES[R.cap].name;
-  return step(5,'Scoring',R.cap!=='none',body,lbl);
+  return body;
 }
 
 // What the match says, when a cap has been agreed.
@@ -8054,25 +8112,29 @@ window.LP_TCLR=k=>{ const S=gmResolveSides(LR); (S[k]||[]).forEach(id=>LP_CLR(id
 // tournament and Crown prize money.
 function gmSettleCard(rec){
   if(!rec||!rec.game||rec.game.fmt==='none')return '';
-  const done=(S.matches||[]).some(m=>m.rid===(rec.rid||rec.id)||m.rid===(rec.finishedAt&&rec.rid));
   const st=gmSettle({...rec,rid:rec.rid||null});
   if(!st)return '';
-  const rows=Object.keys(st.stakes).map(pid=>{
+  const pnl={};
+  Object.keys(st.stakes).forEach(pid=>{ pnl[pid]=(st.winnings[pid]||0)-(st.stakes[pid]||0); });
+  const rows=Object.keys(pnl).map(pid=>{
     const p=S.players.find(x=>x.id===pid);
-    const w=st.winnings[pid]||0,k=st.stakes[pid]||0;
-    return {name:p?p.name:'?',w,k,pnl:w-k};
-  }).sort((a,b)=>b.pnl-a.pnl);
+    return {id:pid,name:p?p.name:'?',pnl:pnl[pid],staked:st.stakes[pid]||0};
+  }).sort((a2,b2)=>b2.pnl-a2.pnl);
   if(!rows.length)return '';
-  const settled=GM_SETTLED;
+  const pays=gmNetting(pnl);
+  const nm=id=>{const p=S.players.find(x=>x.id===id);return p?p.name.split(' ')[0]:'?';};
   return `<div class="lp-sec" style="margin-top:22px">${st.label}</div>
     <div class="gm-panel"><div class="gm-rows">${rows.map(x=>`<div class="gm-row">
-      <span class="gm-nm">${x.name}<small>staked £${x.k}</small></span>
+      <span class="gm-nm">${x.name}<small>staked £${x.staked}</small></span>
       <span class="gm-val ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':x.pnl<0?'−':''}£${Math.abs(x.pnl)}</span></div>`).join('')}</div>
-      ${st.any?(settled
+      ${pays.length?`<div class="gm-pays"><div class="gm-pays-h">Settle up</div>
+        ${pays.map(t=>`<div class="gm-pay"><b>${nm(t.from)}</b> pays <b>${nm(t.to)}</b><span>£${t.amt}</span></div>`).join('')}
+        <div class="gm-pays-n">${pays.length} payment${pays.length===1?'':'s'} and everyone is square — no passing it round in circles.</div></div>`
+        :`<div class="gm-carry">${st.any?'All square — nobody owes anybody.':st.detail}</div>`}
+      ${st.any?(GM_SETTLED
         ? `<div class="gm-carry">Added to the match purse ✓</div>`
-        : `<button class="ui-btn ui-btn-g" style="margin:10px 0 6px" onclick="GM_SETTLE_GO()">Settle up · add to the match purse</button>
-           <div class="ui-note" style="text-align:center">Kept separate from tournament and Crown winnings.</div>`)
-        : `<div class="gm-carry">${st.detail}</div>`}</div>`;
+        : `<button class="ui-btn ui-btn-g" style="margin:10px 0 6px" onclick="GM_SETTLE_GO()">Add to the match purse</button>
+           <div class="ui-note" style="text-align:center">Kept separate from tournament and Crown winnings.</div>`):''}</div>`;
 }
 var GM_SETTLED=false;
 window.GM_SETTLE_GO=()=>{
@@ -8100,7 +8162,12 @@ function gmPurseBlock(){
     <div class="gm-rows">${rows.map(x=>`<div class="gm-row">
       <span class="gm-nm">${x.name}<small>${x.games} game${x.games===1?'':'s'}${x.wins?` · ${x.wins} won`:''}</small></span>
       <span class="gm-val ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':x.pnl<0?'−':''}£${Math.abs(x.pnl)}</span></div>`).join('')}</div>
-    <div class="gm-carry">£${pot} staked between you across ${rows[0].games} game${rows[0].games===1?'':'s'} · tournaments and the Crown are counted separately above</div></div>`;
+    ${(()=>{const pnl={};rows.forEach(x=>pnl[x.id]=x.pnl);const pays=gmNetting(pnl);
+      const nm=id=>{const p=S.players.find(y=>y.id===id);return p?p.name.split(' ')[0]:'?';};
+      return pays.length?`<div class="gm-pays"><div class="gm-pays-h">To settle up</div>
+        ${pays.map(t=>`<div class="gm-pay"><b>${nm(t.from)}</b> pays <b>${nm(t.to)}</b><span>£${t.amt}</span></div>`).join('')}
+        <div class="gm-pays-n">Everything settled in ${pays.length} payment${pays.length===1?'':'s'}.</div></div>`:'';})()}
+    <div class="gm-carry">£${pot} staked between you · tournaments and the Crown are counted separately above</div></div>`;
 }
 
 // ── nearest the pin · longest drive ────────────────────────────────────────
@@ -8133,6 +8200,44 @@ function gmContestSummary(rec){
       return `<div class="gm-row"><span class="gm-pos">${real}</span>
         <span class="gm-nm">${p?p.name:'?'}<small>${gmContestName(gmContestKind(rec,h))}</small></span></div>`;
     }).join('')}</div></div>`;
+}
+
+// ── one screen, one thing: tabs under the hole ─────────────────────────────
+var GM_TAB=null;
+// The tab is per round, not for ever: a new round opens on its game if it has
+// one, otherwise on the card.
+function gmTab(r){
+  if(GM_TAB) return GM_TAB;
+  return (r.game&&r.game.fmt!=='none')?'game':'card';
+}
+function gmRoundTabs(r){
+  const t=gmTab(r);
+  const has=r.game&&r.game.fmt!=='none';
+  const gname=has?GM_FORMATS[r.game.fmt].name:'Game';
+  const nctp=Object.keys(r.ctp||{}).length;
+  const tabs=[['game',gname],['card','Card'],['extras',nctp?`Extras · ${nctp}`:'Extras']];
+  return `<div class="ui-seg ui-seg-full ui-evtabs lp-tabs">${tabs.map(([k,l])=>
+    `<button class="${t===k?'on':''}" onclick="LP_TAB('${k}')">${l}</button>`).join('')}</div>`;
+}
+window.LP_TAB=k=>{ GM_TAB=k; render(); };
+
+
+// ── setup: one Format step, two tabs ───────────────────────────────────────
+// Six numbered steps down a phone screen was a lot to wade through before you
+// could tee off. What you are playing and how you are scoring it are the same
+// decision, so they share a step.
+var GM_STAB='game';
+window.LP_STAB=k=>{ GM_STAB=k; render(); };
+function gmFormatStep(step){
+  const g=gmSel(), R=gmRules();
+  const gl=g.fmt==='none'?'No game':GM_FORMATS[g.fmt].name;
+  const rl=R.cap==='none'?'Medal':R.cap==='mult'?`${R.mult}× net double bogey`:GM_RULES[R.cap].name;
+  const tabs=[['game',`Game · ${gl}`],['scoring',`Scoring · ${rl}`]];
+  const body=`<div class="ui-seg ui-seg-full ui-evtabs gm-stabs">${tabs.map(([k,l])=>
+      `<button class="${GM_STAB===k?'on':''}" onclick="LP_STAB('${k}')">${l}</button>`).join('')}</div>
+    ${GM_STAB==='scoring'?gmRulesStep(step):gmSetupStep(step)}`;
+  const done=g.fmt!=='none'||R.cap!=='none';
+  return step(5,'Format',done,body,done?`${gl} · ${rl}`:'optional');
 }
 </script>
 </body>
