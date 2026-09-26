@@ -2029,8 +2029,29 @@ a.ui-btn{color:#fff}
 .gm-card.on{box-shadow:inset 0 0 0 2px var(--g);background:var(--gl)}
 .gm-card b{display:block;font-size:15px;font-weight:600;letter-spacing:-.02em}
 .gm-card small{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px}
-.gm-card i{display:block;font-style:normal;font-size:11px;color:var(--ink2);margin-top:6px;letter-spacing:.02em}
-.gm-card.on i{color:var(--g);font-weight:600}
+
+/* one question: five answers */
+.gm-tiles{display:flex;flex-direction:column;gap:8px}
+.gm-tile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;
+  border-radius:18px;background:#fff;box-shadow:var(--sh-card);padding:13px 15px;color:var(--ink)}
+.gm-tile.on{box-shadow:inset 0 0 0 2px var(--g);background:var(--gl)}
+.gm-ic{width:38px;height:38px;flex:0 0 38px;border-radius:13px;background:var(--gl);
+  display:flex;align-items:center;justify-content:center;color:var(--g)}
+.gm-tile.on .gm-ic{background:#fff}
+.gm-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.gm-tt{min-width:0}
+.gm-tt b{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.025em}
+.gm-tt small{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px;line-height:1.35}
+
+/* scoring, folded away until you want it */
+.gm-rule{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;
+  border-radius:18px;background:#fff;box-shadow:var(--sh-card);padding:12px 15px;margin-top:14px;color:var(--ink)}
+.gm-rt{flex:1;min-width:0;font-size:14.5px;font-weight:600;letter-spacing:-.02em}
+.gm-rt small{display:block;font-weight:400;font-size:12.5px;color:var(--ink2);margin-top:2px}
+.gm-rc{display:flex;color:var(--ink3);transition:transform .15s}
+.gm-rc.up{transform:rotate(90deg)}
+.gm-ruleb{margin-top:10px}
 .gm-stake{display:flex;align-items:center;gap:10px;margin-top:12px;background:#fff;border-radius:16px;
   box-shadow:inset 0 0 0 1px var(--line);padding:10px 14px}
 .gm-stake span{flex:1;font-size:14px;color:var(--ink2)}
@@ -2078,8 +2099,6 @@ a.ui-btn{color:#fff}
 .gm-pay b{font-weight:600}
 .gm-pay span{margin-left:auto;font-weight:600;font-size:16px;letter-spacing:-.03em;font-feature-settings:'tnum'}
 .gm-pays-n{font-size:12px;color:var(--ink2);margin-top:6px}
-.lp-tabs{margin:18px 0 14px}
-.lp-tabs button{font-size:13px;padding:0 8px}
 .gm-stabs{margin-bottom:14px}
 .gm-stabs button{font-size:12.5px;padding:0 8px}
 /* whose strokes are on the card, and this hole worked out */
@@ -2102,6 +2121,30 @@ a.ui-btn{color:#fff}
 .gm-sk span{display:block;font-size:11.5px;font-weight:600;letter-spacing:-.02em;margin-top:1px}
 .gm-sk.won{background:var(--gl)}.gm-sk.won span{color:var(--g)}
 .gm-sk.tied span{color:var(--ink2);font-weight:400}
+
+/* ════════ The four pages ════════ */
+/* The green line rides above every page. */
+.gm-line{display:flex;align-items:center;gap:10px;background:var(--grad);color:#fff;border-radius:18px;
+  padding:11px 15px;margin:14px 0 12px;box-shadow:0 10px 22px -16px rgba(11,101,52,.9)}
+.gm-line-l{min-width:0;flex:1}
+.gm-line-l .sl{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+.gm-line-l .sv{display:block;font-size:15px;font-weight:600;letter-spacing:-.02em;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gm-line-a{flex:0 0 auto;text-align:right}
+.gm-line-a b{display:block;font-size:19px;font-weight:600;letter-spacing:-.035em;font-feature-settings:'tnum'}
+.gm-line-a span{display:block;font-size:10.5px;color:rgba(255,255,255,.8);margin-top:1px}
+
+.gm-pager{overflow:hidden;touch-action:pan-y;transition:height .28s cubic-bezier(.4,0,.2,1)}
+.gm-track{display:flex;align-items:flex-start;transition:transform .3s cubic-bezier(.4,0,.2,1);will-change:transform}
+.gm-pg{flex:0 0 100%;min-width:100%}
+.gm-nav{margin-top:16px}
+.gm-seg button{font-size:12.5px;padding:0 6px}
+.gm-dots{display:flex;gap:5px;justify-content:center;margin-top:9px}
+.gm-dot{width:6px;height:6px;border-radius:50%;background:var(--line);transition:width .2s,background .2s}
+.gm-dot.on{background:var(--g);width:17px;border-radius:3px}
+/* the results panel brings its own view switch; the pages replace it */
+.gm-pg .rv-tabs{display:none}
+@media (prefers-reduced-motion:reduce){.gm-pager,.gm-track{transition:none}}
 </style>
 </head>
 <body>
@@ -4435,19 +4478,20 @@ function renderPlay(){
     const par=LR.parArr[LRHOLE-1],si=LR.siArr[LRHOLE-1];
     const done=h2=>LR.players.every(p=>lpHasScore(LR.scores,h2,p.id));
     const halfN=Math.floor(n/2);
-    h+=`<div class="lp-strip">${Array.from({length:n},(_,i)=>i+1).map(x=>
-      `${(n>9&&x===halfN+1)?'<div class="lp-turn">turn</div>':''}<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${(LR.holeNums&&LR.holeNums[x-1])||x}</div>`).join('')}</div>`;
     const isScr=LR.game&&LR.game.fmt==='scramble';
-    // When a game is on, the strokes on this row are the GAME's strokes. Showing
-    // the card's own net here was the thing that made a won hole look drawn: the
-    // card gives everyone their full handicap, while a match or a skin is played
-    // off the difference. One number on the screen, and it is the one that decides.
+    // When a game is on, the strokes on the hole are the GAME's strokes. The card
+    // gives everyone their full handicap; a match or a skin is played off the
+    // difference. One number on screen, and it is the one that decides the hole.
     const _GPH=(LR.game&&LR.game.fmt&&LR.game.fmt!=='none'&&!isScr)?gmPlaying(LR,LR.game.fmt):null;
+
+    // ── PAGE 1 · the hole. Scoring and nothing else. ──
+    let pHole=`<div class="lp-strip">${Array.from({length:n},(_,i)=>i+1).map(x=>
+      `${(n>9&&x===halfN+1)?'<div class="lp-turn">turn</div>':''}<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${(LR.holeNums&&LR.holeNums[x-1])||x}</div>`).join('')}</div>`;
     const realH=(LR.holeNums&&LR.holeNums[LRHOLE-1])||LRHOLE;
     const cfgLbl=LR.cfg&&LPCFG[LR.cfg]?LPCFG[LR.cfg][0]:`${n} holes`;
-    h+=`<div class="lp-hole"><div class="lp-hh"><div><div class="lbl">${LR.course} · ${LR.tee} · ${cfgLbl}</div><div class="big">Hole ${realH}</div><div class="lbl" style="letter-spacing:1px">${LRHOLE} of ${n}</div></div><div class="meta">Par <b>${par}</b><br>S.I. <b>${si}</b></div></div>`;
-    if(_GPH) h+=`<div class="lp-gnote">${gmStrokeNote(LR)}</div>`;
-    h+=isScr?gmTeamRows(LR,LRHOLE,par,si,n):LR.players.map(p=>{
+    pHole+=`<div class="lp-hole"><div class="lp-hh"><div><div class="lbl">${LR.course} · ${LR.tee} · ${cfgLbl}</div><div class="big">Hole ${realH}</div><div class="lbl" style="letter-spacing:1px">${LRHOLE} of ${n}</div></div><div class="meta">Par <b>${par}</b><br>S.I. <b>${si}</b></div></div>`;
+    if(_GPH) pHole+=`<div class="lp-gnote">${gmStrokeNote(LR)}</div>`;
+    pHole+=isScr?gmTeamRows(LR,LRHOLE,par,si,n):LR.players.map(p=>{
       const g=lpHasScore(LR.scores,LRHOLE,p.id)?LR.scores[LRHOLE][p.id]:null;
       const stk=_GPH?gmStroke(_GPH[p.id],si,n):lpStrokes(p.ch,si,n);
       const empty=g==null;
@@ -4460,34 +4504,37 @@ function renderPlay(){
         <button class="st-clr"${empty?' style="visibility:hidden"':''} onclick="LP_CLR('${p.id}')">✕</button>
       </div></div>`;
     }).join('');
-    h+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
-    // Everything below the hole lives behind tabs. Standing on a tee in the wind
-    // you want the scorecard and nothing else; the game, the card and the extras
-    // are each one tap away rather than all stacked down the same screen.
-    h+=gmRoundTabs(LR);
-    const _tab=gmTab(LR);
-    if(_tab==='game'){
-      h+=gmHoleBreak(LR,LRHOLE);
-      h+=gmCapLine(LR);
-      h+=gmPanel(LR);
-      if(!LR.game||LR.game.fmt==='none'){
-        if(!LR.rules||LR.rules.cap==='none') h+=`<div class="ui-card ui-pad" style="margin-top:12px;font-size:14px;color:var(--ink2)">No game on this round — just handicaps and the card. You can set one up on the next round.</div>`;
-      }
-    }
-    if(_tab==='card'){
-      h+=`<div class="lp-turnline">${LR.players.map(p=>{
+    pHole+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
+    pHole+=gmContestRow(LR,LRHOLE);
+    pHole+=renderGPS();
+
+    // ── PAGE 2 · the game, worked out, and the money ──
+    let pGame=gmHoleBreak(LR,LRHOLE)+gmCapLine(LR)+gmPanel(LR);
+
+    // ── PAGE 3 · the leaderboard ──
+    let pBoard=`<div class="lp-turnline">${LR.players.map(p=>{
         const sp=lpSplit(LR,p.id);
         return `<div class="lp-tl"><span class="lp-tl-n">${p.name.split(' ')[0]}</span>
           <span><b>${sp.oN?sp.out:'–'}</b>${sp.single?'':` · <b>${sp.iN?sp.inn:'–'}</b>`} <i>${sp.total||'–'}</i></span></div>`;
-      }).join('')}<div class="lp-tl-h">${n>9?'out · in · total':'out · total'}</div></div>`;
-      h+=lpResults(LR);   // leaderboard ↔ full scorecard, in three formats
-    }
-    if(_tab==='extras'){
-      h+=gmContestRow(LR,LRHOLE);
-      h+=renderGPS();
-    }
+      }).join('')}<div class="lp-tl-h">${n>9?'out · in · total':'out · total'}</div></div>`
+      +gmResults(LR,'board');
+
+    // ── PAGE 4 · the card ──
+    let pCard=gmResults(LR,'card');
+
+    const PG={hole:pHole,game:pGame,board:pBoard,card:pCard};
+    const list=gmPageList(LR);
+    const at=gmPageIdx(LR);
+
+    // The green line rides above every page, so whatever you are looking at you
+    // can still see what is at stake.
+    h+=gmStrip(LR);
+    h+=`<div class="gm-pager" id="gmPager"><div class="gm-track" id="gmTrack" style="transform:translateX(-${at*100}%)">`;
+    h+=list.map(k=>`<div class="gm-pg">${PG[k]||''}</div>`).join('');
+    h+=`</div></div>`;
+    h+=gmPagerNav(LR);
+
     if(LPQ.length) h+=`<div class="lp-offline">⟳ ${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
-    // finished only when every player has a score on every hole
     const _board=lpBoard(LR);
     const allDone=_board.length>0 && _board.every(p=>p.thru===n);
     h+=`<div class="lp-fin"><button class="lp-fbtn disc" onclick="LP_X()">Discard</button><button class="lp-fbtn post" ${allDone?'':'disabled'} onclick="LP_FIN()">Finish round</button></div>`;
@@ -4660,6 +4707,7 @@ function render(){
     setTimeout(()=>{ try{ PL_TOGGLE(); }catch(e){} }, 0);
   }
   if(V==='courses'&&!AP&&!AT){ setTimeout(()=>{ try{ csrBind(); }catch(e){} }, 0); }
+  if(V==='play'){ setTimeout(()=>{ try{ gmPagerBind(); gmFit(); }catch(e){} }, 0); }
 
   // a sheet with a sticky header shows a hairline once you scroll it
   if(MOD||UI_MENU||UI_DONE){
@@ -6650,7 +6698,7 @@ function lpMigrateStEstevao(){
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='B-20260926-i · Skins hole by hole';
+const UI_BUILD='B-20260926-j · One question, four pages';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7878,7 +7926,7 @@ function gmSettle(r){
 // attaches the game to it.
 var GM_DEF={fmt:'none',stake:2,sides:null};
 
-window.LP_NEW=()=>{ LPV='setup'; LRMSG=null; GM_TAB=null; GM_STAB='game';
+window.LP_NEW=()=>{ LPV='setup'; LRMSG=null; GM_PAGE=0;
   LRSEL={course:null,tee:null,cfg:null,players:{},guests:[],game:{...GM_DEF},rules:{...GM_RDEF}};
   render(); };
 
@@ -7905,35 +7953,69 @@ window.LP_SIDE=pid=>{ const g=gmSel(); const s=gmSides(gmSetupIds());
   else { s.B=s.B.filter(x=>x!==pid); s.A.push(pid); }
   render(); };
 
+// ── "What are you playing?" ────────────────────────────────────────────────
+// One question. The stake, the sides and the scoring rule do not exist until the
+// game you picked actually needs them — which is what made the old step heavy.
+const GM_ICON={
+  none:'<path d="M4 7h16M4 12h16M4 17h10"/>',
+  skins:'<rect x="3.5" y="6.5" width="17" height="12" rx="3"/><path d="M3.5 10.5h17"/>',
+  stableford:'<path d="M5 19V9M12 19V5M19 19v-7"/>',
+  match:'<path d="M7 21V4l10 4-10 4"/>',
+  betterball:'<path d="M7 21V4l10 4-10 4"/><circle cx="18" cy="17" r="3"/>',
+  scramble:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.8 4-5.5 7-5.5s5.8 1.7 7 5.5"/>',
+};
+function gmIcon(k){ return `<span class="gm-ic"><svg viewBox="0 0 24 24" aria-hidden="true">${GM_ICON[k]||GM_ICON.none}</svg></span>`; }
+
 function gmSetupStep(step){
   const g=gmSel(), ids=gmSetupIds(), n=ids.length;
-  const card=(f,F)=>`<button class="gm-card${g.fmt===f?' on':''}" onclick="LP_G('${f}')">
-      <b>${F.name}</b><small>${F.blurb}</small>
-      <i>${F.allow==null?'team handicap · does not count for handicaps':'plays off '+F.allow+'%'}${F.fromLow?' · strokes from the lowest':''}</i></button>`;
-  let body=`<div class="gm-cards">${Object.keys(GM_FORMATS).map(f=>{
+  const tile=(f,name,blurb)=>`<button class="gm-tile${g.fmt===f?' on':''}" onclick="LP_G('${f}')">
+      ${gmIcon(f)}<span class="gm-tt"><b>${name}</b><small>${blurb}</small></span></button>`;
+  let body=`<div class="gm-tiles">${tile('none','Just the card','Handicaps only, no game')}`;
+  Object.keys(GM_FORMATS).forEach(f=>{
     const F=GM_FORMATS[f];
-    if(F.sides&&n<2) return '';                    // nothing to split into sides
-    if(f==='betterball'&&n<4) return '';           // pairs only
-    if(f==='scramble'&&n<2) return '';
-    return card(f,F);
-  }).join('')}</div>`;
+    if(F.sides&&n<2)return;
+    if(f==='betterball'&&n<4)return;
+    body+=tile(f,F.name,F.blurb);
+  });
+  body+=`</div>`;
+  // What you play off, said once, under the game you picked — rather than printed
+  // on all five tiles where it is just noise.
+  if(g.fmt!=='none'&&GM_FORMATS[g.fmt]){
+    const F=GM_FORMATS[g.fmt];
+    // A singles match is 100%, a four-ball or team match 90% — so it depends on how
+    // the sides are split, which is known here from the picker rather than a round.
+    const sd0=F.sides?gmSides(ids):null;
+    const pct=(g.fmt==='match')?((sd0&&(sd0.A.length>1||sd0.B.length>1))?90:100):F.allow;
+    body+=`<div class="ui-note" style="margin:10px 2px 0">${F.allow==null
+      ? 'Team handicap on a sliding scale. A scramble never counts towards anybody\u2019s handicap.'
+      : `Played off ${pct}% of your course handicap${F.fromLow?', strokes from the lowest':''} \u2014 the official allowance.`}</div>`;
+  }
+
+  // only what this game needs, and nothing else
   if(g.fmt==='skins'||g.fmt==='match'){
     body+=`<div class="gm-stake"><span>${g.fmt==='skins'?'Stake a hole':'On the match'}</span>
-      <button class="st-btn" onclick="LP_STAKE(-1)">−</button>
-      <b>£${g.stake}</b>
+      <button class="st-btn" onclick="LP_STAKE(-1)">−</button><b>£${g.stake}</b>
       <button class="st-btn" onclick="LP_STAKE(1)">＋</button></div>`;
-    if(g.fmt==='skins') body+=`<div class="ui-note" style="margin:8px 2px 0">Tie a hole and the pot carries. With ${n} playing, every hole is worth £${g.stake*n} to somebody.</div>`;
-    else body+=`<div class="ui-note" style="margin:8px 2px 0">Each side puts in £${g.stake}. Winner takes it; a halved match and everyone keeps their own.</div>`;
+    body+=`<div class="ui-note" style="margin:8px 2px 0">${g.fmt==='skins'
+      ? `Tie a hole and the pot carries. With ${n} playing, every hole is worth £${g.stake*n} to somebody.`
+      : `Each side puts in £${g.stake}. Winner takes it; a halved match and everyone keeps their own.`}</div>`;
   }
   if(GM_FORMATS[g.fmt]&&GM_FORMATS[g.fmt].sides){
-    const s=gmSides(ids);
+    const sd=gmSides(ids);
     body+=`<div class="gm-sides">${ids.map(x=>{
-      const a=s.A.includes(x.id);
+      const a=sd.A.includes(x.id);
       return `<button class="gm-side ${a?'a':'b'}" onclick="LP_SIDE('${x.id}')"><span class="gm-sdot">${a?'A':'B'}</span>${x.name}</button>`;
-    }).join('')}</div><div class="ui-note" style="margin:8px 2px 0">Tap a name to move them. ${gmSideNote(g.fmt,s)}</div>`;
+    }).join('')}</div><div class="ui-note" style="margin:8px 2px 0">Tap a name to move them. ${gmSideNote(g.fmt,sd)}</div>`;
   }
   if(g.fmt==='scramble') body+=`<div class="ui-note" style="margin:8px 2px 0"><b>One score a hole per team.</b> A scramble produces no individual scores, so this round is kept in your history but never counts towards anybody's handicap.</div>`;
-  if(g.fmt==='none') body+=`<div class="ui-note" style="margin:8px 2px 0">No game — just handicaps and the card, exactly as before.</div>`;
+  if(g.fmt!=='none'||true){
+    const R=gmRules();
+    const rl=R.cap==='none'?'Medal — every shot counts':R.cap==='mult'?`${R.mult}× net double bogey`:GM_RULES[R.cap].name;
+    body+=`<button class="gm-rule" onclick="LP_STAB('${GM_STAB==='scoring'?'game':'scoring'}')">
+      <span class="gm-rt">Scoring<small>${rl}</small></span>
+      <span class="gm-rc${GM_STAB==='scoring'?' up':''}">${uiSvg('chev','ui-chev')}</span></button>`;
+    if(GM_STAB==='scoring') body+=`<div class="gm-ruleb">${gmRulesStep(step)}</div>`;
+  }
   return body;
 }
 function gmSideNote(fmt,s){
@@ -8011,7 +8093,7 @@ function gmPanel(r){
 
 // Start the round exactly as the app always has, then attach the game to it.
 window.LP_GO=async()=>{
-  GM_TAB=null;
+  GM_PAGE=0;
   const g={...gmSel()};
   await LP_START();
   if(!LR||!LRID) return;
@@ -8241,42 +8323,135 @@ function gmContestSummary(rec){
     }).join('')}</div></div>`;
 }
 
-// ── one screen, one thing: tabs under the hole ─────────────────────────────
-var GM_TAB=null;
-// The tab is per round, not for ever: a new round opens on its game if it has
-// one, otherwise on the card.
-function gmTab(r){
-  if(GM_TAB) return GM_TAB;
-  return (r.game&&r.game.fmt!=='none')?'game':'card';
+// ── four screens, one swipe apart ─────────────────────────────────────────
+// The hole is where you score and carries nothing else. The game, the board and
+// the card each get a page of their own. The green line rides above all of them.
+var GM_PAGE=0;
+
+function gmPageList(r){
+  const has=r.game&&r.game.fmt&&r.game.fmt!=='none';
+  const capped=r.rules&&r.rules.cap&&r.rules.cap!=='none';
+  const l=['hole'];
+  if(has||capped) l.push('game');
+  l.push('board','card');
+  return l;
 }
-function gmRoundTabs(r){
-  const t=gmTab(r);
-  const has=r.game&&r.game.fmt!=='none';
-  const gname=has?GM_FORMATS[r.game.fmt].name:'Game';
-  const nctp=Object.keys(r.ctp||{}).length;
-  const tabs=[['game',gname],['card','Card'],['extras',nctp?`Extras · ${nctp}`:'Extras']];
-  return `<div class="ui-seg ui-seg-full ui-evtabs lp-tabs">${tabs.map(([k,l])=>
-    `<button class="${t===k?'on':''}" onclick="LP_TAB('${k}')">${l}</button>`).join('')}</div>`;
+function gmPageIdx(r){ const n=gmPageList(r).length; return Math.max(0,Math.min(n-1,GM_PAGE)); }
+const GM_PGL={hole:'Hole',game:'Game',board:'Board',card:'Card'};
+
+// Run the app's own results panel in one particular view. LRVIEW is what it reads,
+// so the board and the card can each have a page without touching the function.
+function gmResults(r,view){
+  const keep=LRVIEW;
+  LRVIEW=view;
+  let out='';
+  try{ out=lpResults(r); }catch(e){ out=''; }
+  LRVIEW=keep;
+  return out;
 }
-window.LP_TAB=k=>{ GM_TAB=k; render(); };
+
+// The one line that answers "am I winning, and what's it worth".
+function gmStrip(r){
+  const g=r.game;
+  if(!g||g.fmt==='none'||!GM_FORMATS[g.fmt]) return '';
+  const PH=gmPlaying(r,g.fmt), ids=gmIds(r);
+  const me=(typeof UI_ME!=='undefined'&&UI_ME&&ids.includes(UI_ME))?UI_ME:null;
+  let title=GM_FORMATS[g.fmt].name, msg='', amt='', sub='';
+  if(g.fmt==='skins'){
+    const s=gmSkins(r,PH,ids,g.stake||0);
+    title=`Skins · £${g.stake||0} a hole`;
+    // The headline is who is winning; the figure is where YOU stand.
+    const lead=s.rows[0], mine=(me?s.rows.find(x=>x.id===me):lead)||lead;
+    if(!s.played){ msg='Nothing decided yet'; amt='£'+((g.stake||0)*ids.length); sub='a hole'; }
+    else if(s.carry>0){ msg=`${s.carry} skin${s.carry>1?'s':''} riding`; amt='£'+s.pot; sub='on the next hole'; }
+    else if(lead&&lead.skins){
+      msg=`${gmFirst(r,lead.id)} leads on ${lead.skins} skin${lead.skins>1?'s':''}`;
+      amt=(mine.pnl>0?'+':mine.pnl<0?'−':'')+'£'+Math.abs(mine.pnl);
+      sub=me?'you':gmFirst(r,mine.id);
+    } else { msg='Nothing decided yet'; amt='£'+((g.stake||0)*ids.length); sub='a hole'; }
+  } else if(g.fmt==='match'){
+    const S=gmResolveSides(r), m=gmMatch(r,PH,S.A,S.B);
+    const mine=me&&S.B.includes(me)?-m.up:m.up;
+    title=`Match · £${g.stake||0}`;
+    msg=m.closedAt?`${m.final}`:(mine===0?'All square':`${Math.abs(mine)} ${mine>0?'up':'down'}`);
+    amt=m.left?String(m.left):'–'; sub=m.left?'to play':(m.closedAt?'match over':'finished');
+  } else if(g.fmt==='betterball'){
+    const S=gmResolveSides(r), bb=gmBetterBall(r,PH,S);
+    title='Better ball'; msg=`${bb.A.pts} – ${bb.B.pts}`;
+    amt=String(Math.abs(bb.A.pts-bb.B.pts)); sub='points in it';
+  } else if(g.fmt==='scramble'){
+    const S=gmResolveSides(r), sc=gmScramble(r,S);
+    title='Scramble';
+    msg=sc.A.thru||sc.B.thru?`${sc.A.gross} – ${sc.B.gross}`:'Not started';
+    amt=sc.A.thru?String(sc.A.net):'–'; sub='team A net';
+  } else {
+    const rows=gmStableford(r,PH,ids);
+    const mine=me?rows.find(x=>x.id===me):rows[0];
+    title='Stableford'; msg=mine?`${gmFirst(r,mine.id)} leads on ${rows[0].pts}`:'';
+    amt=mine?String(mine.pts):'0'; sub=me?'your points':'points';
+  }
+  return `<div class="gm-line"><span class="gm-line-l"><span class="sl">${title}</span><span class="sv">${msg}</span></span>
+    <span class="gm-line-a"><b>${amt}</b><span>${sub}</span></span></div>`;
+}
+
+function gmPagerNav(r){
+  const list=gmPageList(r), at=gmPageIdx(r);
+  return `<div class="gm-nav"><div class="ui-seg ui-seg-full gm-seg">${list.map((k,i)=>
+      `<button class="${i===at?'on':''}" onclick="LP_PAGE(${i})">${GM_PGL[k]}</button>`).join('')}</div>
+    <div class="gm-dots">${list.map((k,i)=>`<i class="gm-dot${i===at?' on':''}"></i>`).join('')}</div></div>`;
+}
+
+// Moving between pages never re-renders: the content is already there, so the
+// track just slides. That is what makes it feel like a phone and not a website.
+window.LP_PAGE=i=>{
+  const t=document.getElementById('gmTrack'); if(!t)return;
+  const n=t.children.length;
+  GM_PAGE=Math.max(0,Math.min(n-1,i));
+  t.style.transform=`translateX(-${GM_PAGE*100}%)`;
+  const segs=document.querySelectorAll('.gm-seg button'), dots=document.querySelectorAll('.gm-dot');
+  for(let k=0;k<n;k++){ if(segs[k])segs[k].classList.toggle('on',k===GM_PAGE);
+                        if(dots[k])dots[k].classList.toggle('on',k===GM_PAGE); }
+  gmFit();
+};
+// Each page is its own height, so the pager is only ever as tall as what you are
+// looking at — no dead space under the hole because the card is longer.
+function gmFit(){
+  const p=document.getElementById('gmPager'), t=document.getElementById('gmTrack');
+  if(!p||!t)return;
+  const pg=t.children[GM_PAGE]; if(!pg)return;
+  p.style.height=pg.offsetHeight+'px';
+}
+function gmPagerBind(){
+  const p=document.getElementById('gmPager');
+  if(!p||p.dataset.bound)return;
+  p.dataset.bound='1';
+  let x0=null,y0=null,lock=null;
+  const s=e=>{ const t=e.touches?e.touches[0]:e; x0=t.clientX; y0=t.clientY; lock=null; };
+  const m=e=>{ if(x0===null)return; const t=e.touches?e.touches[0]:e, dx=t.clientX-x0, dy=t.clientY-y0;
+    // Decide once whether this is a sideways swipe or a scroll, then stick to it —
+    // otherwise the page fights the thumb on every diagonal drag.
+    if(lock===null&&(Math.abs(dx)>10||Math.abs(dy)>10)) lock=Math.abs(dx)>Math.abs(dy)?'x':'y';
+    if(lock==='x'&&e.cancelable) e.preventDefault(); };
+  const u=e=>{ if(x0===null)return; const t=e.changedTouches?e.changedTouches[0]:e, dx=t.clientX-x0;
+    if(lock==='x'&&Math.abs(dx)>45) LP_PAGE(GM_PAGE+(dx<0?1:-1));
+    x0=null;y0=null;lock=null; };
+  p.addEventListener('touchstart',s,{passive:true});
+  p.addEventListener('touchmove',m,{passive:false});
+  p.addEventListener('touchend',u);
+  p.addEventListener('touchcancel',u);
+  window.addEventListener('resize',gmFit);
+}
 
 
-// ── setup: one Format step, two tabs ───────────────────────────────────────
-// Six numbered steps down a phone screen was a lot to wade through before you
-// could tee off. What you are playing and how you are scoring it are the same
-// decision, so they share a step.
+// ── setup: one question ────────────────────────────────────────────────────
 var GM_STAB='game';
 window.LP_STAB=k=>{ GM_STAB=k; render(); };
 function gmFormatStep(step){
   const g=gmSel(), R=gmRules();
   const gl=g.fmt==='none'?'No game':GM_FORMATS[g.fmt].name;
   const rl=R.cap==='none'?'Medal':R.cap==='mult'?`${R.mult}× net double bogey`:GM_RULES[R.cap].name;
-  const tabs=[['game',`Game · ${gl}`],['scoring',`Scoring · ${rl}`]];
-  const body=`<div class="ui-seg ui-seg-full ui-evtabs gm-stabs">${tabs.map(([k,l])=>
-      `<button class="${GM_STAB===k?'on':''}" onclick="LP_STAB('${k}')">${l}</button>`).join('')}</div>
-    ${GM_STAB==='scoring'?gmRulesStep(step):gmSetupStep(step)}`;
-  const done=g.fmt!=='none'||R.cap!=='none';
-  return step(5,'Format',done,body,done?`${gl} · ${rl}`:'optional');
+  return step(5,'What are you playing?',g.fmt!=='none',gmSetupStep(step),
+              g.fmt==='none'?'optional':`${gl} · ${rl}`);
 }
 
 // ── whose strokes are on the card right now ────────────────────────────────
