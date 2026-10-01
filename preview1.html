@@ -2122,29 +2122,228 @@ a.ui-btn{color:#fff}
 .gm-sk.won{background:var(--gl)}.gm-sk.won span{color:var(--g)}
 .gm-sk.tied span{color:var(--ink2);font-weight:400}
 
-/* ════════ The four pages ════════ */
-/* The green line rides above every page. */
-.gm-line{display:flex;align-items:center;gap:10px;background:var(--grad);color:#fff;border-radius:18px;
-  padding:11px 15px;margin:14px 0 12px;box-shadow:0 10px 22px -16px rgba(11,101,52,.9)}
-.gm-line-l{min-width:0;flex:1}
-.gm-line-l .sl{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.8)}
-.gm-line-l .sv{display:block;font-size:15px;font-weight:600;letter-spacing:-.02em;margin-top:2px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gm-line-a{flex:0 0 auto;text-align:right}
-.gm-line-a b{display:block;font-size:19px;font-weight:600;letter-spacing:-.035em;font-feature-settings:'tnum'}
-.gm-line-a span{display:block;font-size:10.5px;color:rgba(255,255,255,.8);margin-top:1px}
 
-.gm-pager{overflow:hidden;touch-action:pan-y;transition:height .28s cubic-bezier(.4,0,.2,1)}
-.gm-track{display:flex;align-items:flex-start;transition:transform .3s cubic-bezier(.4,0,.2,1);will-change:transform}
-.gm-pg{flex:0 0 100%;min-width:100%}
-.gm-nav{margin-top:16px}
-.gm-seg button{font-size:12.5px;padding:0 6px}
-.gm-dots{display:flex;gap:5px;justify-content:center;margin-top:9px}
-.gm-dot{width:6px;height:6px;border-radius:50%;background:var(--line);transition:width .2s,background .2s}
-.gm-dot.on{background:var(--g);width:17px;border-radius:3px}
-/* the results panel brings its own view switch; the pages replace it */
-.gm-pg .rv-tabs{display:none}
-@media (prefers-reduced-motion:reduce){.gm-pager,.gm-track{transition:none}}
+
+/* ════════ CLUB 2.1 · LIVE LEADERBOARD ════════ */
+/* The green bar for the game, in the flow of the page under the hole. */
+.lb-gbar{display:flex;align-items:center;gap:10px;width:100%;border:none;font:inherit;text-align:left;cursor:pointer;
+  background:var(--grad);color:#fff;border-radius:18px;padding:12px 14px 12px 15px;margin:14px 0 4px;
+  box-shadow:0 10px 22px -16px rgba(11,101,52,.9);transition:transform .12s}
+.lb-gbar:active{transform:scale(.985)}
+.lb-gbar .gm-line-l{min-width:0;flex:1}
+.lb-gbar .gm-line-l .sl{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+.lb-gbar .gm-line-l .sv{display:block;font-size:15px;font-weight:600;letter-spacing:-.02em;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-gbar .gm-line-a{flex:0 0 auto;text-align:right}
+.lb-gbar .gm-line-a b{display:block;font-size:19px;font-weight:600;letter-spacing:-.035em;font-feature-settings:'tnum'}
+.lb-gbar .gm-line-a span{display:block;font-size:10.5px;color:rgba(255,255,255,.8);margin-top:1px}
+.lb-gbar-c{display:flex;flex:0 0 auto;opacity:.75}
+.lb-gbar-c svg{width:16px;height:16px;stroke:#fff;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;transform:rotate(-90deg)}
+
+/* room under the page for the mini bar, so it never covers the last button */
+.lb-spacer{height:74px}
+
+/* the mini bar, parked 10px above the tab bar */
+.lb-mini{position:fixed;left:0;right:0;margin:0 auto;max-width:528px;width:calc(100% - 32px);
+  bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:61;
+  display:flex;align-items:center;gap:11px;border:none;font:inherit;text-align:left;cursor:pointer;color:var(--ink);
+  background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+  border-radius:20px;padding:10px 14px 10px 11px;
+  box-shadow:0 14px 32px -16px rgba(12,26,18,.45),inset 0 0 0 1px rgba(12,26,18,.06);transition:transform .12s}
+.lb-mini:active{transform:scale(.985)}
+.lb-mini-i{width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:var(--gl);color:var(--g);
+  display:flex;align-items:center;justify-content:center}
+.lb-mini-i svg{width:17px;height:17px;stroke:var(--g);stroke-width:2.1;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lb-mini-c{display:flex;color:var(--ink3)}
+.lb-mini-c svg,.lb-tc svg{width:17px;height:17px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lb-mini-c svg{transform:rotate(-90deg)}
+.lb-tt{flex:1;min-width:0;font-size:14.5px;font-weight:600;letter-spacing:-.02em}
+.lb-tt small{display:block;font-weight:400;font-size:12px;color:var(--ink2);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* the dimmed page behind an open sheet */
+.lb-back{position:fixed;inset:0;z-index:70;background:rgba(12,26,18,.38);opacity:0;pointer-events:none;
+  transition:opacity .25s ease;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.lb-back.on{opacity:1;pointer-events:auto}
+
+/* the sheet, rising from the bottom */
+.lb-sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;z-index:71;
+  background:#fff;border-radius:26px 26px 0 0;box-shadow:0 -14px 40px -18px rgba(12,26,18,.55);
+  max-height:88vh;max-height:88dvh;display:flex;flex-direction:column;
+  transform:translateY(105%);transition:transform .34s cubic-bezier(.32,.72,0,1);visibility:hidden}
+.lb-sheet.open{transform:translateY(0);visibility:visible}
+.lb-tab{flex:0 0 auto;width:100%;border:none;background:none;font:inherit;color:var(--ink);text-align:left;
+  cursor:pointer;padding:10px 18px 12px}
+.lb-grab{display:block;width:38px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 11px}
+.lb-tl{display:flex;align-items:center;gap:10px}
+.lb-tl .lb-tt{font-size:17px;letter-spacing:-.03em}
+.lb-tc{display:flex;color:var(--ink3)}
+.lb-tc svg{transform:rotate(90deg)}
+.lb-b{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:0 16px calc(20px + env(safe-area-inset-bottom,0px))}
+html.lb-lock,html.lb-lock body{overflow:hidden}
+
+/* format switch: one job — re-sort the list */
+.lb-seg{display:flex;background:var(--off);border-radius:14px;padding:3px;gap:3px;
+  box-shadow:inset 0 0 0 1px var(--line);margin:0 0 8px}
+.lb-seg button{flex:1;border:none;background:none;border-radius:11px;min-height:38px;font:inherit;
+  font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;letter-spacing:-.01em}
+.lb-seg button.on{background:#fff;color:var(--ink);box-shadow:var(--sh-card)}
+
+/* a player */
+.lb-row{width:100%;border:none;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer;
+  display:flex;align-items:center;gap:11px;padding:12px 2px;border-bottom:1px solid var(--line);min-height:62px}
+.lb-row:last-of-type{border-bottom:none}
+.lb-p{width:26px;flex:0 0 26px;text-align:center;font-weight:600;font-size:13px;color:var(--ink2);font-feature-settings:'tnum'}
+.lb-av{width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:var(--gl);color:var(--g);
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;letter-spacing:.02em}
+.lb-n{flex:1;min-width:0;font-weight:600;font-size:15px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-n small{display:block;font-weight:400;font-size:12px;color:var(--ink2);margin-top:1px;overflow:hidden;text-overflow:ellipsis}
+.lb-g{font-style:normal;font-size:10.5px;font-weight:600;color:var(--ink2);background:var(--off);border-radius:5px;padding:1px 5px;margin-left:4px}
+.lb-v{flex:0 0 auto;font-weight:600;font-size:21px;letter-spacing:-.04em;font-feature-settings:'tnum'}
+.lb-v small{font-size:11px;font-weight:600;color:var(--ink2);letter-spacing:0;margin-left:2px}
+.lb-row.lead .lb-p,.lb-row.lead .lb-v{color:var(--g)}
+.lb-row.lead .lb-av{background:var(--g);color:#fff}
+.lb-c{display:flex;flex:0 0 auto;color:var(--ink3);transition:transform .2s}
+.lb-c svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;transform:rotate(90deg)}
+.lb-row.open .lb-c{transform:rotate(180deg)}
+.lb-row.open{border-bottom-color:transparent}
+
+/* their card, dropped open */
+.lbc{padding:2px 0 14px;border-bottom:1px solid var(--line);animation:lbDrop .22s ease both}
+@keyframes lbDrop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.lbc-blk+.lbc-blk{margin-top:10px}
+.lbc-bh{display:flex;justify-content:space-between;font-size:11.5px;font-weight:600;color:var(--ink2);
+  text-transform:uppercase;letter-spacing:.06em;margin:0 2px 6px}
+.lbc-bh span:last-child{color:var(--ink);letter-spacing:-.01em;text-transform:none;font-size:13px}
+.lbc-bh small{color:var(--ink2);font-weight:400}
+.lbc-g{display:grid;grid-template-columns:44px repeat(9,1fr);gap:3px;font-feature-settings:'tnum'}
+.lbc-g>div{text-align:center;font-size:12.5px;font-weight:600;padding:6px 0;border-radius:8px;background:var(--off)}
+.lbc-g>.lbc-l{background:none;text-align:left;font-size:10.5px;font-weight:500;color:var(--ink2);padding-left:2px;display:flex;align-items:center}
+.lbc-g>.lbc-h{background:none;font-size:11px;font-weight:500;color:var(--ink2);padding:3px 0}
+.lbc-g>.lbc-e{color:var(--ink3);font-weight:400}
+.lbc-g>.lbc-bi{background:var(--gl);color:var(--g)}
+.lbc-g>.lbc-ea{background:var(--g);color:#fff}
+.lbc-g>.lbc-bo{background:#FFF4E5;color:#9A5B00}
+.lbc-g>.lbc-db{background:#FCE9E7;color:#B4352A}
+.lbc-f{font-size:12px;color:var(--ink2);margin:10px 2px 0;line-height:1.45}
+.lb-note{font-size:12px;color:var(--ink2);line-height:1.5;margin:12px 2px 0}
+
+@media (prefers-reduced-motion:reduce){.lb-sheet,.lb-back,.lb-c,.lbc{transition:none;animation:none}}
+
+/* inside a sheet, cards sit flat — no card-on-card */
+.lb-sheet .gm-hb,.lb-sheet .gm-panel{box-shadow:none;background:var(--off);border-radius:18px}
+.lb-sheet .gm-panel{padding:4px 14px 8px;margin-top:10px}
+.lb-sheet .gm-hb-r,.lb-sheet .gm-row{border-bottom-color:rgba(12,26,18,.07)}
+/* the sheet's own header already names the game */
+.lb-sheet .lp-sec{display:none}
+.lb-sheet .gm-sk{background:#fff}
+.lb-sheet .gm-sk.won{background:var(--gl)}
+
+/* the hole header: ‹ Hole 10 › */
+.lp-hh.lp-hh2{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:6px;margin-bottom:10px}
+.lp-hc{text-align:center;min-width:0}
+.lp-hc .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-hc .big{line-height:1.02}
+.lp-hh2 .meta.lp-hm{text-align:center;font-size:12.5px;color:var(--ink2);line-height:1.4;margin-top:4px}
+.lp-hh2 .meta.lp-hm b{font-size:14px}
+.lp-arw{width:46px;height:46px;border-radius:15px;border:none;background:var(--off);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s}
+.lp-arw:active{transform:scale(.93)}
+.lp-arw:disabled{opacity:.3;cursor:default}
+.lp-arw svg{width:20px;height:20px;stroke:currentColor;stroke-width:2.3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* the game bar sits above the hole now */
+.lb-gbar{margin:12px 0 12px}
+
+/* ════════ CLUB 2.1 · FIVE ROOMS ════════ */
+/* every room is built the same: name, the one number, ≤4 tabs, add button top right */
+.ui-roomhead{align-items:flex-end;margin:4px 4px 14px}
+.ui-roomt{min-width:0;flex:1}
+.ui-roomkey{font-size:13.5px;color:var(--ink2);margin-top:4px;line-height:1.35}
+.ui-roomhead>.ui-btn,.ui-roomhead>.ui-ico{flex:0 0 auto;margin-bottom:2px}
+.ui-roomtabs{margin-bottom:14px}
+.ui-roomnote{margin:0 4px 12px}
+.ui-subchips{margin-bottom:12px}
+
+/* a signpost: what it is, and which room it opens */
+.ui-signs{display:flex;flex-direction:column;gap:10px}
+.ui-sign{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;font:inherit;color:var(--ink);cursor:pointer;
+  background:#fff;border-radius:20px;box-shadow:var(--sh-card);padding:14px 14px 14px 16px;min-height:64px;transition:transform .12s}
+.ui-sign:active{transform:scale(.985)}
+.ui-sign .ui-row-t{flex:1;min-width:0;font-weight:600;font-size:15.5px;letter-spacing:-.02em;line-height:1.25}
+.ui-sign .ui-row-t small{display:block;font-weight:400;font-size:12.5px;color:var(--ink2);margin-top:3px;letter-spacing:0}
+.ui-sk{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);margin-bottom:3px}
+.ui-sk .ui-dot{margin:0}
+.ui-room{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--g);background:var(--gl);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.ui-list .ui-sign{box-shadow:none;border-radius:0;background:none;border-top:1px solid var(--line)}
+.ui-list .ui-sign:first-child{border-top:none}
+.ui-sign.sm{min-height:54px;padding:10px 12px;margin-top:10px;background:var(--off);box-shadow:none}
+
+/* Play ▸ Past */
+.ui-pastmon{margin-top:18px}
+.ui-pastmon:first-of-type{margin-top:4px}
+.ui-pcard{display:flex;flex-direction:column;gap:9px;width:100%;text-align:left;border:none;font:inherit;color:var(--ink);cursor:pointer;
+  background:#fff;border-radius:20px;box-shadow:var(--sh-card);padding:14px 16px;margin-bottom:10px;transition:transform .12s}
+.ui-pcard:active{transform:scale(.985)}
+.ui-pcard-h{display:flex;align-items:flex-start;gap:12px;width:100%}
+.ui-pcard-h .ui-row-t{flex:1;min-width:0;font-weight:600;font-size:15.5px;letter-spacing:-.02em}
+.ui-pcard-h .ui-row-t small{display:block;font-weight:400;font-size:12.5px;color:var(--ink2);margin-top:2px;letter-spacing:0}
+.ui-pcard-me{flex:0 0 auto;text-align:right;line-height:1}
+.ui-pcard-me b{display:block;font-size:26px;font-weight:600;letter-spacing:-.04em;color:var(--g);font-feature-settings:'tnum'}
+.ui-pcard-me small{font-size:10.5px;color:var(--ink2)}
+.ui-pcard-p{display:flex;flex-wrap:wrap;gap:6px}
+.ui-pcard-p span{font-size:12.5px;background:var(--off);border-radius:999px;padding:4px 9px;color:var(--ink2);font-feature-settings:'tnum'}
+.ui-pcard-p span b{color:var(--ink);font-weight:600}
+.ui-pcard-p span.me{background:var(--gl);color:var(--g)}
+.ui-pcard-p span.me b{color:var(--g)}
+.ui-pcard-f{font-size:11.5px;color:var(--ink3)}
+.ui-pline{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:none;font:inherit;color:var(--ink);cursor:pointer;
+  background:#fff;border-radius:18px;box-shadow:var(--sh-card);padding:10px 14px 10px 12px;margin-bottom:8px;min-height:58px}
+.ui-pline .ui-row-t{flex:1;min-width:0;font-size:14.5px;font-weight:600;letter-spacing:-.02em}
+.ui-pline .ui-row-t small{display:block;font-size:12px;font-weight:400;color:var(--ink2);margin-top:2px;letter-spacing:0}
+.ui-pline-v{flex:0 0 auto;text-align:right;line-height:1.1;font-feature-settings:'tnum'}
+.ui-pline-v b{display:block;font-size:19px;font-weight:600;letter-spacing:-.03em}
+.ui-pline-v small{font-size:11.5px;color:var(--ink2)}
+.ui-pline.cnt .ui-pline-v small{color:var(--g);font-weight:600}
+
+/* a round's four numbers */
+.ui-rsum,.lbc-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 10px}
+.ui-rsum>div,.lbc-sum>div{background:var(--off);border-radius:12px;padding:8px 6px 7px;text-align:center;min-width:0}
+.ui-rsum span,.lbc-sum span{display:block;font-size:10.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ui-rsum b,.lbc-sum b{display:block;font-size:19px;font-weight:600;letter-spacing:-.03em;margin-top:2px;font-feature-settings:'tnum'}
+.ui-rsum i,.lbc-sum i{font-style:normal;font-size:11px;font-weight:600;color:var(--ink2);margin-left:3px;letter-spacing:0}
+.lbc-sum{margin:12px 0 0}
+.lbc-sum>div:nth-child(2){background:var(--gl)}
+.lbc-sum>div:nth-child(2) b{color:var(--g)}
+.lbc-rec b{color:var(--ink)}
+.lbc-rec em{font-style:normal;color:var(--g);font-weight:600}
+.lbc-rec small{display:block;margin-top:3px;color:var(--ink3)}
+.lbc-part{color:var(--ink3)}
+.lbc-g>.lbc-t{cursor:pointer;box-shadow:inset 0 0 0 1px rgba(12,26,18,.06)}
+.lbc-g>.lbc-t:active{transform:scale(.92)}
+.lb-row.me .lb-n{color:var(--g)}
+.lb-h{font-size:12.5px;font-weight:600;color:var(--ink2);margin:20px 2px 6px}
+.lb-sheet .lb-h+.gm-panel{margin-top:0}
+.lb-inline{padding:6px 14px 12px;margin-bottom:12px}
+.lb-inline .lb-seg{margin-top:6px}
+
+/* Money */
+.ui-square{font-size:14.5px;line-height:1.5;color:var(--ink2)}
+.ui-square b{color:var(--ink)}
+.gm-settle .gm-pays-h{font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.gm-pay.me b{color:var(--g)}
+.ui-mrow{align-items:center}
+.ui-mrow-w{color:var(--ink3)!important}
+.ui-pnl.up{color:var(--g)}.ui-pnl.dn{color:var(--red)}
+
+/* Play ▸ Live */
+.lp-none{margin-bottom:12px}
+.lp-clear{display:block;margin:14px auto 0;color:var(--red)}
+
+/* Crown */
+.cr-back{display:inline-block;margin:0 0 2px 2px;padding:12px 4px 12px 0;min-height:44px}
+.ui-rules{font-size:14px;line-height:1.55;color:var(--ink2)}
+.ui-rules p{margin:0 0 10px}.ui-rules p:last-child{margin:0}
+.ui-badges{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -3213,14 +3412,14 @@ function renderCrown(){
       <button class="ui-ico" onclick="CROWN_STEP(-1)" aria-label="Previous month">${uiSvg('back')}</button>
       <div class="ui-crhead-t"><div class="ui-h1" style="font-size:24px">${mon}</div><div class="ui-s">${subtitle}</div></div>
       <button class="ui-ico" ${ym>=potmThisYM()?'disabled':''} onclick="CROWN_STEP(1)" aria-label="Next month">${uiSvg('chev')}</button>
-      <button class="ui-ico" onclick="OM('crownset')" aria-label="Crown settings">${uiSvg('gear')}</button>
     </div>`;
 
-  const tabs=`<div class="ui-seg ui-seg-full ui-evtabs ui-crtabs">
-      ${[['race','Race'],['declared','Declared'],['h2h','Head to head'],['fair','Fairness'],['honour','Honours']]
-        .map(([k,l])=>`<button class="${(UI_CRD||'race')===k?'on':''}" onclick="UI_CRD_O('${k}')">${l}</button>`).join('')}
-    </div>`;
-  // one subject per tab — nothing is reached by scrolling past something else
+  // The Crown is one page: the race. Everything behind it — this month's head to
+  // head, who's in, how it's scored — is a labelled row under the board.
+  const tabs='';
+  if(UI_CRD==='honour'){ UI_CRD=null; UI_HON='crown'; setTimeout(()=>UI_TO('league','honours'),0); }
+  if(UI_CRD==='fair'||UI_CRD==='rules') UI_CRD='how';
+  if(UI_CRD==='entries') UI_CRD='declared';
   if(UI_CRD&&UI_CRD!=='race') return renderCrownDetail(ym,st,head,tabs);
 
   // ── a settled month is shown exactly as it was settled ──
@@ -3240,14 +3439,14 @@ function renderCrown(){
         <span class="ui-rbig sm">${x.total.toFixed(1)}</span></div>`).join('')}</div>`;
       fh+=`<button class="ui-btn ui-btn-w" style="margin-top:12px" onclick="CROWN_SHARE('${ym}')">Share result</button>`;
     }
-    return fh+`</div>`;
+    return fh+uiCrownLinks(ym,st,null)+`</div>`;
   }
 
   const r=uiCrown(ym);
   let h=`<div class="cr-wrap">`+head(r.locked?'Final':'Live')+tabs;
 
   if(!r.entrants.length){
-    return h+`<div class="ui-crempty">Nobody has entered ${mon.split(' ')[0]} yet. Open the settings to say who is in.</div></div>`;
+    return h+`<div class="ui-crempty">Nobody has entered ${mon.split(' ')[0]} yet. Say who is in under How it works.</div>`+uiCrownLinks(ym,st,r)+`</div>`;
   }
 
   // ── hero: who is winning ──
@@ -3294,8 +3493,19 @@ function renderCrown(){
       <div class="ui-row" style="cursor:default;min-height:54px"><span class="ui-av">${uiInit(e.name)}</span>
         <span class="ui-row-t">${e.name}<small>${e.rounds.length} of ${st.minRounds} round${st.minRounds===1?'':'s'}</small></span></div>`).join('')}</div>`;
   }
+  h+=uiCrownLinks(ym,st,r);
   if(r.winner)h+=`<button class="ui-btn ui-btn-w" style="margin-top:14px" onclick="CROWN_SHARE('${ym}')">Share standings</button>`;
   return h+`</div>`;
+}
+// The rows under the board: each one says what's behind it.
+function uiCrownLinks(ym,st,r){
+  const declared=potmRegList(ym).filter(x=>!x.cancelled).length;
+  const row=(k,t,sub)=>`<button class="ui-row" onclick="UI_CRD_O('${k}')"><span class="ui-row-t">${t}<small>${sub}</small></span>${uiSvg('chev','ui-chev')}</button>`;
+  return `<div class="ui-list" style="margin-top:14px">
+    ${r?row('h2h','This month’s head to head','Crown entrants only · the career record is in League ▸ Head to head'):''}
+    ${row('declared','Who’s in',`${r?uiPl(r.entrants.length,'entrant')+' · ':''}${declared?uiPl(declared,'round')+' declared':'nothing declared'}`)}
+    ${row('how','How it works',`Scoring ${st.weights.scoring} / ${st.weights.h2h} / ${st.weights.form} / ${st.weights.bonus} · fairness · stakes`)}
+  </div>`;
 }
 
 // the ring at the top of the hero
@@ -3317,30 +3527,21 @@ function uiDaysLeft(ym){
     return d>=0?d:null;
   }catch(e){ return null; }
 }
-// the rows under the board that lead to everything else
-function uiCrownRows(ym,st,r){
-  const declared=potmRegList(ym).filter(x=>!x.cancelled).length;
-  const row=(k,t,sub)=>`<button class="ui-row" onclick="UI_CRD_O('${k}')"><span class="ui-row-t">${t}<small>${sub}</small></span>${uiSvg('chev','ui-chev')}</button>`;
-  return `<div class="ui-lbl">The detail</div><div class="ui-list">
-    ${row('h2h','Head to head','Who beat whom, same course same day')}
-    ${row('fair','Fairness','What is levelled out')}
-    ${row('honour','Roll of honour','Past winners')}
-    ${row('entries','Entries',r?`${r.entrants.length} in`:'Who is in')}
-    ${row('declared','Declared rounds',declared?`${declared} declared this month`:'Nothing declared')}
-    ${row('rules','How it is scored',`${st.weights.scoring} / ${st.weights.h2h} / ${st.weights.form} / ${st.weights.bonus}`)}
-    <button class="ui-row" onclick="OM('crownset')"><span class="ui-row-t">Crown settings<small>Entries, weights, stakes, settle</small></span>${uiSvg('chev','ui-chev')}</button>
-  </div>`;
-}
-
 // ── the detail page: one subject at a time ──
 function renderCrownDetail(ym,st,head,tabs){
   let r=null; try{ r=uiCrown(ym); }catch(e){}
-  let body='';
-  if(UI_CRD==='h2h') body=r?crownMatrix(r):'';
-  else if(UI_CRD==='fair') body=r?crownFair(r,st):'';
-  else if(UI_CRD==='honour') body=crownHonour();
-  else if(UI_CRD==='declared') body=crownDeclared(ym);
-  return `<div class="cr-wrap">${head(r&&r.locked?'Final':'Live')}${tabs}
+  let body='', title='';
+  if(UI_CRD==='h2h'){ title='This month’s head to head'; body=r?crownMatrix(r):''; }
+  else if(UI_CRD==='declared'){ title='Who’s in'; body=crownDeclared(ym); }
+  else {
+    title='How it works';
+    body=`<div class="ui-card ui-pad ui-rules">${crownRulesText(st).split('\n\n').map((x,i)=>i===0?'':`<p>${x.replace(/\n/g,'<br>')}</p>`).join('')}</div>`
+      +(r?crownFair(r,st):'')
+      +`<div class="ui-list" style="margin-top:14px"><button class="ui-row" onclick="OM('crownset')"><span class="ui-row-t">Crown settings<small>Who’s entered, weights, the stake, settling a month</small></span>${uiSvg('chev','ui-chev')}</button></div>`;
+  }
+  return `<div class="cr-wrap">${head(r&&r.locked?'Final':'Live')}
+    <button class="ui-link cr-back" onclick="UI_CRD_O('race')">‹ The race</button>
+    <div class="ui-lbl" style="margin-top:4px">${title}</div>
     <div class="ui-crdetail">${body}</div>
   </div>`;
 }
@@ -3774,7 +3975,7 @@ async function push(ns){
       players:ns.players,courses:ns.courses,
       tournaments:ns.tournaments||[],upcoming:ns.upcoming||[],
       contests:ns.contests||[],purse:ns.purse||[],
-      ...(ns.matches?{matches:ns.matches}:{}),   // money won off each other, kept apart from tournament prize money
+      ...(ns.matches&&ns.matches.length?{matches:ns.matches}:{}),   // money won off each other, kept apart from tournament prize money
       ...(ns.courseHoles?{courseHoles:ns.courseHoles}:{}),
       ...(ns.potm?{potm:ns.potm}:{}),
       ts:Date.now()
@@ -3809,7 +4010,8 @@ onValue(dbRef,snap=>{
       tournaments,upcoming:d.upcoming||[],
       contests:d.contests||[],purse:d.purse||[],
       courseHoles:d.courseHoles||null,
-      potm:d.potm||null
+      potm:d.potm||null,
+      matches:Array.isArray(d.matches)?d.matches:(d.matches?Object.values(d.matches):[])
     };
     try{lpMigrate();}catch(e){}
     try{lpMigrateBoavista();}catch(e){}
@@ -4149,11 +4351,17 @@ function lpBoard(r){
   }).sort((a,b)=>a.thru===0&&b.thru===0?0:b.thru===0?-1:a.thru===0?1:(a.netToPar-b.netToPar)||(b.stb-a.stb));
 }
 function lpThru(r){ let t=0; for(let h=1;h<=r.holes;h++){ if(r.players.every(p=>lpHasScore(r.scores,h,p.id)))t++; } return t; }
+// The WhatsApp message at the end of a round. It used to say "net" beside the
+// GROSS score against par; now each line carries gross, real net and points.
 function lpShareText(rec){
   const B=lpBoard(rec);
   const d=rec.date.split('-').reverse().join('/');
+  const sg=v=>v>0?'+'+v:v===0?'E':String(v);
   let t=`⛳ The Club — ${rec.course} (${rec.tee}) · ${d}\n`;
-  B.forEach((p,i)=>{ t+=`${i+1}. ${p.name}${p.guest?' (guest)':''} — ${p.gross} gross · net ${p.toPar>0?'+':''}${p.toPar} · ${p.stb} pts\n`; });
+  B.forEach((p,i)=>{
+    let net=0; for(let h=1;h<=rec.holes;h++) if(lpHasScore(rec.scores,h,p.id)) net+=rec.scores[h][p.id]-lpStrokes(p.ch,rec.siArr[h-1],rec.holes);
+    t+=`${i+1}. ${p.name}${p.guest?' (guest)':''} — ${p.gross} gross · net ${net} (${sg(p.netToPar)}) · ${p.stb} pts\n`;
+  });
   return t;
 }
 // One-time self-healing migration: official Benamor card (July 2026) corrects SI + tee ratings
@@ -4366,6 +4574,7 @@ function renderGPS(){
   return h+`</div>`;
 }
 
+var LB_SUMSEEN=null;
 function renderPlay(){
   let h='<div class="lp-wrap">';
   if(LRMSG){h+=`<div class="lp-msg">${LRMSG}</div>`;}
@@ -4373,11 +4582,10 @@ function renderPlay(){
   if(LPV==='list'){
     const live=ROUNDS?Object.entries(ROUNDS).filter(([id,r])=>r&&r.active):[];
     const joined=id=>LR&&LRID===id;
-    h+=`<div style="margin:2px 4px 16px"><div class="ui-h1">Play</div>
-      <div class="ui-s" style="margin-top:6px">Everyone scores on their own phone, live.</div></div>`;
-    h+=`<div class="lp-sec">Live now</div>`;
+    // The room's own header and tabs sit above this — Live is one tab of Play.
     if(!live.length){
-      h+=`<div class="lp-empty">No rounds in play. Start one below and the rest of the group can join from their own phones.</div>`;
+      h+=`<div class="ui-crempty lp-none">Nobody is out on the course right now.<br>Start a round and the rest of the group joins from their own phones.</div>
+        <button class="ui-btn ui-btn-g" style="margin-top:4px" onclick="LP_NEW()">${uiSvg('plus')}Start a new round</button>`;
     }else h+=live.map(([id,r])=>{
       const t=lpThru(r);
       const names=(r.players||[]).map(p=>p.name.split(' ')[0]).join(' · ');
@@ -4389,10 +4597,9 @@ function renderPlay(){
         <span class="ui-live-go">${joined(id)?'Back to scoring':mine?'Join':'Watch'} ›</span>
       </button>`;
     }).join('');
-    h+=`<button class="ui-btn ui-btn-g" style="margin-top:16px" onclick="LP_NEW()">${uiSvg('plus')}Start a new round</button>`;
-    h+=`<div class="ui-duo" style="margin-top:10px${live.length?'':';grid-template-columns:1fr'}">
-      <button class="ui-btn ui-btn-w" onclick="LP_HIST()">Past rounds</button>
-      ${live.length?`<button class="ui-btn ui-btn-w" style="color:var(--red)" onclick="LP_CLEARALL()">Clear stuck rounds</button>`:''}</div>`;
+    h+=`<div class="ui-list" style="margin-top:14px">
+      <button class="ui-sign" onclick="UI_TO('play','past')"><span class="ui-row-t">Played without the app?<small>Post the score in Past</small></span><span class="ui-room">Past ›</span></button></div>`;
+    if(live.length) h+=`<button class="ui-link lp-clear" onclick="LP_CLEARALL()">Clear stuck rounds</button>`;
   }
 
   else if(LPV==='setup'){
@@ -4489,7 +4696,15 @@ function renderPlay(){
       `${(n>9&&x===halfN+1)?'<div class="lp-turn">turn</div>':''}<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${(LR.holeNums&&LR.holeNums[x-1])||x}</div>`).join('')}</div>`;
     const realH=(LR.holeNums&&LR.holeNums[LRHOLE-1])||LRHOLE;
     const cfgLbl=LR.cfg&&LPCFG[LR.cfg]?LPCFG[LR.cfg][0]:`${n} holes`;
-    pHole+=`<div class="lp-hole"><div class="lp-hh"><div><div class="lbl">${LR.course} · ${LR.tee} · ${cfgLbl}</div><div class="big">Hole ${realH}</div><div class="lbl" style="letter-spacing:1px">${LRHOLE} of ${n}</div></div><div class="meta">Par <b>${par}</b><br>S.I. <b>${si}</b></div></div>`;
+    // The game, where you can see it without scrolling: straight under the holes.
+    pHole+=lbGameBar(LR);
+    // Previous and next sit either side of the hole number — where the eye already
+    // is — so moving on never means scrolling down past four players to find a button.
+    pHole+=`<div class="lp-hole"><div class="lp-hh lp-hh2">
+      <button class="lp-arw" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)" aria-label="Previous hole">${uiSvg('back')}</button>
+      <div class="lp-hc"><div class="lbl">${LR.course} · ${LR.tee} · ${cfgLbl}</div><div class="big">Hole ${realH}</div>
+        <div class="meta lp-hm">Par <b>${par}</b> · S.I. <b>${si}</b> · ${LRHOLE} of ${n}</div></div>
+      <button class="lp-arw" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)" aria-label="Next hole">${uiSvg('chev')}</button></div>`;
     if(_GPH) pHole+=`<div class="lp-gnote">${gmStrokeNote(LR)}</div>`;
     pHole+=isScr?gmTeamRows(LR,LRHOLE,par,si,n):LR.players.map(p=>{
       const g=lpHasScore(LR.scores,LRHOLE,p.id)?LR.scores[LRHOLE][p.id]:null;
@@ -4508,38 +4723,17 @@ function renderPlay(){
     pHole+=gmContestRow(LR,LRHOLE);
     pHole+=renderGPS();
 
-    // ── PAGE 2 · the game, worked out, and the money ──
-    let pGame=gmHoleBreak(LR,LRHOLE)+gmCapLine(LR)+gmPanel(LR);
-
-    // ── PAGE 3 · the leaderboard ──
-    let pBoard=`<div class="lp-turnline">${LR.players.map(p=>{
-        const sp=lpSplit(LR,p.id);
-        return `<div class="lp-tl"><span class="lp-tl-n">${p.name.split(' ')[0]}</span>
-          <span><b>${sp.oN?sp.out:'–'}</b>${sp.single?'':` · <b>${sp.iN?sp.inn:'–'}</b>`} <i>${sp.total||'–'}</i></span></div>`;
-      }).join('')}<div class="lp-tl-h">${n>9?'out · in · total':'out · total'}</div></div>`
-      +gmResults(LR,'board');
-
-    // ── PAGE 4 · the card ──
-    let pCard=gmResults(LR,'card');
-
-    const PG={hole:pHole,game:pGame,board:pBoard,card:pCard};
-    const list=gmPageList(LR);
-    const at=gmPageIdx(LR);
-
-    // The green line rides above every page, so whatever you are looking at you
-    // can still see what is at stake.
-    h+=gmStrip(LR);
-    h+=`<div class="gm-pager" id="gmPager"><div class="gm-track" id="gmTrack" style="transform:translateX(-${at*100}%)">`;
-    h+=list.map(k=>`<div class="gm-pg">${PG[k]||''}</div>`).join('');
-    h+=`</div></div>`;
-    h+=gmPagerNav(LR);
-
+    // One screen. The hole, then the game's green bar, then everything else is a
+    // sheet you open when you want it: the leaderboard from its bar at the bottom,
+    // the game from its bar under the hole.
+    h+=pHole;
     if(LPQ.length) h+=`<div class="lp-offline">⟳ ${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
     const _board=lpBoard(LR);
     const allDone=_board.length>0 && _board.every(p=>p.thru===n);
     h+=`<div class="lp-fin"><button class="lp-fbtn disc" onclick="LP_X()">Discard</button><button class="lp-fbtn post" ${allDone?'':'disabled'} onclick="LP_FIN()">Finish round</button></div>`;
     if(!allDone)h+=`<div class="lp-hint">Finishing unlocks when every player has all ${n} holes in. The round is saved live — closing the app never loses it.</div>`;
     h+=`<button class="lp-ghost sm" onclick="LP_BACK()">‹ Leave (round keeps running)</button>`;
+    h+=lbRender(LR);
   }
 
   else if(LPV==='summary'&&SUMMARY){
@@ -4548,18 +4742,22 @@ function renderPlay(){
     const B=SUMMARY.players.map(p=>{const x=byId[p.id]||{gross:0,ch:p.ch};return {...x,...lpNetFromRow(SUMMARY,p,x),name:p.name,guest:p.guest};}).sort((a,b)=>a.netToPar-b.netToPar||b.stb-a.stb);
     const sing=SUMMARY.holes<=9;
     const w=B[0];
-    const wUnder=w?w.toPar:0;
-    const parLine=wUnder===0?'level par':`${Math.abs(wUnder)} ${wUnder<0?'under':'over'} par`;
+    const wUnder=w?w.netToPar:0;
+    const parLine=wUnder===0?'net level par':`${Math.abs(wUnder)} ${wUnder<0?'under':'over'} net`;
     h+=`<div class="ui-done-top ui-panel" style="border-radius:24px;margin-bottom:14px">
       <span class="ui-av g lg" style="margin:0 auto;background:#fff;color:var(--g)">${uiInit(w.name)}</span>
       <div class="ui-h1" style="color:#fff;margin-top:14px">${w.name.split(' ')[0]}${w.guest?' (guest)':''} wins</div>
       <div class="ui-done-s">Net ${w.net} · ${parLine} · ${w.stb} points</div>
+      <div class="ui-done-s">Kept for good in Play ▸ Past</div>
       <div class="ui-done-s" style="margin-top:2px">${uiShort(SUMMARY.course)} · ${SUMMARY.tee} · ${uiDay(SUMMARY.date)}</div>
     </div>`;
-    h+=`<div class="ui-list">`+B.map((p,i)=>`
-      <div class="ui-row" style="cursor:default"><span class="ui-rpos">${i+1}</span>
-        <span class="ui-row-t">${p.name}${p.guest?' <span class="ui-gtag">guest</span>':''}<small>${p.stb} pts · net ${p.net} · gross ${p.gross}</small></span>
-        <span class="ui-rbig sm ${p.toPar<0?'red':''}">${p.toPar>0?'+'+p.toPar:p.toPar===0?'E':p.toPar}</span></div>`).join('')+`</div>`;
+    // The same leaderboard as on the course: tap a name and their card opens —
+    // gross, net, points, and what went on their record.
+    if(!LB_SUMSEEN||LB_SUMSEEN!==(SUMMARY.rid||SUMMARY.finishedAt)){
+      LB_SUMSEEN=SUMMARY.rid||SUMMARY.finishedAt; LB_PROWS={};
+      if(UI_ME&&SUMMARY.players.some(p=>p.id===UI_ME)) LB_PROWS[UI_ME]=true;
+    }
+    h+=`<div class="ui-card lb-inline" id="lbSumB">${lbBoardBody({...SUMMARY,id:SUMMARY.rid||null},'sum')}</div>`;
     h+=SUMMARY.noPost
       ? `<div class="ui-posted"><i class="ui-dot wait"></i>Scramble — kept in history, not posted to any handicap</div>`
       : `<div class="ui-posted"><i class="ui-dot ok"></i>Posted to all ${SUMMARY.players.length} handicap${SUMMARY.players.length===1?'':'s'}</div>`;
@@ -4571,52 +4769,8 @@ function renderPlay(){
   }
 
   else if(LPV==='hist'){
-    h+=`<button class="lp-back" onclick="LP_BACK()">‹ Back</button>`;
-    h+=`<div class="lp-sec">Past rounds</div>`;
-    if(HIST===null){h+=`<div class="lp-empty">Loading…</div>`;}
-    else{
-      const recs=Object.entries(HIST||{}).map(([id,r])=>({id,...r})).sort((a,b)=>(b.finishedAt||0)-(a.finishedAt||0));
-      const names=[...new Set(recs.flatMap(r=>r.players.map(p=>p.name)))];
-      if(names.length>1)h+=`<div class="lp-chips" style="margin-bottom:12px">${names.map(nm=>`<button class="lp-chip${HISTFILT===nm?' on':''}" onclick="LP_HFILT('${nm.replace(/'/g,"\\'")}')">${nm.split(' ')[0]}</button>`).join('')}</div>`;
-      const shown=HISTFILT?recs.filter(r=>r.players.some(p=>p.name===HISTFILT)):recs;
-      if(!shown.length)h+=`<div class="lp-empty">No rounds yet — they'll appear here after you finish one.</div>`;
-      if(HISTOPEN){
-        const r=shown.find(x=>x.id===HISTOPEN)||recs.find(x=>x.id===HISTOPEN);
-        if(r){
-          const B=lpBoard(r);
-          h+=`<div class="lp-hole" style="margin-bottom:12px"><div class="lp-hh"><div><div class="lbl">${r.date.split('-').reverse().join('/')}</div><div class="big" style="font-size:26px">${r.course}</div></div><div class="meta">${r.tee}<br>${r.holes} holes</div></div>`;
-          h+=`<div class="cr-note" style="margin:8px 0 0">Tap any score to correct it. The round total and the handicap update automatically.</div>
-          <div class="lp-tblwrap"><table class="lp-tbl"><tr><th>H</th><th>Par</th>${r.players.map(p=>`<th>${p.name.split(' ')[0]}${p.guest?' ᵍ':''}</th>`).join('')}</tr>`;
-          const halfH=Math.floor(r.holes/2), showSplit=r.holes>9;
-          for(let x=1;x<=r.holes;x++){
-            const realN=(r.holeNums&&r.holeNums[x-1])||x;
-            h+=`<tr><td class="hn">${realN}</td><td class="pr">${r.parArr[x-1]}</td>${r.players.map(p=>{
-              const g=lpHasScore(r.scores,x,p.id)?r.scores[x][p.id]:null;
-              return `<td onclick="HOLE_EDIT('${r.id}','${p.id}',${x})" style="cursor:pointer"><span class="mk ${lpNote(g,r.parArr[x-1])}">${g??'–'}</span></td>`;
-            }).join('')}</tr>`;
-            if(showSplit&&x===halfH){
-              h+=`<tr class="split"><td>OUT</td><td class="pr">${r.parArr.slice(0,halfH).reduce((a,b)=>a+b,0)}</td>${r.players.map(p=>{
-                const sp=lpSplit(r,p.id);return `<td>${sp.oN?sp.out:'–'}</td>`;}).join('')}</tr>`;
-            }
-          }
-          if(showSplit){
-            h+=`<tr class="split"><td>IN</td><td class="pr">${r.parArr.slice(halfH).reduce((a,b)=>a+b,0)}</td>${r.players.map(p=>{
-              const sp=lpSplit(r,p.id);return `<td>${sp.iN?sp.inn:'–'}</td>`;}).join('')}</tr>`;
-          }
-          h+=`<tr class="tot"><td colspan="2">TOTAL</td>${B.sort((a,b)=>r.players.findIndex(p=>p.id===a.id)-r.players.findIndex(p=>p.id===b.id)).map(p=>`<td>${p.gross}</td>`).join('')}</tr>`;
-          h+=`<tr class="tot"><td colspan="2">Net±</td>${B.map(p=>`<td>${(p.toPar>0?'+':'')+p.toPar}</td>`).join('')}</tr>`;
-          h+=`<tr class="tot"><td colspan="2">Pts</td>${B.map(p=>`<td>${p.stb}</td>`).join('')}</tr></table></div></div>`;
-        }
-      }
-      h+=shown.map(r=>{
-        const B=lpBoard(r);
-        return `<div class="lp-rcard${HISTOPEN===r.id?' on':''}" onclick="LP_HOPEN('${r.id}')">
-          <div><div class="rc-course">${r.course} · ${r.tee}</div>
-          <div class="rc-sub">${B.map(p=>`${p.name.split(' ')[0]} ${p.gross}`).join(' · ')}</div></div>
-          <div class="rc-thru"><small>${r.date.split('-').reverse().join('/')}</small></div>
-        </div>`;
-      }).join('');
-    }
+    // The old history list is now Play ▸ Past — one list of every round.
+    LPV='list'; UI_ROOMTAB.play='past'; return renderPlayRoom();
   }
 
   return h+'</div>';
@@ -4626,27 +4780,26 @@ function render(){
   const root=document.getElementById('app');
   if(!INIT){root.innerHTML='<div class="ui-loading"><div class="ui-spin"></div>Connecting to The Club…</div>';return;}
   const R=ranked();
-  // Profile tab = this phone's own player page
-  if(V==='profile'&&!PID&&!TID&&UI_MEP()) PID=UI_ME;
+  // Old addresses (rankings, crown, purse, upcoming…) land on their new shelf.
+  uiRoute();
+  if(!UI_ROOMS.includes(V)) V='home';
+  // A score posted from a room opens over that room; once the form is gone, so is the player.
+  if(UI_SPOST&&!MOD){ UI_SPOST=false; PID=null; }
   if(UI_PID_LAST!==PID){ UI_PTAB='overview'; UI_PID_LAST=PID; }   // a new player always opens on Overview
-  const AP=S.players.find(p=>p.id===PID),AT=S.tournaments.find(t=>t.id===TID);
-  const isProfile=V==='profile'&&AP&&AP.id===UI_ME;
+  const SP=S.players.find(p=>p.id===PID);
+  const AP=UI_SPOST?null:SP, AT=S.tournaments.find(t=>t.id===TID);
 
   let h=renderTopBar(AP,AT);
 
-  if(AP) h+=isProfile?`<div class="ui-profile">${renderPlayerDetail(AP)}${UI_PTAB==='overview'?renderProfileFoot(AP):''}</div>`:renderPlayerDetail(AP);
+  if(AP) h+=renderPlayerDetail(AP);
   else if(AT) h+=renderTournamentDetail(AT);
-  else if(V==='home') h+=renderHome(R);
-  else if(V==='profile') h+=renderProfilePick();
-  else if(V==='settings') h+=renderSettings();
-  else if(V==='rankings') h+=renderRanking(R);
-  else if(V==='play') h+=renderPlay();
-  else if(V==='crown') h+=renderCrown();
-  else if(uiIsEvents(V)) h+=renderEvents();
-  else if(V==='purse') h+=renderPurse();
-  else h+=renderCourses();
+  else if(V==='league') h+=renderLeague(R);
+  else if(V==='play') h+=renderPlayRoom();
+  else if(V==='money') h+=renderMoney();
+  else if(V==='me') h+=renderMe(R);
+  else h+=renderHome(R);
 
-  if(MOD==='score'&&AP) h+=renderScoreModal(AP);
+  if(MOD==='score'&&SP) h+=renderScoreModal(SP);
   if(MOD==='course') h+=renderCourseModal();
   if(MOD==='crownset') h+=renderCrownSettings();
   if(MOD==='register') h+=renderRegisterModal();
@@ -4657,14 +4810,14 @@ function render(){
   if(MOD==='contest') h+=renderContestModal();
   if(MOD==='purse-edit') h+=renderPurseEditModal();
   if(MOD==='predict') h+=renderPredictModal();
-  if(UI_MENU&&!MOD) h+=renderMenu();
   if(UI_DONE&&!MOD) h+=renderPosted();
   if(MOD!=='course') UI_NC=null;
   if(MOD!=='score'&&MOD!=='course') UI_KEEP=null;
-  if(V!=='crown') UI_CRD=null;     // the Crown detail page belongs to the Crown tab
+  if(!(V==='league'&&UI_ROOMTAB.league==='crown')) UI_CRD=null;     // the Crown's own pages belong to the Crown
 
-  // Floating bottom bar: Home · Rankings · Crown · Profile + green Play
-  h+=renderDock(AP?(isProfile?'profile':V):AT?'':V);
+  // Floating bottom bar: Home · League · Money · Me + green Play. A player page or an
+  // event keeps the room it was opened from lit.
+  h+=renderDock(V);
 
   // A repaint must never eat what you are typing. If the focus is in a field, remember
   // which field and where the caret was, and put it back once the page is rebuilt —
@@ -4675,7 +4828,14 @@ function render(){
        s:(()=>{try{return ae.selectionStart}catch(e){return null}})(),
        e:(()=>{try{return ae.selectionEnd}catch(e){return null}})()} : null;
 
+  // A score arriving from another phone repaints the page. If a sheet is open,
+  // keep the reader exactly where they were in it.
+  const _ks={}; ['lbBoardB','lbGameB','lbPastB'].forEach(id=>{ const e=document.getElementById(id); if(e) _ks[id]=e.scrollTop; });
+
   root.innerHTML=h;
+
+  Object.keys(_ks).forEach(id=>{ const e=document.getElementById(id); if(e) e.scrollTop=_ks[id]; });
+  document.documentElement.classList.toggle('lb-lock', !!LB_OPEN && !!root.querySelector('.lb-sheet.open'));
 
   if(keep){
     const el=document.getElementById(keep.id);
@@ -4689,7 +4849,7 @@ function render(){
       }catch(e){}
     }
   }
-  root.className='ui-v-'+(AP?(isProfile?'profile':'player'):AT?'event':V);
+  root.className='ui-v-'+(AP?'player':AT?'event':V);
 
   // Whenever the score modal is open, paint the course picker and let UM() fill in tee,
   // hole configuration and the live differential. (The old check looked for an input that
@@ -4706,11 +4866,10 @@ function render(){
   if(MOD==='player'){
     setTimeout(()=>{ try{ PL_TOGGLE(); }catch(e){} }, 0);
   }
-  if(V==='courses'&&!AP&&!AT){ setTimeout(()=>{ try{ csrBind(); }catch(e){} }, 0); }
-  if(V==='play'){ setTimeout(()=>{ try{ gmPagerBind(); gmFit(); }catch(e){} }, 0); }
+  if(V==='play'&&UI_ROOMTAB.play==='courses'&&LPV==='list'&&!AP&&!AT){ setTimeout(()=>{ try{ csrBind(); }catch(e){} }, 0); }
 
   // a sheet with a sticky header shows a hairline once you scroll it
-  if(MOD||UI_MENU||UI_DONE){
+  if(MOD||UI_DONE){
     setTimeout(()=>{ try{
       const mo=document.querySelector('.mo'); if(!mo||mo.dataset.sc) return;
       mo.dataset.sc='1';
@@ -4721,23 +4880,16 @@ function render(){
 
 // ── RANKINGS ──────────────────────────────────────────────────────────────────
 function renderRanking(R){
-  const tab=['hi','form','rounds','records'].includes(UI_RSORT)?UI_RSORT:'hi';
-  let h=`<div class="ui-pagehead"><div class="ui-h1">Rankings</div>
-      <button class="ui-btn ui-btn-g ui-btn-sm" onclick="PL_ADD()">${uiSvg('plus')}Add player</button></div>
-    <div class="ui-seg ui-seg-full ui-evtabs">
-      ${[['hi','Handicap'],['form','Form'],['rounds','Rounds'],['records','Records']]
-        .map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="UI_SORT('${k}')">${l}</button>`).join('')}
-    </div>`;
-  if(tab==='records') return h+renderRecords(R);
+  // League ▸ Rankings. Handicap or form is a sort, not a page; records live in Honours.
+  const tab=UI_RSORT==='form'?'form':'hi';
+  let h=uiChips([['hi','Handicap'],['form','Form']],tab,'UI_SORT');
 
   const rows=R.map(p=>({p,st:uiStats(p)}));
   let list=[...rows];
   if(tab==='form') list.sort((a,b)=>(a.st.form==null)-(b.st.form==null)||(a.st.form??0)-(b.st.form??0));
-  else if(tab==='rounds') list.sort((a,b)=>b.st.roundsYear-a.st.roundsYear||b.st.valid-a.st.valid);
   const mov=v=>v==null||Math.abs(v)<0.05?'':v<0?`<span class="ui-mv dn">↓${Math.abs(v).toFixed(1)}</span>`:`<span class="ui-mv up">↑${v.toFixed(1)}</span>`;
-  h+=`<div class="ui-note" style="margin:0 4px 12px">${
+  h+=`<div class="ui-note ui-roomnote">${
     tab==='form'?'Last five rounds against each player’s own index. Minus means playing better than their handicap.'
-    :tab==='rounds'?`Rounds posted in ${new Date().getFullYear()}.`
     :'Best 8 of the last 20 rounds set each index.'}</div>`;
   let pos=0;
   h+=`<div class="ui-list">`+list.map((x,k)=>{
@@ -4746,13 +4898,10 @@ function renderRanking(R){
     if(tab==='form'){
       big=st.form==null?'<span class="ui-na">—</span>':(st.form>0?'+':st.form<0?'−':'')+Math.abs(st.form).toFixed(1);
       sub=st.form==null?'needs 3 rounds':`index ${p.hi!=null?p.hi.toFixed(1):'—'} · last 5`;
-    }else if(tab==='rounds'){
-      big=String(st.roundsYear);
-      sub=`${st.valid} in total`;
     }else{
       big=p.hi!==null?`${p.hi.toFixed(1)}${p.carried?'<i class="ui-star">*</i>':''}`:'<span class="ui-na">—</span>';
       sub=p.carried?'carried from previous club'
-        :p.hi!==null?`${st.valid} rounds${mov(st.move)?' · '+mov(st.move):''}`
+        :p.hi!==null?`${st.valid} rounds${st.bestGross?' · best '+st.bestGross.score:''}${mov(st.move)?' · '+mov(st.move):''}`
         :(st.holes?`needs ${Math.max(0,54-st.holes)} holes for an index`:'no rounds yet');
     }
     const showPos=tab==='hi'?(p.hi!==null?++pos:''):(k+1);
@@ -4768,58 +4917,27 @@ function renderRanking(R){
 
 // ── PLAYER DETAIL ─────────────────────────────────────────────────────────────
 function renderPlayerDetail(p){
-  const s=calcHI(p.scores,S.courses);
+  // Another member's page — built exactly like Me: Overview and Stats, with their
+  // rounds and head-to-heads as signposts into Play and the League.
   const st=uiStats(p);
-  const isMe=p.id===UI_ME;
-  const inProfileTab=V==='profile'&&isMe;
-  const rp=ranked().find(x=>x.id===p.id)||{};
-  const hi=rp.hi!=null?rp.hi:null;
   const home=st.courses.length?uiShort(st.courses[0].name):'';
-  const tab=UI_PTAB||'overview';
+  if(UI_PTAB==='rounds'){ UI_PTAB='overview'; setTimeout(()=>UI_PASTGO(p.id),0); }
+  if(UI_PTAB==='h2h'){ UI_PTAB='overview'; setTimeout(()=>UI_H2HGO(p.id),0); }
+  const tab=UI_PTAB==='stats'?'stats':'overview';
   let h=`<div class="ui-top">
-      ${inProfileTab?'<span style="width:40px"></span>':`<button class="ui-ico" onclick="CP()" aria-label="Back">${uiSvg('back')}</button>`}
+      <button class="ui-ico" onclick="CP()" aria-label="Back">${uiSvg('back')}</button>
       <span></span>
       <div class="ui-top-r"><button class="ui-ico" onclick="PL_EDIT('${p.id}')" aria-label="Edit player">${uiSvg('pen')}</button></div>
     </div>
     <div class="ui-phead"><span class="ui-av g lg">${uiInit(p.name)}</span>
-      <div class="ui-pheadt"><div class="ui-h1">${p.name}</div>
+      <div class="ui-pheadt"><div class="ui-h1">${p.name}${p.id===UI_ME?' <span class="ui-pill">you</span>':''}</div>
       <div class="ui-s">${home?home+' · ':''}${st.valid} round${st.valid===1?'':'s'}</div></div></div>
     <div class="ui-seg ui-seg-full ui-evtabs">
-      ${[['overview','Overview'],['rounds','Rounds'],['h2h','Head to head'],['stats','Stats']]
+      ${[['overview','Overview'],['stats','Stats']]
         .map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="UI_PTAB_O('${k}')">${l}</button>`).join('')}
     </div>`;
-
-  if(tab==='rounds')  return h+renderRoundsTab(p,s,st);
-  if(tab==='h2h')     return h+renderH2H(p);
-  if(tab==='stats')   return h+renderStatsTab(p,st);
-
-  // ── Overview ──
-  const yd=st.yearDelta;
-  h+=`<div class="ui-hicard ui-panel">
-    <div class="ui-hic-top"><span>Handicap index</span>${yd!=null&&Math.abs(yd)>=0.05?`<span class="ui-pill gw">${yd<0?'↓':'↑'} ${Math.abs(yd).toFixed(1)} this year</span>`:''}</div>
-    <div class="ui-xl" style="font-size:72px;margin-top:8px">${hi!=null?hi.toFixed(1):'—'}${rp.carried?'<i class="ui-star w">*</i>':''}</div>
-    ${uiSpark(st)}
-    <div class="ui-hic-sub">${hi==null?(st.holes?`Needs ${Math.max(0,54-st.holes)} more holes for a first index`:'No rounds yet'):rp.carried?`Carried from previous club · ${rp.count||0}/3 rounds here`:`Best ${s.n} of the last ${s.count} count${st.move!=null&&Math.abs(st.move)>=0.05?` · ${st.move<0?'↓':'↑'}${Math.abs(st.move).toFixed(1)} last round`:''}`}</div>
-  </div>
-  <div class="ui-stat3">
-    <div><span>Low</span><b>${st.lowHI!=null?st.lowHI.toFixed(1):'—'}</b></div>
-    <div><span>Best</span><b>${st.bestGross?st.bestGross.score:'—'}</b></div>
-    <div><span>Crowns</span><b>${st.crowns}</b></div>
-  </div>`;
-  const tg=uiTarget(p);
-  if(tg) h+=uiTargetCard(tg,false);
-  h+=`<button class="ui-btn ui-btn-g" style="margin-top:14px" onclick="OM('score')">${uiSvg('plus')}Add a round</button>`;
-  return h;
-}
-
-// ── Rounds tab: the full history, nothing else ──
-function renderRoundsTab(p,s,st){
-  const nextOut=uiNextOut(p,s);
-  let h=`<div class="ui-note" style="margin:0 4px 12px">${s.hi!==null
-      ? `Best ${s.n} of the last ${s.count} set ${p.id===UI_ME?'your':'the'} index${nextOut?` · next to drop out: ${uiShort(nextOut.course)} ${nextOut.score}`:''}`
-      : `${st.valid} round${st.valid===1?'':'s'} posted — an index needs 54 holes`}</div>`;
-  h+=`<button class="ui-btn ui-btn-g" style="margin-bottom:14px" onclick="OM('score')">${uiSvg('plus')}Add a round</button>`;
-  return h+renderRoundList(p,s);
+  if(tab==='stats') return h+renderStatsTab(p,st);
+  return h+uiPlayerOverview(p);
 }
 
 // ── Stats tab: most played, badges, personal bests ──
@@ -4935,13 +5053,15 @@ function renderUpcoming(){
 }
 
 // ── PURSE LEADERBOARD ─────────────────────────────────────────────────────────
-function renderPurse(){
+// The tournament purse lives in Money ▸ Ledger ▸ Tournaments; match money has its
+// own shelf beside it, so the two are never added together.
+function renderPurse(){ UI_ROOMTAB.money='ledger'; UI_LEDG='tournaments'; return renderMoney(); }
+function renderPurseBody(){
   const purseData=calcPurse();
   const totalEarned=purseData.reduce((s,p)=>s+p.totalEarned,0);
-  let h=`<div class="ui-pagehead"><div class="ui-h1">Purse</div>
-    <button class="ui-btn ui-btn-g ui-btn-sm" onclick="SET_PURSE(null)">${uiSvg('plus')}Record</button></div>`;
+  let h='';
   h+=`<div class="ui-pursetotal ui-panel">
-    <div class="ui-pt-l">The purse · ${new Date().getFullYear()} season</div>
+    <div class="ui-pt-l">Tournament purse · ${new Date().getFullYear()} season</div>
     <div class="ui-xl" style="font-size:62px;color:#fff">${fmtCurrency(totalEarned)}</div>
     <div class="ui-pt-s">${totalEarned===0?'Nothing recorded yet — tap Record to add winnings':`changed hands across ${purseData.reduce((s,p)=>s+p.events,0)} entr${purseData.reduce((s,p)=>s+p.events,0)===1?'y':'ies'}`}</div>
   </div>`;
@@ -4974,16 +5094,18 @@ function renderPurse(){
       h+=`</div>`;
     }
   });
-  return h+`</div>`+gmPurseBlock();
+  return h+`</div>`;
 }
 
 // ── CONTESTS ──────────────────────────────────────────────────────────────────
 function renderContests(){
   const CTABS=[['drive','Longest drive'],['pin','Closest to pin'],['birdie','Most birdies'],['eagle','Eagles']];
-  const filtered=S.contests.filter(c=>c.type===CTAB).sort((a,b)=>b.date.localeCompare(a.date));
+  // one kind of contest: the ones typed in and the ones won in a live round
+  const ALL=[...S.contests,...uiLiveContests()];
+  const filtered=ALL.filter(c=>c.type===CTAB).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const wins={};
   S.players.forEach(p=>{wins[p.id]={name:p.name,drive:0,pin:0,birdie:0,eagle:0};});
-  S.contests.forEach(c=>{if(wins[c.winnerId])wins[c.winnerId][c.type]=(wins[c.winnerId][c.type]||0)+1;});
+  ALL.forEach(c=>{if(wins[c.winnerId])wins[c.winnerId][c.type]=(wins[c.winnerId][c.type]||0)+1;});
   const table=Object.values(wins).filter(x=>x[CTAB]>0).sort((a,b)=>b[CTAB]-a[CTAB]);
   const label=(CTABS.find(c=>c[0]===CTAB)||['','Contest'])[1];
   let h=`<div class="ui-chips-x" style="margin-bottom:14px">${CTABS.map(([v,l])=>`<button class="ui-chip sm${CTAB===v?' on':''}" onclick="SC('${v}')">${l}</button>`).join('')}</div>`;
@@ -5005,7 +5127,7 @@ function renderContests(){
     h+=`<div class="ui-row" style="cursor:default">
       <span class="ui-row-t">${c.course||c.event||'—'}<small>${uiDay(c.date)}${c.detail?' · '+c.detail:''}</small></span>
       <span class="ui-row-v"><b class="ui-twin">${w?w.name.split(' ')[0]:'—'}</b></span>
-      <button class="ui-ico sm" onclick="DC('${c.id}')" aria-label="Remove" style="color:var(--red)">${uiSvg('x')}</button></div>`;
+      ${c.live?'':`<button class="ui-ico sm" onclick="DC('${c.id}')" aria-label="Remove" style="color:var(--red)">${uiSvg('x')}</button>`}</div>`;
   });
   return h+`</div>`;
 }
@@ -5135,9 +5257,8 @@ function renderCourses(){
   const el=document.getElementById('csr');
   const raw=el?el.value:'';
   const total=new Set(S.courses.map(c=>c.name)).size;
-  return `<div class="ui-pagehead"><div class="ui-h1">Courses</div>
-      <button class="ui-btn ui-btn-g ui-btn-sm" onclick="OM('course')">${uiSvg('plus')}Add</button></div>
-    <div class="ui-csearchwrap"><input type="text" inputmode="search" enterkeyhint="search" id="csr"
+  // Play ▸ Courses: the room's header carries "+ Course".
+  return `<div class="ui-csearchwrap"><input type="text" inputmode="search" enterkeyhint="search" id="csr"
       placeholder="Search all ${total} courses…" value="${(raw||'').replace(/"/g,'&quot;')}"
       autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" class="ui-csearch">
       <button type="button" class="ui-csearchx" id="csrx" aria-label="Clear">${uiSvg('x')}</button></div>
@@ -6696,21 +6817,15 @@ function lpMigrateStEstevao(){
 
 // ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
-// Home · Rankings · Crown · Profile + green Play, and a menu for everything else.
+// Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
+// No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='B-20260926-j · One question, four pages';
+const UI_BUILD='C-20260930-a · Club 2.1 · five rooms';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
 
-const UI_MAIN=['home','rankings','crown','profile','play'];
-const UI_MORE=[
-  ['upcoming','Events','Diary, results, contests, winners','cal'],
-  ['purse','Purse','Who’s up, who owes','purse'],
-  ['courses','Courses','Tees, ratings, slopes','flag'],
-  ['settings','Settings','Sync, backup, players','gear'],
-];
-const UI_TITLES={upcoming:'Events',tournaments:'Events',contests:'Events',winners:'Events',purse:'Purse',courses:'Courses',settings:'Settings'};
+const UI_MAIN=['home','league','play','money','me'];
 const UI_I={
   home:'<path d="M4 10.5 12 4l8 6.5V20H4z"/>',
   rank:'<path d="M5 19V9M12 19V5M19 19v-7"/>',
@@ -6746,45 +6861,27 @@ function uiSync(light){
 }
 
 // ── top bar ──
+// The brand and whether you're live. The room's own header says where you are.
 function renderTopBar(AP,AT){
   if(AP) return '';                              // player pages draw their own header
   if(!AT&&V==='home') return '';                 // Home has its own green header
-  const menu=`<button class="ui-ico" onclick="UI_MENU_O()" aria-label="Menu">${uiSvg('more')}</button>`;
-  if(!AP&&!AT&&UI_TITLES[V]){
-    return `<div class="ui-top">
-      <button class="ui-ico" onclick="UI_BACK()" aria-label="Back">${uiSvg('back')}</button>
-      <div class="ui-top-t">${UI_TITLES[V]}</div>
-      <div class="ui-top-r">${menu}</div></div>`;
-  }
-  return `<div class="ui-top"><div class="ui-brand">The Club</div><div class="ui-top-r">${uiSync()}${menu}</div></div>`;
+  return `<div class="ui-top"><div class="ui-brand">The Club</div><div class="ui-top-r">${uiSync()}</div></div>`;
 }
 
 // ── floating bottom bar ──
 function renderDock(tab){
-  const items=[['home','home','Home'],['rankings','rank','Rankings'],['crown','crown','Crown'],['profile','prof','Profile']];
+  const items=[['home','home','Home'],['league','rank','League'],['money','purse','Money'],['me','prof','Me']];
   return `<nav class="ui-dock" aria-label="Main">
-    <div class="ui-bar">${items.map(([v,ic,l])=>`<button class="ui-ti${tab===v?' on':''}" onclick="UI_GO('${v}')">${uiSvg(ic)}<span>${l}</span></button>`).join('')}</div>
-    <button class="ui-play${tab==='play'?' on':''}" onclick="UI_GO('play')" aria-label="Play">${uiSvg('plus')}</button>
+    <div class="ui-bar">${items.map(([v,ic,l])=>`<button class="ui-ti${tab===v?' on':''}" onclick="UI_GO('${v}')"${tab===v?' aria-current="page"':''}>${uiSvg(ic)}<span>${l}</span></button>`).join('')}</div>
+    <button class="ui-play${tab==='play'?' on':''}" onclick="UI_GO('play','live')" aria-label="Play">${uiSvg('plus')}</button>
   </nav>`;
 }
 
-// ── menu sheet: everything else, one tap away ──
-function uiTiles(){
-  return `<div class="ui-tiles">${UI_MORE.map(([v,l,sub,ic])=>`<button class="ui-tile" onclick="UI_MENU_GO('${v}')">${uiSvg(ic)}<span class="v">${l}</span><span class="k">${sub}</span></button>`).join('')}</div>`;
-}
-function renderMenu(){
-  return `<div class="ov" onclick="if(event.target===this)UI_MENU_X()"><div class="mo">
-    <div class="ui-sheet-h"><div class="mo-title">The club</div>
-      <button class="ui-ico" onclick="UI_MENU_X()" aria-label="Close">${uiSvg('x')}</button></div>
-    ${uiTiles()}
-  </div></div>`;
-}
-
 // ── Profile ──
-function renderProfilePick(){
+function renderProfilePick(inRoom){
   const list=[...S.players].sort((a,b)=>a.name.localeCompare(b.name));
-  return `<div style="margin:8px 4px 16px"><div class="ui-h1">Profile</div>
-      <div class="ui-s" style="margin-top:6px">Who’s this phone for? You only pick once.</div></div>
+  return `${inRoom?'<div class="ui-note ui-roomnote">Pick yourself once and Home shows your handicap, what you need to shoot, and where you stand.</div>':`<div style="margin:8px 4px 16px"><div class="ui-h1">Profile</div>
+      <div class="ui-s" style="margin-top:6px">Who’s this phone for? You only pick once.</div></div>`}
     <div class="ui-list">${list.map(p=>`<button class="ui-row" onclick="UI_SETME('${p.id}')">
       <span class="ui-av">${uiInit(p.name)}</span>
       <span class="ui-row-t">${p.name}<small>${(p.scores||[]).length} rounds</small></span>${uiSvg('chev','ui-chev')}</button>`).join('')}</div>
@@ -6817,21 +6914,30 @@ function renderSettings(){
 }
 
 // ── handlers ──
-window.UI_GO=v=>{
+// Go to a room (and, optionally, one of its tabs). Old names still work.
+window.UI_GO=(v,tab)=>{
   UI_MENU=false;
-  if(!UI_MAIN.includes(v)&&UI_MAIN.includes(V)) UI_FROM=V;
-  PID=null; TID=null; UI_PTAB='overview';
-  if(v==='profile'&&UI_MEP()) PID=UI_ME;
-  SV(v);
+  const r=UI_ROUTE[v];
+  if(r){ v=r[0]; tab=tab||r[1]; if(r[2]) UI_HON=r[2]; if(r[0]==='money'&&r[1]==='ledger') UI_LEDG='tournaments'; }
+  if(!UI_MAIN.includes(v)) v='home';
+  if(tab) UI_ROOMTAB[v]=tab; else if(v==='play') UI_ROOMTAB.play='live';   // the green button always lands on Live
+  UI_FROM=V; PID=null; TID=null; UI_PTAB='overview'; UI_SPOST=false; OPEN_SCORE=null;
+  if(typeof LB_OPEN!=='undefined'){ LB_OPEN=null; LB_PASTID=null; }
+  if(v==='play'&&UI_ROOMTAB.play!=='live'){
+    // Upcoming, Past and Courses never drop you into the scoring screen. A round in
+    // progress keeps running; Live shows it with "Back to scoring".
+    if(LPV==='round'){ try{ GPON=false; gpStop(); }catch(e){} }
+    V='play'; OPEN_COURSE=null; LRMSG=null; LPV='list'; try{ lpPull(); }catch(e){}
+    render();
+  }else SV(v);
   try{ window.scrollTo(0,0); }catch(e){}
 };
 window.UI_BACK=()=>UI_GO(UI_MAIN.includes(UI_FROM)?UI_FROM:'home');
-window.UI_MENU_O=()=>{UI_MENU=true;render();};
 window.UI_MENU_X=()=>{UI_MENU=false;render();};
 window.UI_MENU_GO=v=>UI_GO(v);
 window.UI_SETME=id=>{
   UI_ME=id; try{ CLUB_SET('club_me_v1',id); }catch(e){}
-  PID=id; V='profile'; render(); try{ window.scrollTo(0,0); }catch(e){}
+  PID=null; V='me'; UI_ROOMTAB.me='overview'; render(); try{ window.scrollTo(0,0); }catch(e){}
 };
 // The app could never be signed out: the function existed but nothing called it, so a
 // shared or lost phone stayed logged in for good.
@@ -6844,12 +6950,9 @@ window.UI_SIGNOUT=()=>{
 };
 window.UI_ME_CLEAR=()=>{
   UI_ME=null; try{ CLUB_DEL('club_me_v1'); }catch(e){}
-  UI_GO('profile');
+  UI_GO('me','overview');
 };
-window.UI_POST=()=>{
-  if(!UI_MEP()) return UI_GO('profile');
-  UI_MENU=false; TID=null; PID=UI_ME; V='profile'; OM('score');
-};
+// UI_POST lives in rooms.js: the form opens over the room you're in.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 2 — Home, Rankings, Profile, Round history, Add player
@@ -7075,16 +7178,15 @@ function renderLiveCards(){
     }catch(e){}
     const me=r.players.find(x=>x.id===UI_ME);
     const nt=(()=>{ try{ const b=lpBoard(r); const x=b.find(y=>y.id===UI_ME); return x&&x.thru?x.netToPar:null; }catch(e){ return null; } })();
-    return `<button class="ui-live" onclick="UI_GO('play')">
-      <span class="ui-pill"><i class="ui-dot ok"></i>Live · thru ${thru}</span>
-      <span class="ui-live-t">${uiShort(r.course)} · ${r.tee}</span>
-      <span class="ui-s">${lead?lead+mine:r.players.map(x=>x.name.split(' ')[0]).join(' · ')}</span>
-      ${me&&nt!=null?`<span class="ui-live-n${nt<0?' red':''}">${nt===0?'E':(nt>0?'+':'−')+Math.abs(nt)}</span>`:`<span class="ui-live-go">${me?'Carry on':'Watch'} ›</span>`}
-    </button>`;
+    const net=me&&nt!=null?` · you’re ${nt===0?'level':(nt>0?'+':'−')+Math.abs(nt)} net`:'';
+    return uiSign("UI_GO('play','live')",`<span class="ui-sk"><i class="ui-dot ok"></i>Live now · thru ${thru}</span>${uiShort(r.course)} · ${r.tee}`,
+      `${lead?lead+mine:r.players.map(x=>x.name.split(' ')[0]).join(' · ')}${net}`,'Play','live');
   }).join('');
 }
 
 // ── Home ──
+// The front door. Nothing lives here: every line is a signpost that says what's
+// going on and which room it's in.
 function renderHome(R){
   uiLivePeek();
   const hr=new Date().getHours();
@@ -7094,8 +7196,7 @@ function renderHome(R){
   let h=`<div class="ui-hero ui-panel">
     <div class="ui-hero-top"><div class="ui-brand w">The Club</div>
       <div class="ui-top-r">${uiSync(true)}
-        <button class="ui-ico gw" onclick="UI_MENU_O()" aria-label="Menu">${uiSvg('more')}</button>
-        ${me?`<button class="ui-av w" onclick="UI_GO('profile')" aria-label="My profile">${uiInit(me.name)}</button>`:''}
+        ${me?`<button class="ui-av w" onclick="UI_GO('me','overview')" aria-label="Me">${uiInit(me.name)}</button>`:''}
       </div></div>`;
   if(me){
     const st=uiStats(me);
@@ -7110,36 +7211,47 @@ function renderHome(R){
     h+=`<div class="ui-greet">${greet}</div>
       <div class="ui-h1">Who’s this phone for?</div>
       <div class="ui-hero-sub">Pick yourself once and Home shows your handicap, what you need to shoot, and your Crown position.</div>
-      <button class="ui-btn ui-btn-w" onclick="UI_GO('profile')">Choose player</button>`;
+      <button class="ui-btn ui-btn-w" onclick="UI_GO('me','overview')">Choose player</button>`;
   }
-  h+=`</div><div class="ui-home-body">`;
+  h+=`</div><div class="ui-home-body"><div class="ui-signs">`;
+  // live now
   h+=renderLiveCards();
-  // Crown + next event
-  let crown='';
-  if(me){
-    try{
-      const ym=potmThisYM(), r=uiCrown(ym), e=r.entrants.find(x=>x.pid===me.id);
-      const mon=potmMonthName(ym).split(' ')[0];
-      if(potmSettledRecord(ym)) crown='';
-      else if(!e) crown=`<button class="ui-tile" onclick="UI_GO('crown')"><span class="k">${mon} Crown</span><span class="v">Not entered</span><span class="k">Tap to see the race</span></button>`;
-      else if(!e.qualified) crown=`<button class="ui-tile" onclick="UI_GO('crown')"><span class="k">${mon} Crown</span><span class="v">${e.rounds.length} of ${r.settings.minRounds}</span><span class="k">rounds to qualify</span></button>`;
-      else{
-        const i=r.qualified.findIndex(x=>x.pid===me.id), lead=r.qualified[0];
-        crown=`<button class="ui-tile" onclick="UI_GO('crown')"><span class="k">${mon} Crown</span><span class="v"><b class="ui-tbig">${uiOrd(i+1)}</b> ${i===0?(r.qualified[1]?`${rd(lead.total-r.qualified[1].total,1)} pts clear`:'leading'):`${rd(lead.total-e.total,1)} pts behind`}</span></button>`;
-      }
-    }catch(err){ crown=''; }
-  }
+  // next up
   const now=uiToday();
   const next=[...(S.upcoming||[])].filter(t=>t&&t.date&&t.date>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  const ev=next?`<button class="ui-tile" onclick="UI_GO('upcoming')"><span class="k">${uiWeekday(next.date)}</span><span class="v">${next.name||'Next event'}</span><span class="k">${(next.players||[]).length} in${me&&(next.players||[]).includes(me.name)?' · you’re in':''}</span></button>`:'';
-  if(crown||ev) h+=`<div class="ui-duo${crown&&ev?'':' one'}">${crown||''}${ev}</div>`;
-  if(!me) h+=renderCrownStrip();
-  h+=`<div class="ui-list" style="margin-top:10px">
-      <button class="ui-row" onclick="UI_POST()"><span class="ui-av g">${uiSvg('plus')}</span><span class="ui-row-t">Post a round<small>Add a score you played today or earlier</small></span>${uiSvg('chev','ui-chev')}</button>
-      <button class="ui-row" onclick="OM('register')"><span class="ui-av">${uiSvg('crown')}</span><span class="ui-row-t">Declare a round<small>Tell the group before you tee off — counts for the Crown</small></span>${uiSvg('chev','ui-chev')}</button>
-      <button class="ui-row" onclick="UI_GO('play')"><span class="ui-av">${uiSvg('flag')}</span><span class="ui-row-t">Play live<small>Everyone scores on their own phone</small></span>${uiSvg('chev','ui-chev')}</button>
-    </div>`;
-  h+=`<div class="ui-lbl">The club</div>${uiTiles()}</div>`;
+  if(next){
+    const n=(next.players||[]).length, inIt=me&&(next.players||[]).includes(me.name);
+    h+=uiSign("UI_TO('play','upcoming')",`<span class="ui-sk">Next up · ${uiWeekday(next.date)}</span>${next.name||'Next round'}`,
+      `${next.course?uiShort(next.course)+' · ':''}${n} in${me?(inIt?' · you’re in':' · you’re not in yet'):''}`,'Play');
+  }
+  // the Crown
+  try{
+    const ym=potmThisYM(), r=uiCrown(ym), mon=potmMonthName(ym).split(' ')[0];
+    if(!potmSettledRecord(ym)){
+      const e=me?r.entrants.find(x=>x.pid===me.id):null;
+      const days=uiDaysLeft(ym), left=days==null?'':days===0?' · last day':days===1?' · 1 day left':` · ${days} days left`;
+      let line='';
+      if(me&&e&&e.qualified){
+        const i=r.qualified.findIndex(x=>x.pid===me.id), lead=r.qualified[0];
+        line=`${uiOrd(i+1)}${i===0?(r.qualified[1]?` · ${rd(lead.total-r.qualified[1].total,1)} pts clear`:' · leading'):` · ${rd(lead.total-e.total,1)} pts behind ${lead.name.split(' ')[0]}`}`;
+      }else if(me&&e) line=`${e.rounds.length} of ${r.settings.minRounds} rounds to qualify`;
+      else if(r.winner) line=`${r.winner.name.split(' ')[0]} leads on ${r.winner.total.toFixed(1)}`;
+      else line=me&&!e?'You’re not entered this month':'Nobody ranked yet';
+      h+=uiSign("UI_TO('league','crown')",`<span class="ui-sk">The ${mon} Crown${left}</span>${line}`,'','League');
+    }
+  }catch(err){}
+  // money
+  try{
+    const M=uiMoneyOpen();
+    {
+      const mine=me?(M.pnl[me.id]||0):0;
+      const who=me?M.pays.filter(x=>x.to===me.id||x.from===me.id).length:0;
+      h+=uiSign("UI_TO('money','settle')",`<span class="ui-sk">Money</span>${uiMoneyKey(M)}`,
+        mine>0?`From ${who===1?'one player':who+' players'}`:mine<0?`To ${who===1?'one player':who+' players'}`:M.pays.length?`${uiPl(M.pays.length,'payment')} between the group`:'Nothing waiting',
+        'Money');
+    }
+  }catch(err){}
+  h+=`</div></div>`;
   return h;
 }
 
@@ -7388,30 +7500,6 @@ window.CSR_L=L=>{ CSR_LETTER=(CSR_LETTER===L?'':L); OPEN_COURSE=null;
   coursesRepaint(); try{ window.scrollTo(0,0); }catch(e){} };
 window.COURSES_SCOPE=v=>{ COURSES_ALL=!!v; coursesRepaint(); };
 window.TC=n=>{ OPEN_COURSE=(OPEN_COURSE===n?null:n); coursesRepaint(); };
-
-// ═══════════════════════════════════════════════════════════════════════════
-// AUDIT · one Events section instead of four menu entries
-// Upcoming, Tournaments, Contests and Winners are the same thing at different
-// points in time, and the approved mockup shows them as one screen with tabs.
-// V still carries which tab is open, so every existing link keeps working.
-// ═══════════════════════════════════════════════════════════════════════════
-const UI_EVTABS=[['upcoming','Upcoming'],['tournaments','Tournaments'],['contests','Contests'],['winners','Winners']];
-const UI_EVADD={upcoming:["OM('upcoming')",'New event'],tournaments:["OM('tournament')",'Add result'],
-                contests:["OM('contest')",'Add result'],winners:null};
-function uiIsEvents(v){ return UI_EVTABS.some(t=>t[0]===v); }
-function renderEvents(){
-  const tab=uiIsEvents(V)?V:'upcoming';
-  const add=UI_EVADD[tab];
-  let h=`<div class="ui-pagehead"><div class="ui-h1">Events</div>
-    ${add?`<button class="ui-btn ui-btn-g ui-btn-sm" onclick="${add[0]}">${uiSvg('plus')}${add[1]}</button>`:''}</div>
-    <div class="ui-seg ui-seg-full ui-evtabs">${UI_EVTABS.map(([k,l])=>
-      `<button class="${tab===k?'on':''}" onclick="UI_GO('${k}')">${l}</button>`).join('')}</div>`;
-  if(tab==='upcoming') h+=renderUpcoming();
-  else if(tab==='tournaments') h+=renderTournaments();
-  else if(tab==='contests') h+=renderContests();
-  else h+=renderWinners();
-  return h;
-}
 function renderH2H(p){
   const all=S.players.filter(o=>o.id!==p.id).map(o=>({o,r:uiH2H(p,o)}));
   const played=all.filter(x=>x.r.rows.length);
@@ -7512,8 +7600,9 @@ function renderRoundList(p,s){
       }
       h+=`<div class="ui-hdet">
         ${bad&&issues[oi]?`<div class="ui-alert red" style="margin:0 0 10px">${issues[oi]}</div>`:''}
+        ${uiRoundScores(p,oi,eff,bad)}
         <div class="ui-hgrid">
-          <div><span>Course</span><b>${s2.course}</b></div>
+          <div><span>Course</span><b>${s2.course}${s2.tee?' · '+s2.tee:''}</b></div>
           <div><span>Rating / slope</span><b class="ui-mono">${c?c.rating.toFixed(1)+' / '+c.slope:'—'}</b></div>
           <div><span>Holes</span><b>${is9?'9-hole':'18-hole'}</b></div>
           <div><span>Date played</span><b>${s2.date?fmtDate(s2.date):'—'}</b></div>
@@ -7521,6 +7610,7 @@ function renderRoundList(p,s){
         ${breakdown}
         ${isCounting&&!(is9&&m&&m.is9)?`<div class="ui-cnt">Counting toward the index</div>`:''}
         <div class="ui-hact">
+          ${s2.rid?`<button class="ui-btn ui-btn-g ui-btn-sm" onclick="event.stopPropagation();UI_CARD('${s2.rid}')">See the scorecard</button>`:''}
           <button class="ui-btn ui-btn-w ui-btn-sm" onclick="event.stopPropagation();ES('${p.id}',${oi})">${uiSvg('pen')}Edit</button>
           <button class="ui-btn ui-btn-sm ui-btn-red" onclick="event.stopPropagation();DS('${p.id}',${oi})">Delete</button>
         </div>
@@ -7528,6 +7618,41 @@ function renderRoundList(p,s){
     }
   });
   return h+`</div>`;
+}
+
+// The four numbers a golfer asks about a round: what I shot, what that was net,
+// what the handicap counted, and the differential it made.
+function uiRoundNet(p,idx){
+  const s=p.scores[idx]; if(!s) return null;
+  const gross=s.gross!=null?s.gross:s.score;
+  // a round played on the app: the handicap it was played off is on the card
+  if(s.rid&&HIST&&HIST[s.rid]){
+    const r=HIST[s.rid], rp=(r.players||[]).find(x=>x.id===p.id);
+    if(rp&&rp.ch!=null&&Array.isArray(r.parArr)){ const par=r.parArr.reduce((a,b)=>a+b,0); return {ch:rp.ch,net:gross-rp.ch,toPar:gross-rp.ch-par}; }
+  }
+  // posted by hand: the course handicap from the index they had going in
+  const st=uiStats(p), t=(st.tl||[]).find(x=>x.i===idx), hi=t?t.before:null;
+  const pa=lpParArr(s.course,s.tee), row=findCourse(S.courses,s);
+  if(hi==null||!pa||!row) return null;
+  const sum=a=>a.reduce((x,y)=>x+y,0), cfg=s.holes||'18';
+  let par,n;
+  if(cfg==='F9'){ par=sum(pa.slice(0,9)); n=9; }
+  else if(cfg==='L9'){ par=sum(pa.slice(9,18)); n=9; }
+  else if(cfg==='F9x2'||cfg==='L9x2'){ par=2*sum(cfg==='F9x2'?pa.slice(0,9):pa.slice(9,18)); n=18; }
+  else { par=sum(pa); n=pa.length; }
+  if(!par||par<27) return null;
+  const ch=lpCH(hi,row,n,par); if(ch==null) return null;
+  return {ch,net:gross-ch,toPar:gross-ch-par};
+}
+function uiRoundScores(p,idx,eff,bad){
+  const s=p.scores[idx], gross=s.gross!=null?s.gross:s.score, n=uiRoundNet(p,idx);
+  const sg=v=>v>0?'+'+v:v===0?'E':'−'+Math.abs(v);
+  return `<div class="ui-rsum">
+    <div><span>Gross</span><b>${gross}</b></div>
+    <div><span>Net${n?' · off '+n.ch:''}</span><b>${n?n.net:'—'}${n?`<i>${sg(n.toPar)}</i>`:''}</b></div>
+    <div><span>${s.score!==gross?'Adjusted':'Counted'}</span><b>${s.score}</b></div>
+    <div><span>Differential</span><b>${bad?'–':eff!=null?eff.toFixed(1):'—'}</b></div>
+  </div>${s.score!==gross?`<div class="ui-note" style="margin:0 2px 10px">Net double bogey capped ${gross-s.score} shot${gross-s.score===1?'':'s'} for the handicap. The ${gross} still stands as what was played.</div>`:''}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -8042,9 +8167,14 @@ function gmPanel(r){
   }
   if(g.fmt==='skins'){
     const s=gmSkins(r,PH,ids,g.stake||0);
-    body=`<div class="gm-rows">${s.rows.map((x,i)=>`<div class="gm-row${i===0&&x.skins?' lead':''}">
-      <span class="gm-pos">${x.skins}</span><span class="gm-nm">${x.name}<small>off ${x.ph}</small></span>
-      <span class="gm-val ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':''}${x.pnl===0?'£0':'£'+Math.abs(x.pnl)*(x.pnl<0?-1:1)}<small>${x.skins} skin${x.skins===1?'':'s'}</small></span></div>`).join('')}</div>`;
+    // Position on the left, as everywhere else in the app; money on the right,
+    // signed the way people write it: +£12, −£4.
+    let _last=null,_pos=0;
+    const ranked2=s.rows.map((x,i)=>{ if(x.skins!==_last){_pos=i+1;_last=x.skins;} return {...x,pos:_pos}; });
+    ranked2.forEach(x=>{ if(ranked2.filter(y=>y.pos===x.pos).length>1) x.tie=true; });
+    body=`<div class="gm-rows">${ranked2.map(x=>`<div class="gm-row${x.pos===1&&x.skins?' lead':''}">
+      <span class="gm-pos">${x.tie?'T':''}${x.pos}</span><span class="gm-nm">${x.name}<small>plays off ${x.ph} · ${x.skins} skin${x.skins===1?'':'s'}</small></span>
+      <span class="gm-val ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':x.pnl<0?'−':''}£${Math.abs(x.pnl)}</span></div>`).join('')}</div>`;
     // Hole by hole, so a carry is never a mystery: you can see exactly which hole
     // was halved and which hole somebody took.
     const done=s.holes.filter(x=>x.status!=='pending');
@@ -8184,13 +8314,16 @@ window.LP_FIN=async()=>{
     try{await fetch(`${LRS_URL}/${rid}.json`,{method:'DELETE'});}catch(e){}
     LPQ=[];lpSaveLocal();
     GM_SETTLED=false;
-    SUMMARY=rec;LR=null;LRID=null;HIST=null;LPV='summary';render();
+    SUMMARY={...rec,rid};LR=null;LRID=null;HIST=null;LPV='summary';render();
     return;
   }
   const ags={}; snap.players.forEach(p=>{ if(!p.guest) ags[p.id]=gmAGS(snap,p.id); });
   GM_SETTLED=false;
   await LP_F();
   if(LPV!=='summary') return;                 // cancelled, or scores still unsynced
+  // The card needs its id to find itself again: the money ledger, the Past list and
+  // 'what went on my record' all look the round up by it.
+  if(SUMMARY&&!SUMMARY.rid) SUMMARY={...SUMMARY,rid};
   const players=S.players.map(p=>{
     const a=ags[p.id]; if(!a) return p;
     return {...p,scores:(p.scores||[]).map(s=>{
@@ -8270,27 +8403,6 @@ window.GM_SETTLE_GO=()=>{
   render();
 };
 
-// ── the match purse, shown apart from tournament money ─────────────────────
-function gmPurseBlock(){
-  const P=gmPurse();
-  const rows=Object.keys(P).map(k=>P[k]).filter(x=>x.games);
-  if(!rows.length) return `<div class="ui-lbl">Match winnings</div>
-    <div class="ui-card ui-pad" style="font-size:14px;color:var(--ink2)">Nothing settled yet. Play a skins or a match with a stake on it and it lands here — separate from tournament and Crown money.</div>`;
-  rows.sort((a,b)=>b.pnl-a.pnl);
-  const pot=rows.reduce((a,b)=>a+b.staked,0);
-  return `<div class="ui-lbl">Match winnings</div>
-    <div class="ui-card ui-pad" style="padding:6px 16px 10px">
-    <div class="gm-rows">${rows.map(x=>`<div class="gm-row">
-      <span class="gm-nm">${x.name}<small>${x.games} game${x.games===1?'':'s'}${x.wins?` · ${x.wins} won`:''}</small></span>
-      <span class="gm-val ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':x.pnl<0?'−':''}£${Math.abs(x.pnl)}</span></div>`).join('')}</div>
-    ${(()=>{const pnl={};rows.forEach(x=>pnl[x.id]=x.pnl);const pays=gmNetting(pnl);
-      const nm=id=>{const p=S.players.find(y=>y.id===id);return p?p.name.split(' ')[0]:'?';};
-      return pays.length?`<div class="gm-pays"><div class="gm-pays-h">To settle up</div>
-        ${pays.map(t=>`<div class="gm-pay"><b>${nm(t.from)}</b> pays <b>${nm(t.to)}</b><span>£${t.amt}</span></div>`).join('')}
-        <div class="gm-pays-n">Everything settled in ${pays.length} payment${pays.length===1?'':'s'}.</div></div>`:'';})()}
-    <div class="gm-carry">£${pot} staked between you · tournaments and the Crown are counted separately above</div></div>`;
-}
-
 // ── nearest the pin · longest drive ────────────────────────────────────────
 // Recorded on the hole itself, while everyone is still standing on the green
 // arguing about it. Par 3s get nearest the pin, everything else longest drive.
@@ -8323,37 +8435,19 @@ function gmContestSummary(rec){
     }).join('')}</div></div>`;
 }
 
-// ── four screens, one swipe apart ─────────────────────────────────────────
-// The hole is where you score and carries nothing else. The game, the board and
-// the card each get a page of their own. The green line rides above all of them.
-var GM_PAGE=0;
-
-function gmPageList(r){
-  const has=r.game&&r.game.fmt&&r.game.fmt!=='none';
-  const capped=r.rules&&r.rules.cap&&r.rules.cap!=='none';
-  const l=['hole'];
-  if(has||capped) l.push('game');
-  l.push('board','card');
-  return l;
-}
-function gmPageIdx(r){ const n=gmPageList(r).length; return Math.max(0,Math.min(n-1,GM_PAGE)); }
-const GM_PGL={hole:'Hole',game:'Game',board:'Board',card:'Card'};
-
-// Run the app's own results panel in one particular view. LRVIEW is what it reads,
-// so the board and the card can each have a page without touching the function.
-function gmResults(r,view){
-  const keep=LRVIEW;
-  LRVIEW=view;
-  let out='';
-  try{ out=lpResults(r); }catch(e){ out=''; }
-  LRVIEW=keep;
-  return out;
-}
+var GM_PAGE=0;   // kept only so older saved state never throws
 
 // The one line that answers "am I winning, and what's it worth".
-function gmStrip(r){
+function gmStrip(r){ const x=gmStripInner(r); return x?`<div class="gm-line">${x}</div>`:''; }
+function gmStripInner(r){
   const g=r.game;
-  if(!g||g.fmt==='none'||!GM_FORMATS[g.fmt]) return '';
+  if(!g||g.fmt==='none'||!GM_FORMATS[g.fmt]){
+    // no game, but a cap agreed on the tee: say so
+    const R=r.rules; if(!R||R.cap==='none') return '';
+    const lbl=R.cap==='mult'?`${R.mult}× net double bogey`:GM_RULES[R.cap].name;
+    return `<span class="gm-line-l"><span class="sl">Agreed scoring</span><span class="sv">${lbl}</span></span>
+      <span class="gm-line-a"><b>${r.players.reduce((t,p)=>t+gmMatchScore(r,p.id,R).capped,0)}</b><span>holes capped</span></span>`;
+  }
   const PH=gmPlaying(r,g.fmt), ids=gmIds(r);
   const me=(typeof UI_ME!=='undefined'&&UI_ME&&ids.includes(UI_ME))?UI_ME:null;
   let title=GM_FORMATS[g.fmt].name, msg='', amt='', sub='';
@@ -8390,57 +8484,11 @@ function gmStrip(r){
     title='Stableford'; msg=mine?`${gmFirst(r,mine.id)} leads on ${rows[0].pts}`:'';
     amt=mine?String(mine.pts):'0'; sub=me?'your points':'points';
   }
-  return `<div class="gm-line"><span class="gm-line-l"><span class="sl">${title}</span><span class="sv">${msg}</span></span>
-    <span class="gm-line-a"><b>${amt}</b><span>${sub}</span></span></div>`;
+  return `<span class="gm-line-l"><span class="sl">${title}</span><span class="sv">${msg}</span></span>
+    <span class="gm-line-a"><b>${amt}</b><span>${sub}</span></span>`;
 }
 
-function gmPagerNav(r){
-  const list=gmPageList(r), at=gmPageIdx(r);
-  return `<div class="gm-nav"><div class="ui-seg ui-seg-full gm-seg">${list.map((k,i)=>
-      `<button class="${i===at?'on':''}" onclick="LP_PAGE(${i})">${GM_PGL[k]}</button>`).join('')}</div>
-    <div class="gm-dots">${list.map((k,i)=>`<i class="gm-dot${i===at?' on':''}"></i>`).join('')}</div></div>`;
-}
 
-// Moving between pages never re-renders: the content is already there, so the
-// track just slides. That is what makes it feel like a phone and not a website.
-window.LP_PAGE=i=>{
-  const t=document.getElementById('gmTrack'); if(!t)return;
-  const n=t.children.length;
-  GM_PAGE=Math.max(0,Math.min(n-1,i));
-  t.style.transform=`translateX(-${GM_PAGE*100}%)`;
-  const segs=document.querySelectorAll('.gm-seg button'), dots=document.querySelectorAll('.gm-dot');
-  for(let k=0;k<n;k++){ if(segs[k])segs[k].classList.toggle('on',k===GM_PAGE);
-                        if(dots[k])dots[k].classList.toggle('on',k===GM_PAGE); }
-  gmFit();
-};
-// Each page is its own height, so the pager is only ever as tall as what you are
-// looking at — no dead space under the hole because the card is longer.
-function gmFit(){
-  const p=document.getElementById('gmPager'), t=document.getElementById('gmTrack');
-  if(!p||!t)return;
-  const pg=t.children[GM_PAGE]; if(!pg)return;
-  p.style.height=pg.offsetHeight+'px';
-}
-function gmPagerBind(){
-  const p=document.getElementById('gmPager');
-  if(!p||p.dataset.bound)return;
-  p.dataset.bound='1';
-  let x0=null,y0=null,lock=null;
-  const s=e=>{ const t=e.touches?e.touches[0]:e; x0=t.clientX; y0=t.clientY; lock=null; };
-  const m=e=>{ if(x0===null)return; const t=e.touches?e.touches[0]:e, dx=t.clientX-x0, dy=t.clientY-y0;
-    // Decide once whether this is a sideways swipe or a scroll, then stick to it —
-    // otherwise the page fights the thumb on every diagonal drag.
-    if(lock===null&&(Math.abs(dx)>10||Math.abs(dy)>10)) lock=Math.abs(dx)>Math.abs(dy)?'x':'y';
-    if(lock==='x'&&e.cancelable) e.preventDefault(); };
-  const u=e=>{ if(x0===null)return; const t=e.changedTouches?e.changedTouches[0]:e, dx=t.clientX-x0;
-    if(lock==='x'&&Math.abs(dx)>45) LP_PAGE(GM_PAGE+(dx<0?1:-1));
-    x0=null;y0=null;lock=null; };
-  p.addEventListener('touchstart',s,{passive:true});
-  p.addEventListener('touchmove',m,{passive:false});
-  p.addEventListener('touchend',u);
-  p.addEventListener('touchcancel',u);
-  window.addEventListener('resize',gmFit);
-}
 
 
 // ── setup: one question ────────────────────────────────────────────────────
@@ -8459,8 +8507,8 @@ function gmStrokeNote(r){
   const g=r.game, F=GM_FORMATS[g.fmt];
   const pct=gmAllowFor(r,g.fmt);
   return F.fromLow
-    ? `Strokes and nets below are for the ${F.name.toLowerCase()} — ${pct}%, lowest handicap off scratch.`
-    : `Strokes and nets below are for the ${F.name.toLowerCase()} — ${pct}% of your course handicap.`;
+    ? `Strokes shown are for the ${F.name.toLowerCase()}: ${pct}%, lowest handicap off scratch.`
+    : `Strokes shown are for the ${F.name.toLowerCase()}: ${pct}% of your course handicap.`;
 }
 
 // ── this hole, worked out ──────────────────────────────────────────────────
@@ -8488,9 +8536,804 @@ function gmHoleBreak(r,hole){
       <span class="gm-hb-eq">${x.gross}${x.stk?` − ${x.stk}`:''}</span>
       <span class="gm-hb-net">${x.net}</span></div>`).join('')}</div>
     <div class="gm-hb-n">${drew
-      ? `Halved on ${best} by ${winners.map(x=>x.name).join(' and ')}${g.fmt==='skins'?' — the skin carries.':'.'}`
+      ? `Halved on ${best} by ${gmList(winners.map(x=>x.name))}${g.fmt==='skins'?' — the skin carries.':'.'}`
       : `${winners[0].name} takes it with ${best}.`}</div></div>`;
 }
+
+// "Miguel", "Miguel and António", "Gonçalo, Miguel and António"
+function gmList(a){ return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and '+a[a.length-1]; }
+
+
+// ── correcting a hole on a finished card ───────────────────────────────────
+// HOLE_SAVE (unchanged) re-posts the round's new GROSS as the score. A round
+// posted since the adjusted-score change carries two numbers — the adjusted
+// score the handicap uses, and the real gross — so once it has saved, put the
+// two back where they belong, worked out from the corrected card.
+(function(){
+  const _HS=window.HOLE_SAVE;
+  window.HOLE_SAVE=async()=>{
+    const e=EDIT_HOLE?{...EDIT_HOLE}:null;
+    await _HS();
+    if(!e) return;
+    const rec=HIST&&HIST[e.rid]; if(!rec) return;
+    let changed=false;
+    const players=S.players.map(p=>{
+      if(p.id!==e.pid) return p;
+      return {...p,scores:(p.scores||[]).map(s=>{
+        if(s.rid!==e.rid||!s.ags) return s;
+        const a=gmAGS(rec,p.id);
+        if(s.score===a.adj&&s.gross===a.real) return s;
+        changed=true;
+        return {...s,gross:a.real,score:a.adj,capped:a.capped};
+      })};
+    });
+    if(changed) upd({...S,players});
+    render();
+  };
+})();
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIVE LEADERBOARD · a bar at the bottom that rises into a sheet
+//
+// Tap the bar: the leaderboard comes up. Stableford / Net / Gross re-sorts it.
+// Tap a player: their card drops open underneath them, in place, so you can open
+// two and compare without leaving the list. The numbers are lpBoard's — the same
+// ones the round has always used — so nothing here can disagree with the card.
+//
+// The game gets the same sheet, opened from its green bar under the hole.
+// ═══════════════════════════════════════════════════════════════════════════
+var LB_OPEN=null;          // null | 'board' | 'game'
+var LB_ROWS={};            // player id -> card open
+var LB_RID=null;           // the round these belong to
+var LB_PROWS={};           // the same, for a finished card (Past, or the end of a round)
+var LB_PASTID=null;        // the finished round whose card is open in Play ▸ Past
+
+function lbFmt(){ return (typeof LRFMT!=='undefined'&&LRFMT)||'stb'; }
+function lbSigned(v){ return v>0?'+'+v:v===0?'E':'−'+Math.abs(v); }
+const LB_FMTN={stb:'Stableford',net:'Net',gross:'Gross'};
+
+// A new round starts closed, with no cards open.
+function lbSync(r){
+  const id=r&&(r.startedAt||r.date);
+  if(id!==LB_RID){ LB_RID=id; LB_OPEN=null; LB_ROWS={}; }
+}
+
+// ── the numbers ────────────────────────────────────────────────────────────
+function lbRows(r){
+  const fmt=lbFmt();
+  const rows=lpBoard(r).map(b=>{
+    const p=r.players.find(x=>x.id===b.id)||b;
+    return {...b,name:p.name,ch:p.ch,guest:p.guest};
+  });
+  const key=x=>fmt==='stb'?-x.stb:fmt==='net'?x.netToPar:x.toPar;
+  rows.sort((A,B)=>{
+    if(!A.thru&&!B.thru) return 0;
+    if(!A.thru) return 1;
+    if(!B.thru) return -1;
+    return (key(A)-key(B)) || (fmt==='stb'?A.netToPar-B.netToPar:B.stb-A.stb) || (B.thru-A.thru);
+  });
+  // Golf leaderboards share a position on a tie and mark it T.
+  let last=null,pos=0;
+  rows.forEach((x,i)=>{
+    if(!x.thru){ x.pos='–'; return; }
+    const k=key(x);
+    if(k!==last){ pos=i+1; last=k; }
+    x.pos=pos;
+  });
+  const seen={}; rows.forEach(x=>{ if(x.thru) seen[x.pos]=(seen[x.pos]||0)+1; });
+  rows.forEach(x=>{ if(x.thru&&seen[x.pos]>1) x.pos='T'+x.pos; });
+  return rows;
+}
+function lbValue(x){
+  const fmt=lbFmt();
+  if(!x.thru) return '–';
+  if(fmt==='stb') return `${x.stb}<small>pts</small>`;
+  if(fmt==='net') return lbSigned(x.netToPar);
+  return lbSigned(x.toPar);
+}
+function lbSub(r,x){
+  const fmt=lbFmt(), n=r.holes;
+  if(!x.thru) return 'not started';
+  const thru=x.thru===n?'finished':`thru ${x.thru}`;
+  if(fmt==='stb') return `${thru} · net ${lbSigned(x.netToPar)} · ${x.gross} gross`;
+  if(fmt==='net') return `${thru} · ${x.stb} pts · ${x.gross} gross`;
+  return `${thru} · ${x.gross} shots · plays off ${x.ch}`;
+}
+function lbHeadline(r){
+  const rows=lbRows(r), lead=rows[0];
+  if(!lead||!lead.thru) return 'Nobody has a score in yet';
+  const fmt=lbFmt(), first=lead.name.split(' ')[0];
+  const tied=typeof lead.pos==='string'&&lead.pos[0]==='T';
+  const what=fmt==='stb'?`${lead.stb} points`:fmt==='net'?`net ${lbSigned(lead.netToPar)}`:`${lbSigned(lead.toPar)} gross`;
+  return tied?`Tied at the top on ${what}`:`${first} leads on ${what}`;
+}
+
+// ── a player's card, dropped open under their row ──────────────────────────
+function lbCard(r,x,ctx){
+  const n=r.holes, single=n<=9;
+  const fix=ctx==='past'&&!r.noPost&&r.id;      // a finished card can be corrected, hole by hole
+  let netShots=0;
+  for(let i=0;i<n;i++) if(lpHasScore(r.scores,i+1,x.id)) netShots+=r.scores[i+1][x.id]-lpStrokes(x.ch,r.siArr[i],n);
+  const block=(from,to,label)=>{
+    const idx=[]; for(let i=from;i<to;i++) idx.push(i);
+    let gr=0,nt=0,got=0;
+    const cell=(i,net)=>{
+      const tap=fix&&!net?` role="button" tabindex="0" onclick="event.stopPropagation();HOLE_EDIT('${r.id}','${x.id}',${i+1})"`:'';
+      if(!lpHasScore(r.scores,i+1,x.id)) return `<div class="lbc-e${tap?' lbc-t':''}"${tap}>·</div>`;
+      const g=r.scores[i+1][x.id], stk=lpStrokes(x.ch,r.siArr[i],n), v=net?g-stk:g;
+      const d=v-r.parArr[i];
+      const cls=(d<=-2?'lbc-ea':d===-1?'lbc-bi':d===1?'lbc-bo':d>=2?'lbc-db':'')+(tap?' lbc-t':'');
+      return `<div class="${cls}"${tap}>${v}</div>`;
+    };
+    idx.forEach(i=>{ if(lpHasScore(r.scores,i+1,x.id)){ const g=r.scores[i+1][x.id];
+      gr+=g; nt+=g-lpStrokes(x.ch,r.siArr[i],n); got++; } });
+    const par=idx.reduce((t,i)=>t+r.parArr[i],0);
+    return `<div class="lbc-blk">
+      <div class="lbc-bh"><span>${label}</span><span>${got?gr:'–'}<small> / ${par}</small></span></div>
+      <div class="lbc-g">
+        <div class="lbc-l">Hole</div>${idx.map(i=>`<div class="lbc-h">${(r.holeNums&&r.holeNums[i])||i+1}</div>`).join('')}
+        <div class="lbc-l">Par</div>${idx.map(i=>`<div class="lbc-h">${r.parArr[i]}</div>`).join('')}
+        <div class="lbc-l">Shots</div>${idx.map(i=>cell(i,false)).join('')}
+        <div class="lbc-l">Net</div>${idx.map(i=>cell(i,true)).join('')}
+      </div></div>`;
+  };
+  return `<div class="lbc">
+    ${block(0,single?n:9,single?'Round':'Out')}
+    ${single?'':block(9,18,'In')}
+    ${lbCardFoot(r,x,ctx,netShots)}
+  </div>`;
+}
+
+// The line under a card: what they shot, what that is net, and — once the round
+// is over — what went on their record. "What was your net?" is answered here.
+function lbCardFoot(r,x,ctx,netShots){
+  if(!x.thru) return `<div class="lbc-f">No scores yet.</div>`;
+  const part=x.thru<r.holes?` <span class="lbc-part">over ${x.thru} hole${x.thru===1?'':'s'}</span>`:'';
+  let h=`<div class="lbc-sum">
+      <div><span>Gross</span><b>${x.gross}</b></div>
+      <div><span>Net</span><b>${netShots}</b><i>${lbSigned(x.netToPar)}</i></div>
+      <div><span>Points</span><b>${x.stb}</b></div>
+      <div><span>Plays off</span><b>${x.ch}</b></div>
+    </div>`;
+  if(part) h+=`<div class="lbc-f">${part}</div>`;
+  if(ctx&&!x.guest&&!r.noPost){
+    const f=uiPostedFacts(r,x.id);
+    if(f) h+=`<div class="lbc-f lbc-rec">On ${x.id===UI_ME?'your':'their'} record: <b>${f.adj}</b>${f.adj!==f.gross?' adjusted':''}${f.diff!=null?` · differential <b>${f.diff.toFixed(1)}</b>`:''}${f.counting?' · <em>counting</em>':''}${f.adj!==f.gross?`<small>Net double bogey caps a blow-up hole for the handicap — the ${f.gross} still stands on the card.</small>`:''}</div>`;
+  }else if(ctx&&x.guest){
+    h+=`<div class="lbc-f">Guest — kept on the card, not posted to a handicap.</div>`;
+  }
+  return h;
+}
+// The round as it went onto one member's record, if it did.
+var UI_HIC=new Map();
+function uiCalcHI(p){
+  const k=uiSig(p), hit=UI_HIC.get(k); if(hit) return hit;
+  if(UI_HIC.size>40) UI_HIC.clear();
+  const r=calcHI(p.scores||[],S.courses); UI_HIC.set(k,r); return r;
+}
+function uiPostedFacts(r,pid){
+  const p=S.players.find(y=>y.id===pid); if(!p||!r.id) return null;
+  const idx=(p.scores||[]).findIndex(s=>s.rid===r.id); if(idx<0) return null;
+  return uiRoundFacts(p,idx);
+}
+function uiRoundFacts(p,idx){
+  const s=p.scores[idx], c=findCourse(S.courses,s), res=uiCalcHI(p);
+  const m=res.meta&&res.meta[idx];
+  const issue=c?roundIssue(s,c):'course not found';
+  const diff=issue?null:(m&&m.eighteenhDiff!=null?m.eighteenhDiff:(m&&m.ninehDiff!=null?m.ninehDiff:(c?calcDiff(s.score,c.rating,c.slope):null)));
+  return {adj:s.score,gross:s.gross!=null?s.gross:s.score,diff,issue,
+          counting:!!(res.countingIdx&&res.countingIdx.has(idx))};
+}
+
+// ── Play ▸ Past: a finished round opens in the same sheet as the live one ──
+function uiPastRec(){
+  if(!LB_PASTID) return null;
+  const r=(HIST&&HIST[LB_PASTID])||(SUMMARY&&SUMMARY.rid===LB_PASTID?SUMMARY:null);
+  return r?{...r,id:LB_PASTID}:null;
+}
+function lbPastBody(r){
+  let h=lbBoardBody(r,'past');
+  const g=r.game&&r.game.fmt&&r.game.fmt!=='none'&&GM_FORMATS[r.game.fmt];
+  if(g){
+    h+=`<div class="lb-h">${g.name}${r.game.stake&&(r.game.fmt==='skins'||r.game.fmt==='match')?` · £${r.game.stake} ${r.game.fmt==='skins'?'a hole':'on the match'}`:''}</div>`;
+    h+=gmPanel(r);
+  }
+  const m=r.id?gmLedger().find(x=>x.rid===r.id):null;
+  if(m){
+    if(!g) h+=`<div class="lb-h">${m.label||'The game'}</div>`;
+    h+=`<button class="ui-sign sm" onclick="UI_TO('money','${m.settledAt?'ledger':'settle'}')">
+        <span class="ui-row-t">${m.settledAt?'Paid and settled':'Waiting to be settled'}<small>${m.label}</small></span>
+        <span class="ui-room">Money ›</span></button>`;
+  }
+  const c=gmContestSummary(r);
+  if(c) h+=`<div class="lb-h">Nearest the pin · longest drive</div>`+c;
+  if(r.noPost) h+=`<p class="lb-note">A scramble — kept here for the record, not posted to anyone’s handicap.</p>`;
+  if(r.amended&&r.amended.at) h+=`<p class="lb-note">Card corrected ${uiDay(r.amended.at)}.</p>`;
+  return h;
+}
+function lbPastSheet(){
+  const r=uiPastRec(); if(!r) return '';
+  const k='past', open=LB_OPEN===k;
+  return `<div class="lb-back${LB_OPEN?' on':''}" onclick="LB_X()"></div>
+    <section class="lb-sheet${open?' open':''}" id="lbPast" role="dialog" aria-label="Scorecard" aria-hidden="${!open}">
+      <button class="lb-tab" onclick="LB_X()" aria-label="Close scorecard">
+        <span class="lb-grab"></span>
+        <span class="lb-tl"><span class="lb-tt">${uiShort(r.course)} · ${r.tee}<small>${uiWeekday(r.date)} · ${r.holes} holes · ${r.players.length} player${r.players.length===1?'':'s'}</small></span>
+        <span class="lb-tc">${uiSvg('chev')}</span></span></button>
+      <div class="lb-b" id="lbPastB">${lbPastBody(r)}</div></section>`;
+}
+// Open a finished card. Your own card is open already — that's the one you came for.
+window.LB_PAST=rid=>{
+  LB_PASTID=rid; LB_PROWS={};
+  const r=uiPastRec();
+  if(r&&UI_ME&&r.players.some(p=>p.id===UI_ME)) LB_PROWS[UI_ME]=true;
+  LB_OPEN=null; render();
+  const go=()=>{ LB_OPEN='past'; lbApply(); };
+  try{ requestAnimationFrame(()=>requestAnimationFrame(go)); }catch(e){ go(); }
+};
+
+// ── scramble: the board is the teams, not the players ─────────────────────
+function lbTeamRows(r){
+  const S=gmResolveSides(r), sc=gmScramble(r,S);
+  const nm=l=>l.map(id=>gmFirst(r,id)).join(' & ');
+  const rows=[{k:'A',ids:S.A,s:sc.A},{k:'B',ids:S.B,s:sc.B}];
+  rows.sort((a,b)=>(!a.s.thru)-(!b.s.thru)||a.s.net-b.s.net);
+  return rows.map((t,i)=>`<div class="lb-row${i===0&&t.s.thru?' lead':''}" style="cursor:default">
+      <span class="lb-p">${t.s.thru?i+1:'–'}</span><span class="lb-av">${t.k}</span>
+      <span class="lb-n">Team ${t.k}<small>${nm(t.ids)} · plays off ${t.s.ch}</small></span>
+      <span class="lb-v">${t.s.thru?lbSigned(t.s.toPar):'–'}</span></div>`).join('')
+    +`<p class="lb-note">A scramble has one score a team. Net ${sc.A.thru?sc.A.net:'–'} against ${sc.B.thru?sc.B.net:'–'}.</p>`;
+}
+
+// ── the sheet bodies ───────────────────────────────────────────────────────
+// ctx: undefined = the live round · 'past' = a finished card in Play ▸ Past ·
+// 'sum' = the card at the end of the round. Same list, same card, everywhere.
+function lbBoardBody(r,ctx){
+  const isScr=r.game&&r.game.fmt==='scramble';
+  if(isScr) return lbTeamRows(r);
+  const fmt=lbFmt(), rows=lbRows(r), RS=ctx?LB_PROWS:LB_ROWS;
+  let h=`<div class="lb-seg" role="tablist">${['stb','net','gross'].map(f=>
+    `<button role="tab" aria-selected="${f===fmt}" class="${f===fmt?'on':''}" onclick="LB_F('${f}')">${LB_FMTN[f]}</button>`).join('')}</div>`;
+  h+=rows.map(x=>{
+    const open=!!RS[x.id];
+    return `<button class="lb-row${x.pos===1||x.pos==='T1'?' lead':''}${open?' open':''}${x.id===UI_ME?' me':''}" onclick="LB_R('${x.id}','${ctx||''}')" aria-expanded="${open}">
+      <span class="lb-p">${x.pos}</span>
+      <span class="lb-av">${uiInit(x.name)}</span>
+      <span class="lb-n">${x.name}${x.guest?' <i class="lb-g">guest</i>':''}<small>${lbSub(r,x)}</small></span>
+      <span class="lb-v">${lbValue(x)}</span>
+      <span class="lb-c">${uiSvg('chev')}</span></button>${open?lbCard(r,x,ctx):''}`;
+  }).join('');
+  h+=`<p class="lb-note">${fmt==='stb'?'Stableford points off each player’s full course handicap.'
+       :fmt==='net'?'Net against par, off each player’s full course handicap.'
+       :'Shots against par, before any handicap.'} Tap a name for their card.${ctx==='past'&&!r.noPost?' Tap a score on a card to correct it.':''}</p>`;
+  return h;
+}
+function lbDoneHole(r,from){
+  const all=h=>r.players.every(p=>lpHasScore(r.scores,h,p.id));
+  if(all(from)) return from;
+  for(let h=from-1;h>=1;h--) if(all(h)) return h;
+  return from;
+}
+function lbGameBody(r){
+  return gmHoleBreak(r,lbDoneHole(r,LRHOLE))+gmCapLine(r)+gmPanel(r);
+}
+
+// ── the game's green bar: in the flow of the page, right under the hole ─────
+function lbGameBar(r){
+  lbSync(r);
+  const hasGame=r.game&&r.game.fmt&&r.game.fmt!=='none';
+  const hasCap=r.rules&&r.rules.cap&&r.rules.cap!=='none';
+  if(!hasGame&&!hasCap) return '';
+  return `<button class="lb-gbar" onclick="LB_T('game')" aria-expanded="${LB_OPEN==='game'}">${gmStripInner(r)}<span class="lb-gbar-c">${uiSvg('chev')}</span></button>`;
+}
+
+// ── the sheets, dropped at the end of the round view ───────────────────────
+// The leaderboard is a mini bar parked just above the tab bar, the way a music
+// app parks what's playing. Tap it and the full sheet rises from the bottom.
+function lbRender(r){
+  lbSync(r);
+  const hasGame=r.game&&r.game.fmt&&r.game.fmt!=='none';
+  const hasCap=r.rules&&r.rules.cap&&r.rules.cap!=='none';
+  const sheet=(id,k,title,sub,body)=>`<section class="lb-sheet${LB_OPEN===k?' open':''}" id="${id}" role="dialog" aria-label="${title}" aria-hidden="${LB_OPEN!==k}">
+      <button class="lb-tab" onclick="LB_X()" aria-label="Close ${title}">
+        <span class="lb-grab"></span>
+        <span class="lb-tl"><span class="lb-tt">${title}<small${k==='board'?' id="lbHead2"':''}>${sub}</small></span>
+        <span class="lb-tc">${uiSvg('chev')}</span></span></button>
+      <div class="lb-b" id="${id}B">${body}</div></section>`;
+  let h=`<div class="lb-spacer"></div>`;
+  h+=`<div class="lb-back${LB_OPEN?' on':''}" onclick="LB_X()"></div>`;
+  h+=`<button class="lb-mini" onclick="LB_T('board')" aria-expanded="${LB_OPEN==='board'}" aria-controls="lbBoard">
+      <span class="lb-mini-i">${uiSvg('rank')}</span>
+      <span class="lb-tt">Leaderboard<small id="lbHead">${lbHeadline(r)}</small></span>
+      <span class="lb-mini-c">${uiSvg('chev')}</span></button>`;
+  h+=sheet('lbBoard','board','Leaderboard',lbHeadline(r),lbBoardBody(r));
+  if(hasGame||hasCap){
+    const gt=hasGame?GM_FORMATS[r.game.fmt].name:'Agreed scoring';
+    const gs=hasGame&&r.game.stake&&(r.game.fmt==='skins'||r.game.fmt==='match')
+      ?`£${r.game.stake} ${r.game.fmt==='skins'?'a hole':'on the match'}`:'This round';
+    h+=sheet('lbGame','game',gt,gs,lbGameBody(r));
+  }
+  return h;
+}
+
+// ── handlers: open and close without a re-render, so it slides ─────────────
+function lbApply(){
+  [['lbBoard','board'],['lbGame','game'],['lbPast','past']].forEach(([id,k])=>{
+    const e=document.getElementById(id); if(!e) return;
+    e.classList.toggle('open',LB_OPEN===k);
+    e.setAttribute('aria-hidden',String(LB_OPEN!==k));
+  });
+  document.querySelectorAll('.lb-back').forEach(e=>e.classList.toggle('on',!!LB_OPEN));
+  const m=document.querySelector('.lb-mini'); if(m) m.setAttribute('aria-expanded',String(LB_OPEN==='board'));
+  const g=document.querySelector('.lb-gbar'); if(g) g.setAttribute('aria-expanded',String(LB_OPEN==='game'));
+  document.documentElement.classList.toggle('lb-lock',!!LB_OPEN);
+}
+window.LB_T=k=>{ LB_OPEN=(LB_OPEN===k?null:k); lbApply(); };
+window.LB_X=()=>{ LB_OPEN=null; lbApply(); };
+// Repaint only the board's contents, keeping your place in the list.
+function lbRepaint(){
+  const paint=(id,fn)=>{ const box=document.getElementById(id); if(!box) return;
+    const top=box.scrollTop; box.innerHTML=fn(); box.scrollTop=top; };
+  if(LR){
+    paint('lbBoardB',()=>lbBoardBody(LR));
+    const t=lbHeadline(LR);
+    ['lbHead','lbHead2'].forEach(k=>{ const e=document.getElementById(k); if(e) e.textContent=t; });
+  }
+  const pr=uiPastRec(); if(pr) paint('lbPastB',()=>lbPastBody(pr));
+  if(SUMMARY) paint('lbSumB',()=>lbBoardBody({...SUMMARY,id:SUMMARY.rid||null},'sum'));
+}
+window.LB_F=f=>{ LRFMT=f; lbRepaint(); };
+window.LB_R=(id,ctx)=>{ const RS=ctx?LB_PROWS:LB_ROWS; RS[id]=!RS[id]; lbRepaint(); };
+// Escape closes it, as a sheet should.
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&LB_OPEN){ LB_X(); } });
+// ═══════════════════════════════════════════════════════════════════════════
+// CLUB 2.1 · FIVE ROOMS — Home · League · Play · Money · Me
+//
+// Every room is built the same way: its name, the one number that matters,
+// and never more than four tabs. Add buttons sit top right, in the room they
+// fill. Nothing is filed twice — a shortcut shows where it goes, it never
+// holds its own copy.
+//
+// Old addresses (rankings, crown, purse, upcoming…) still work: render() sends
+// each one to its new shelf, so no link anywhere in the app goes dead.
+// ═══════════════════════════════════════════════════════════════════════════
+const UI_ROOMS=['home','league','play','money','me'];
+var UI_ROOMTAB={league:'rankings',play:'live',money:'settle',me:'overview'};
+var UI_HON='records', UI_LEDG='all', UI_PAST=null, UI_PASTN=30, UI_H2HWHO=null, UI_SPOST=false, UI_HLOAD=false;
+const UI_ROUTE={
+  rankings:['league','rankings'], crown:['league','crown'],
+  tournaments:['league','honours','tournaments'], winners:['league','honours','tournaments'],
+  contests:['league','honours','contests'],
+  upcoming:['play','upcoming'], courses:['play','courses'],
+  purse:['money','ledger'], profile:['me','overview'], settings:['me','settings'],
+};
+function uiRoute(){
+  const r=UI_ROUTE[V]; if(!r) return false;
+  V=r[0]; UI_ROOMTAB[r[0]]=r[1];
+  if(r[2]) UI_HON=r[2];
+  if(r[0]==='money') UI_LEDG='tournaments';
+  return true;
+}
+
+// ── the parts every room is made of ────────────────────────────────────────
+function uiRoomHead(title,key,action){
+  return `<div class="ui-pagehead ui-roomhead"><div class="ui-roomt"><div class="ui-h1">${title}</div>${key?`<div class="ui-roomkey">${key}</div>`:''}</div>${action||''}</div>`;
+}
+function uiRoomTabs(tabs,cur){
+  return `<div class="ui-seg ui-seg-full ui-evtabs ui-roomtabs" role="tablist">${tabs.map(([k,l])=>
+    `<button role="tab" aria-selected="${cur===k}" class="${cur===k?'on':''}" onclick="UI_RT('${k}')">${l}</button>`).join('')}</div>`;
+}
+function uiAdd(onclick,label){ return `<button class="ui-btn ui-btn-g ui-btn-sm" onclick="${onclick}">${uiSvg('plus')}${label}</button>`; }
+function uiChips(list,cur,handler){
+  return `<div class="ui-chips-x ui-subchips">${list.map(([k,l])=>
+    `<button class="ui-chip sm${cur===k?' on':''}" onclick="${handler}('${k}')">${l}</button>`).join('')}</div>`;
+}
+// A signpost: says what it is and which room it takes you to.
+function uiSign(onclick,title,sub,room,extra){
+  return `<button class="ui-sign${extra?' '+extra:''}" onclick="${onclick}"><span class="ui-row-t">${title}${sub?`<small>${sub}</small>`:''}</span><span class="ui-room">${room} ›</span></button>`;
+}
+function uiPl(n,w){ return `${n} ${w}${n===1?'':'s'}`; }
+function uiMoneyStr(v){ const a=Math.abs(Math.round(v*100)/100); return '£'+(a%1?a.toFixed(2):a); }
+function uiFirst(pid){ const p=S.players.find(x=>x.id===pid); return p?uiName(p):'?'; }
+
+// ═══════════════════════════════ LEAGUE ═══════════════════════════════════
+// Everyone against everyone. Results only — the money for any of it is in Money.
+function renderLeague(R){
+  const t=UI_ROOMTAB.league;
+  const y0=new Date().getFullYear()+'-01-01';
+  const ry=S.players.reduce((a,p)=>a+(p.scores||[]).filter(s=>s.date&&s.date>=y0).length,0);
+  let act='';
+  if(t==='crown') act=uiAdd("OM('register')",'Declare');
+  if(t==='honours'&&UI_HON==='tournaments') act=uiAdd("OM('tournament')",'Result');
+  if(t==='honours'&&UI_HON==='contests') act=uiAdd("OM('contest')",'Result');
+  let h=uiRoomHead('League',`${uiPl(S.players.length,'member')} · ${uiPl(ry,'round')} this year`,act)
+    +uiRoomTabs([['rankings','Rankings'],['crown','Crown'],['h2h','Head to head'],['honours','Honours']],t);
+  if(t==='crown') return h+renderCrown();
+  if(t==='h2h') return h+renderLeagueH2H();
+  if(t==='honours') return h+renderHonours(R);
+  return h+renderRanking(R);
+}
+// Head to head: the career record, one player at a time. Defaults to you.
+function renderLeagueH2H(){
+  const list=[...S.players].sort((a,b)=>(b.id===UI_ME)-(a.id===UI_ME)||a.name.localeCompare(b.name));
+  if(!list.length) return `<div class="ui-crempty">No players yet.</div>`;
+  const who=list.find(p=>p.id===UI_H2HWHO)||list.find(p=>p.id===UI_ME)||list[0];
+  UI_H2HWHO=who.id;
+  return `<div class="ui-note ui-roomnote">Every round two of you played on the same course, the same day — for all time. Pick whose record to look at.</div>`
+    +uiChips(list.map(p=>[p.id,p.id===UI_ME?'Me':uiName(p)]),who.id,'UI_H2HW')
+    +renderH2H(who);
+}
+// Honours: every winner of everything, in one roll.
+function renderHonours(R){
+  const k=['records','crown','tournaments','contests'].includes(UI_HON)?UI_HON:'records';
+  let h=uiChips([['records','Records'],['crown','Crown'],['tournaments','Tournaments'],['contests','Contests']],k,'UI_HON_O');
+  if(k==='records'){ const r=renderRecords(R); return h+(r||`<div class="ui-crempty">Records appear once rounds are posted.</div>`); }
+  if(k==='crown') return h+crownHonour();
+  if(k==='contests'){ uiHistLoad(); return h+renderContests(); }
+  // tournaments: the champions, then anything still waiting for a winner
+  h+=renderWinners();
+  const open=[...S.tournaments].filter(t=>!t.winnerId).sort((a,b)=>b.date.localeCompare(a.date));
+  if(open.length) h+=`<div class="ui-lbl">No winner recorded yet</div><div class="ui-list">${open.map(t=>`
+    <button class="ui-row" onclick="OT('${t.id}')"><span class="ui-av">${uiSvg('trophy')}</span>
+      <span class="ui-row-t">${t.name}<small>${uiDay(t.date)} · ${uiPl(t.entries.length,'player')}</small></span>${uiSvg('chev','ui-chev')}</button>`).join('')}</div>`;
+  return h;
+}
+// Nearest-the-pin and longest-drive won in a live round count in the same table
+// as the ones typed in by hand — one kind of contest, not two.
+function uiLiveContests(){
+  if(!HIST) return [];
+  const out=[];
+  Object.keys(HIST).forEach(rid=>{
+    const r=HIST[rid]; if(!r||!r.ctp||!Array.isArray(r.players)) return;
+    Object.keys(r.ctp).forEach(h=>{
+      const pid=r.ctp[h]; if(!pid||!S.players.some(p=>p.id===pid)) return;
+      const real=(r.holeNums&&r.holeNums[h-1])||h;
+      out.push({id:'live:'+rid+':'+h,type:gmContestKind(r,+h)==='ctp'?'pin':'drive',winnerId:pid,
+        date:r.date,course:r.course,detail:`hole ${real} · live round`,live:true});
+    });
+  });
+  return out;
+}
+
+// ═══════════════════════════════ PLAY ═════════════════════════════════════
+// Every round of golf, in time order: coming up, happening, finished.
+function renderPlayRoom(){
+  if(LPV==='hist'){ LPV='list'; UI_ROOMTAB.play='past'; }
+  // setup, the scoring screen and the end-of-round card are full screen
+  if(LPV!=='list') return renderPlay();
+  const t=UI_ROOMTAB.play;
+  let key='', act='';
+  if(t==='upcoming'){
+    const n=uiUpcomingList().length;
+    key=n?`${uiPl(n,'round')} coming up`:'Nothing in the diary';
+    act=uiAdd("OM('upcoming')",'Event');
+  }else if(t==='past'){
+    const n=S.players.reduce((a,p)=>a+(p.scores||[]).length,0);
+    key=`${uiPl(n,'round')} on the record`;
+    act=uiAdd('UI_POST()','Post a score');
+  }else if(t==='courses'){
+    key=`${uiPl(new Set(S.courses.map(c=>c.name)).size,'course')}`;
+    act=uiAdd("OM('course')",'Course');
+  }else{
+    const live=ROUNDS?Object.values(ROUNDS).filter(r=>r&&r.active).length:0;
+    key=live?`${live} live now`:'Everyone scores on their own phone';
+    act=uiAdd('LP_NEW()','New round');
+  }
+  let h=uiRoomHead('Play',key,act)+uiRoomTabs([['upcoming','Upcoming'],['live','Live'],['past','Past'],['courses','Courses']],t);
+  if(t==='upcoming') return h+renderUpcoming();
+  if(t==='past') return h+renderPast();
+  if(t==='courses') return h+renderCourses();
+  return h+renderPlay();
+}
+function uiUpcomingList(){
+  const now=new Date();
+  return [...(S.upcoming||[])].filter(t=>t&&t.date&&(new Date(t.date)>=now||(daysUntil(t.date)||0)>=-1));
+}
+function uiHistLoad(){
+  if(HIST!==null||UI_HLOAD) return;
+  UI_HLOAD=true;
+  fetch(`${RH_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{ HIST=d||{}; })
+    .catch(()=>{ HIST={}; }).finally(()=>{ UI_HLOAD=false; render(); });
+}
+
+// ── Past: one list of every round anyone has played ────────────────────────
+// Everyone: the club's timeline — a round played together is one card, a score
+// posted by hand is one line. Pick a player and it becomes their handicap
+// record: counting rounds in green, tap any to see or fix it.
+function renderPast(){
+  uiHistLoad();
+  const who=UI_PAST&&S.players.find(p=>p.id===UI_PAST)?UI_PAST:null;
+  UI_PAST=who;
+  const list=[...S.players].sort((a,b)=>(b.id===UI_ME)-(a.id===UI_ME)||a.name.localeCompare(b.name));
+  let h=uiChips([['','Everyone'],...list.map(p=>[p.id,p.id===UI_ME?'Me':uiName(p)])],who||'','UI_PASTW');
+  if(who){
+    const p=S.players.find(x=>x.id===who), s=uiCalcHI(p), st=uiStats(p);
+    const nextOut=uiNextOut(p,s);
+    h+=`<div class="ui-note ui-roomnote">${s.hi!==null
+      ? `Best ${s.n} of the last ${s.count} set ${p.id===UI_ME?'your':uiName(p)+'’s'} index of <b>${s.hi.toFixed(1)}</b>${nextOut?` · next to drop out: ${uiShort(nextOut.course)} ${nextOut.score}`:''}`
+      : `${uiPl(st.valid,'round')} posted — an index needs 54 holes`}. Tap a round for the detail${HIST?'':''}.</div>`;
+    h+=renderRoundList(p,s);
+    return h+lbPastSheet();
+  }
+  const items=uiPastItems();
+  if(HIST===null&&!items.length) return h+`<div class="ui-crempty">Loading…</div>`;
+  if(!items.length) return h+`<div class="ui-crempty">No rounds yet. Finish a live round or post a score and it lands here.</div>`;
+  const shown=items.slice(0,UI_PASTN);
+  if(HIST===null) h+=`<div class="ui-note ui-roomnote">Fetching the scorecards…</div>`;
+  let lastMon='';
+  h+=shown.map(it=>{
+    const mon=it.date?new Date(it.date+'T12:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'No date';
+    const head=mon!==lastMon?`<div class="ui-lbl ui-pastmon">${mon}</div>`:''; lastMon=mon;
+    return head+(it.kind==='card'?uiPastCard(it):uiPastLine(it));
+  }).join('');
+  if(items.length>shown.length) h+=`<button class="ui-btn ui-btn-w" style="margin-top:12px" onclick="UI_PASTMORE()">Show ${Math.min(30,items.length-shown.length)} more</button>`;
+  return h+lbPastSheet();
+}
+// Cards played together come from the round history; anything else is a score
+// posted by hand. A card's posted scores are not listed twice.
+function uiPastItems(){
+  const out=[], seen=new Set();
+  Object.keys(HIST||{}).forEach(rid=>{
+    const r=HIST[rid]; if(!r||!Array.isArray(r.players)||!r.players.length||!Array.isArray(r.parArr)) return;
+    seen.add(rid);
+    out.push({kind:'card',rid,r,date:r.date||'',at:r.finishedAt||0});
+  });
+  S.players.forEach(p=>(p.scores||[]).forEach((s,i)=>{
+    if(s.rid&&seen.has(s.rid)) return;
+    out.push({kind:'line',p,s,i,date:s.date||'',at:0});
+  }));
+  return out.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.at-a.at);
+}
+function uiPastCard(it){
+  const r=it.r;
+  let B=[]; try{ B=lpBoard(r).filter(x=>x.thru); }catch(e){}
+  const game=r.game&&r.game.fmt&&r.game.fmt!=='none'&&GM_FORMATS[r.game.fmt]?GM_FORMATS[r.game.fmt].name:'';
+  const me=B.find(x=>x.id===UI_ME);
+  const netS=x=>{ let n=0; for(let h=1;h<=r.holes;h++) if(lpHasScore(r.scores,h,x.id)) n+=r.scores[h][x.id]-lpStrokes(x.ch,r.siArr[h-1],r.holes); return n; };
+  const scr=r.game&&r.game.fmt==='scramble';
+  return `<button class="ui-pcard" onclick="LB_PAST('${it.rid}')">
+    <span class="ui-pcard-h"><span class="ui-row-t">${uiShort(r.course)} · ${r.tee}<small>${uiWeekday(r.date)} · ${r.holes} holes${game?' · '+game:''}</small></span>
+      ${me&&!scr?`<span class="ui-pcard-me"><b>${netS(me)}</b><small>your net</small></span>`:''}</span>
+    <span class="ui-pcard-p">${scr?'<span>Scramble · one card a team</span>':B.map(x=>`<span${x.id===UI_ME?' class="me"':''}>${x.name.split(' ')[0]} <b>${x.gross}</b> · net ${netS(x)}</span>`).join('')}</span>
+    <span class="ui-pcard-f">Tap for everyone’s card</span>
+  </button>`;
+}
+function uiPastLine(it){
+  const {p,s,i}=it, f=uiRoundFacts(p,i);
+  const cfg=s.holes&&s.holes!=='18'?' · '+(uiCfgL?uiCfgL(s.holes):s.holes):'';
+  return `<button class="ui-pline${f.counting?' cnt':''}" onclick="UI_PASTGO('${p.id}',${i})">
+    <span class="ui-av${p.id===UI_ME?' g':''}">${uiInit(p.name)}</span>
+    <span class="ui-row-t">${p.id===UI_ME?'You':uiName(p)} · ${uiShort(s.course)}${cfg}<small>${s.date?uiDay(s.date):'no date'} · posted by hand${f.adj!==f.gross?` · ${f.adj} adjusted`:''}</small></span>
+    <span class="ui-pline-v"><b>${f.gross}</b><small>${f.diff!=null?f.diff.toFixed(1):'–'}</small></span></button>`;
+}
+
+// ═══════════════════════════════ MONEY ════════════════════════════════════
+// Anything with a £ sign, and nothing without one.
+function uiMoneyOpen(){
+  const open=gmLedger().filter(m=>!m.settledAt);
+  const pnl={};
+  open.forEach(m=>{
+    const W=m.winnings||{}, K=m.stakes||{};
+    new Set([...Object.keys(W),...Object.keys(K)]).forEach(id=>{ pnl[id]=(pnl[id]||0)+(W[id]||0)-(K[id]||0); });
+  });
+  Object.keys(pnl).forEach(k=>{ pnl[k]=Math.round(pnl[k]*100)/100; });
+  return {open,pnl,pays:gmNetting(pnl)};
+}
+function uiMoneyKey(M){
+  M=M||uiMoneyOpen();
+  const mine=UI_MEP()?(M.pnl[UI_ME]||0):null;
+  if(mine!=null&&mine>0) return `You’re owed ${uiMoneyStr(mine)}`;
+  if(mine!=null&&mine<0) return `You owe ${uiMoneyStr(mine)}`;
+  if(M.pays.length) return `${uiPl(M.pays.length,'payment')} to settle`;
+  return 'All square';
+}
+function renderMoney(){
+  const t=UI_ROOMTAB.money, M=uiMoneyOpen();
+  const act=t==='ledger'&&UI_LEDG==='tournaments'?`<button class="ui-btn ui-btn-g ui-btn-sm" onclick="SET_PURSE(null)">${uiSvg('plus')}Record</button>`:'';
+  let h=uiRoomHead('Money',uiMoneyKey(M),act)+uiRoomTabs([['settle','Settle up'],['ledger','Ledger']],t);
+  return h+(t==='ledger'?renderLedger():renderSettle(M));
+}
+function renderSettle(M){
+  let h='';
+  if(!M.pays.length){
+    h+=`<div class="ui-card ui-pad ui-square"><b>All square.</b> Nobody owes anybody for the games you’ve played.${gmLedger().length?'':' Put a stake on a skins or a match and it lands here when the round is finished.'}</div>`;
+  }else{
+    h+=`<div class="ui-card ui-pad gm-settle">
+      <div class="gm-pays-h">${uiPl(M.pays.length,'payment')} settles everything</div>
+      ${M.pays.map(x=>`<div class="gm-pay${x.from===UI_ME||x.to===UI_ME?' me':''}"><b>${uiFirst(x.from)}</b> pays <b>${uiFirst(x.to)}</b><span>${uiMoneyStr(x.amt)}</span></div>`).join('')}
+      <div class="gm-pays-n">Netted across ${uiPl(M.open.length,'game')}, so nobody passes money round in circles.</div>
+      <button class="ui-btn ui-btn-g" style="margin-top:12px" onclick="UI_SETTLED()">${uiSvg('tick')}Mark as paid</button>
+    </div>`;
+  }
+  if(M.open.length){
+    h+=`<div class="ui-lbl">Waiting to be settled</div><div class="ui-list">${[...M.open].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>uiMatchRow(m)).join('')}</div>`;
+  }
+  h+=`<div class="ui-list" style="margin-top:14px">${uiSign("UI_TO('money','ledger')",'Everything ever won and paid','Matches, the Crown and tournaments','Ledger')}</div>`;
+  return h;
+}
+function uiMatchRow(m){
+  const W=m.winnings||{}, K=m.stakes||{};
+  const ids=[...new Set([...Object.keys(W),...Object.keys(K)])];
+  const v=id=>Math.round(((W[id]||0)-(K[id]||0))*100)/100;
+  const mine=ids.includes(UI_ME)?v(UI_ME):null;
+  const who=ids.map(id=>{ const x=v(id); return `${uiFirst(id)} ${x>0?'+':x<0?'−':''}${x?uiMoneyStr(x):'£0'}`; }).join(' · ');
+  return `<div class="ui-row ui-mrow" style="cursor:default">
+    <span class="ui-row-t">${m.label||'Game'}<small>${m.course?uiShort(m.course)+' · ':''}${m.date?uiDay(m.date):''}${m.settledAt?' · paid':''}</small><small class="ui-mrow-w">${who}</small></span>
+    ${mine!=null?`<span class="ui-pnl ${mine>0?'up':mine<0?'dn':''}">${mine>0?'+':mine<0?'−':''}${uiMoneyStr(mine)}</span>`:''}
+    ${m.rid?`<button class="ui-ico sm" onclick="UI_CARD('${m.rid}')" aria-label="See the card">${uiSvg('chev')}</button>`:''}</div>`;
+}
+function renderLedger(){
+  const k=['all','matches','crown','tournaments'].includes(UI_LEDG)?UI_LEDG:'all';
+  let h=uiChips([['all','All'],['matches','Matches'],['crown','The Crown'],['tournaments','Tournaments']],k,'UI_LEDG_O');
+  if(k==='tournaments') return h+renderPurseBody();
+  if(k==='crown') return h+uiCrownMoney();
+  if(k==='matches'){
+    const L=[...gmLedger()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    if(!L.length) return h+`<div class="ui-crempty">No games with money on them yet.</div>`;
+    const P=gmPurse(), rows=Object.keys(P).map(x=>P[x]).filter(x=>x.games).sort((a,b)=>b.pnl-a.pnl);
+    h+=`<div class="ui-lbl" style="margin-top:0">All time</div><div class="ui-list">${rows.map(x=>`
+      <div class="ui-row" style="cursor:default"><span class="ui-av${x.id===UI_ME?' g':''}">${uiInit(x.name)}</span>
+        <span class="ui-row-t">${x.name}<small>${uiPl(x.games,'game')}${x.wins?` · ${x.wins} won`:''}</small></span>
+        <span class="ui-pnl ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':x.pnl<0?'−':''}${uiMoneyStr(x.pnl)}</span></div>`).join('')}</div>`;
+    return h+`<div class="ui-lbl">Every game</div><div class="ui-list">${L.map(uiMatchRow).join('')}</div>`;
+  }
+  // all: where it came from, one line a shelf
+  const me=UI_MEP()?S.players.find(p=>p.id===UI_ME):null;
+  const P=gmPurse(), mm=me&&P[me.id]?P[me.id]:null;
+  const tp=(()=>{ try{ return calcPurse().find(x=>me&&x.name===me.name)||null; }catch(e){ return null; } })();
+  const cr=uiCrownMine();
+  const sgn=(v,f)=>v>0?'+'+f(v):v<0?'−'+f(Math.abs(v)):f(0);
+  h+=`<div class="ui-list">
+    <button class="ui-row" onclick="UI_LEDG_O('matches')"><span class="ui-row-t">Matches<small>Skins and match play · ${uiPl(gmLedger().length,'game')}</small></span>
+      ${mm?`<span class="ui-pnl ${mm.pnl>0?'up':mm.pnl<0?'dn':''}">${sgn(mm.pnl,uiMoneyStr)}</span>`:''}${uiSvg('chev','ui-chev')}</button>
+    <button class="ui-row" onclick="UI_LEDG_O('crown')"><span class="ui-row-t">The Crown<small>Monthly stakes · ${uiPl(cr.months,'month')} settled</small></span>
+      ${me?`<span class="ui-pnl ${cr.pnl>0?'up':cr.pnl<0?'dn':''}">${sgn(cr.pnl,v=>cr.cur+v)}</span>`:''}${uiSvg('chev','ui-chev')}</button>
+    <button class="ui-row" onclick="UI_LEDG_O('tournaments')"><span class="ui-row-t">Tournaments<small>Buy-ins and prize money</small></span>
+      ${tp?`<span class="ui-pnl ${tp.pnl>0?'up':tp.pnl<0?'dn':''}">${tp.pnl>0?'+':tp.pnl<0?'−':''}${fmtCurrency(Math.abs(tp.pnl))}</span>`:''}${uiSvg('chev','ui-chev')}</button>
+  </div>
+  <div class="ui-note ui-roomnote">${me?'Your running total on each shelf. ':''}Each keeps its own currency, as it was played for.</div>`;
+  return h;
+}
+function uiCrownResults(){
+  const res=(S.potm&&S.potm.results)||{};
+  return Object.keys(res).sort((a,b)=>b.localeCompare(a)).map(k=>({ym:k,...res[k]}));
+}
+function uiCrownMine(){
+  const me=UI_MEP()?S.players.find(p=>p.id===UI_ME):null;
+  let pnl=0, cur='£';
+  const R=uiCrownResults().filter(x=>!x.void);
+  R.forEach(x=>{ if(x.currency) cur=x.currency; (x.owed||[]).forEach(o=>{ if(!me) return;
+    if(o.to===me.name) pnl+=+o.amount||0; if(o.from===me.name) pnl-=+o.amount||0; }); });
+  return {pnl,cur,months:R.length};
+}
+function uiCrownMoney(){
+  const R=uiCrownResults();
+  if(!R.length) return `<div class="ui-crempty">No Crown months settled yet. When one settles, who paid whom is kept here.</div>`;
+  return `<div class="ui-list">${R.map(x=>`
+    <div class="ui-row" style="cursor:default"><span class="ui-crmon">${potmMonthName(x.ym)}</span>
+      <span class="ui-row-t">${x.void?'Void — pot rolled forward':(x.winner||'—')}<small>${x.void?'too few qualified':(x.owed||[]).length?(x.owed||[]).map(o=>`${o.from.split(' ')[0]} → ${o.to.split(' ')[0]} ${x.currency||''}${o.amount}`).join(' · '):'nothing at stake'}</small></span>
+      ${x.void?'':`<span class="ui-crwin">${uiSvg('crown')}</span>`}</div>`).join('')}</div>
+    <div class="ui-note ui-roomnote">The standings for every month are in League ▸ Crown.</div>`;
+}
+
+// ═══════════════════════════════ ME ═══════════════════════════════════════
+// Your own card. Your rounds and your head-to-heads are signposts into Play and
+// the League — the same screens, filtered to you.
+function renderMe(R){
+  const t=UI_ROOMTAB.me;
+  if(!UI_MEP()){
+    let h=uiRoomHead('Me','Who’s this phone for?','')+uiRoomTabs([['overview','Choose player'],['settings','Settings']],t==='settings'?'settings':'overview');
+    if(t==='settings') return h+renderSettings();
+    return h+renderProfilePick(true);
+  }
+  const p=S.players.find(x=>x.id===UI_ME);
+  const st=uiStats(p), rp=R.find(x=>x.id===p.id)||{};
+  const key=`${p.name}${rp.hi!=null?' · index '+rp.hi.toFixed(1):''}`;
+  const act=`<button class="ui-ico" onclick="PL_EDIT('${p.id}')" aria-label="Edit my details">${uiSvg('pen')}</button>`;
+  let h=uiRoomHead('Me',key,act)+uiRoomTabs([['overview','Overview'],['stats','Stats'],['settings','Settings']],t);
+  if(t==='stats') return h+renderStatsTab(p,st);
+  if(t==='settings') return h+renderSettings();
+  return h+uiPlayerOverview(p)+renderProfileFoot(p);
+}
+// Shared by Me and every other player's page.
+function uiPlayerOverview(p){
+  const s=uiCalcHI(p), st=uiStats(p), mine=p.id===UI_ME, fn=mine?'your':uiName(p)+'’s';
+  const rp=ranked().find(x=>x.id===p.id)||{};
+  const hi=rp.hi!=null?rp.hi:null, yd=st.yearDelta;
+  let h=`<div class="ui-hicard ui-panel">
+    <div class="ui-hic-top"><span>Handicap index</span>${yd!=null&&Math.abs(yd)>=0.05?`<span class="ui-pill gw">${yd<0?'↓':'↑'} ${Math.abs(yd).toFixed(1)} this year</span>`:''}</div>
+    <div class="ui-xl" style="font-size:72px;margin-top:8px">${hi!=null?hi.toFixed(1):'—'}${rp.carried?'<i class="ui-star w">*</i>':''}</div>
+    ${uiSpark(st)}
+    <div class="ui-hic-sub">${hi==null?(st.holes?`Needs ${Math.max(0,54-st.holes)} more holes for a first index`:'No rounds yet'):rp.carried?`Carried from previous club · ${rp.count||0}/3 rounds here`:`Best ${s.n} of the last ${s.count} count${st.move!=null&&Math.abs(st.move)>=0.05?` · ${st.move<0?'↓':'↑'}${Math.abs(st.move).toFixed(1)} last round`:''}`}</div>
+  </div>
+  <div class="ui-stat3">
+    <div><span>Low</span><b>${st.lowHI!=null?st.lowHI.toFixed(1):'—'}</b></div>
+    <div><span>Best</span><b>${st.bestGross?st.bestGross.score:'—'}</b></div>
+    <div><span>Crowns</span><b>${st.crowns}</b></div>
+  </div>`;
+  const tg=uiTarget(p); if(tg) h+=uiTargetCard(tg,false);
+  // the last five, counting rounds in green — the full list is a tap away in Play
+  const ord=[...orderScores(p.scores||[])].reverse().slice(0,5);
+  if(ord.length){
+    h+=`<div class="ui-lbl">Last ${ord.length} · counting rounds in green</div><div class="ui-hist">${ord.map(e=>{
+      const s2=e.s, f=uiRoundFacts(p,e.i);
+      return `<button class="ui-hrow${f.counting?' cnt':''}${f.issue?' bad':''}" onclick="UI_PASTGO('${p.id}',${e.i})">
+        <span class="ui-row-t">${uiShort(s2.course)}${s2.tee?' · '+s2.tee:''}<small>${s2.date?uiDay(s2.date):'no date'} · ${f.gross}${f.adj!==f.gross?`, adjusted ${f.adj}`:''}</small></span>
+        <span class="ui-hdf">${f.diff!=null?f.diff.toFixed(1):'–'}</span></button>`;}).join('')}</div>`;
+  }
+  // signposts, not copies
+  const h2=S.players.filter(o=>o.id!==p.id).map(o=>({o,r:uiH2H(p,o)})).filter(x=>x.r.rows.length)
+    .sort((a,b)=>(b.r.w-b.r.l)-(a.r.w-a.r.l)||b.r.rows.length-a.r.rows.length);
+  const best=h2[0];
+  h+=`<div class="ui-list" style="margin-top:14px">
+    ${uiSign(`UI_PASTGO('${p.id}')`,`All ${fn} rounds`,`${uiPl((p.scores||[]).length,'round')} · tap one for the card`,'Play')}
+    ${uiSign(`UI_H2HGO('${p.id}')`,`${mine?'Me':uiName(p)} against everyone`,best?`Best record: v ${uiName(best.o)}, ${best.r.w}–${best.r.l}${best.r.d?'–'+best.r.d:''}`:'No rounds alongside anyone yet','League')}
+  </div>`;
+  const badges=potmBadges(p,S.courses);
+  if(badges.length) h+=`<div class="ui-lbl">Badges</div><div class="ui-chips-x ui-badges">${badges.map(b=>`<span class="ui-chip sm">${b.name}</span>`).join('')}</div>`;
+  return h;
+}
+
+// ═══════════════════════════════ HANDLERS ═════════════════════════════════
+// A tab inside the room you're in.
+window.UI_RT=t=>{
+  UI_ROOMTAB[V]=t;
+  if(V==='play'){ if(LPV==='hist') LPV='list'; }
+  if(V==='league'&&t!=='crown') UI_CRD=null;
+  OPEN_SCORE=null; LB_OPEN=null;
+  render(); try{ window.scrollTo(0,0); }catch(e){}
+};
+// Straight to a room and tab — every signpost goes through here.
+window.UI_TO=(room,tab)=>UI_GO(room,tab);
+window.UI_HON_O=k=>{ UI_HON=k; render(); };
+window.UI_LEDG_O=k=>{ UI_LEDG=k; render(); try{ window.scrollTo(0,0); }catch(e){} };
+window.UI_H2HW=id=>{ UI_H2HWHO=id; render(); };
+window.UI_H2HGO=id=>{ UI_H2HWHO=id; UI_TO('league','h2h'); };
+window.UI_PASTW=id=>{ UI_PAST=id||null; UI_PASTN=30; OPEN_SCORE=null; render(); };
+window.UI_PASTMORE=()=>{ UI_PASTN+=30; render(); };
+// A player's record in Play ▸ Past, with one round already open.
+window.UI_PASTGO=(pid,idx)=>{
+  UI_PAST=pid; UI_TO('play','past');
+  if(idx!=null){ OPEN_SCORE={pid,idx:+idx}; render();
+    setTimeout(()=>{ try{ const e=document.querySelector('.ui-hrow.open'); if(e) e.scrollIntoView({block:'center'}); }catch(err){} },40); }
+};
+// A finished card, from anywhere: the money ledger, a player's round.
+window.UI_CARD=rid=>{
+  if(V!=='play'||UI_ROOMTAB.play!=='past'){ UI_TO('play','past'); }
+  if(HIST===null){ UI_HLOAD=true;
+    fetch(`${RH_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{ HIST=d||{}; })
+      .catch(()=>{ HIST={}; }).finally(()=>{ UI_HLOAD=false;
+        if(HIST&&HIST[rid]) LB_PAST(rid); else { render(); alert('That card isn’t in the round history.'); } });
+    return;
+  }
+  if(HIST[rid]) LB_PAST(rid); else alert('That card isn’t in the round history.');
+};
+window.UI_SETTLED=()=>{
+  const M=uiMoneyOpen(); if(!M.open.length) return;
+  const lines=M.pays.map(x=>`${uiFirst(x.from)} pays ${uiFirst(x.to)} ${uiMoneyStr(x.amt)}`).join('\n');
+  if(!confirm(`Mark everything as paid?\n\n${lines}\n\nOnly do this once the money has changed hands. The games stay in the Ledger.`)) return;
+  const at=Date.now(), ids=new Set(M.open.map(m=>m.id));
+  upd({...S,matches:gmLedger().map(m=>ids.has(m.id)?{...m,settledAt:at}:m)});
+};
+// Posting a score opens the form over the room you're in, not a player page.
+window.UI_POST=()=>{
+  if(!UI_MEP()) return UI_TO('me','overview');
+  TID=null; if(!PID){ UI_SPOST=true; PID=UI_ME; } OM('score');
+};
+(function(){
+  const _CM=window.CM;
+  window.CM=()=>{ if(UI_SPOST){ UI_SPOST=false; PID=null; } _CM(); };
+  const _ES=window.ES;
+  window.ES=(pid,idx)=>{ if(!PID) UI_SPOST=true; _ES(pid,idx); };
+  // the old "Rounds" links on a player page now open their record in Play
+  window.UI_RH_O=pid=>UI_PASTGO(pid||PID||UI_ME);
+  window.UI_MENU_O=()=>UI_GO('home');
+  // "Done" at the end of a round files it where you'll look for it: Play ▸ Past,
+  // at the top, fetched fresh so the card you just finished is there.
+  const _LD=window.LP_DONE;
+  window.LP_DONE=()=>{ _LD(); UI_ROOMTAB.play='past'; UI_PAST=null; UI_PASTN=30; HIST=null; LRMSG=null; render(); try{ window.scrollTo(0,0); }catch(e){} };
+})();
 </script>
 </body>
 </html>
