@@ -2344,6 +2344,39 @@ html.lb-lock,html.lb-lock body{overflow:hidden}
 .ui-rules{font-size:14px;line-height:1.55;color:var(--ink2)}
 .ui-rules p{margin:0 0 10px}.ui-rules p:last-child{margin:0}
 .ui-badges{flex-wrap:wrap}
+
+/* League ▸ Honours ▸ Records · the season awards card */
+.aw-card{background:#fff;border-radius:22px;box-shadow:var(--sh-card),inset 0 0 0 1px var(--line);overflow:hidden;margin:0 0 4px}
+.aw-top{background:var(--grad);background-image:var(--topo),var(--grad);background-size:cover;color:#fff;padding:16px 16px 14px}
+.aw-t{display:flex;align-items:center;gap:12px}
+.aw-ic{flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.16);display:grid;place-items:center}
+.aw-ic svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.aw-h{font-size:19px;font-weight:600;letter-spacing:-.03em;line-height:1.15}
+.aw-sub{font-size:12.5px;color:rgba(255,255,255,.82);margin-top:2px}
+.aw-years{display:flex;gap:4px;margin-top:12px;background:rgba(255,255,255,.14);border-radius:999px;padding:3px;width:max-content}
+.aw-years button{border:none;background:none;color:#fff;font:inherit;font-size:12.5px;font-weight:500;padding:8px 14px;min-height:36px;border-radius:999px;cursor:pointer;font-feature-settings:'tnum'}
+.aw-years button.on{background:#fff;color:var(--g);font-weight:600}
+.aw-row{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:64px;border-top:1px solid var(--line)}
+.aw-row:first-child{border-top:none}
+.aw-k{width:84px;flex:0 0 84px;font-size:12px;line-height:1.3;color:var(--ink2)}
+.aw-w{flex:1;min-width:0}
+.aw-w b{display:block;font-size:15px;font-weight:600;letter-spacing:-.02em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aw-w small{display:block;font-size:12px;line-height:1.35;color:var(--ink2);margin-top:2px}
+.aw-n{flex:0 0 auto;font-size:20px;font-weight:500;letter-spacing:-.04em;font-feature-settings:'tnum';white-space:nowrap;color:var(--ink)}
+.aw-row.me{background:var(--gl)}
+.aw-row.me .aw-w b,.aw-row.me .aw-n{color:var(--g)}
+.aw-row.none .aw-w small{color:var(--ink3);margin:0}
+.aw-rules{border-top:1px solid var(--line)}
+.aw-rules summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px;min-height:48px;font-size:13.5px;font-weight:500;color:var(--ink);cursor:pointer}
+.aw-rules summary::-webkit-details-marker{display:none}
+.aw-rules summary span{display:grid;place-items:center;width:20px;height:20px;transition:transform .2s}
+.aw-rules summary svg{width:16px;height:16px;fill:none;stroke:var(--ink3);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.aw-rules[open] summary span{transform:rotate(90deg)}
+.aw-rules ol{margin:0;padding:0 16px 0 34px;font-size:13px;line-height:1.5;color:var(--ink2)}
+.aw-rules li{margin:0 0 8px}
+.aw-rules li b{color:var(--ink);font-weight:600}
+.aw-rules p{margin:4px 16px 14px;font-size:12px;line-height:1.5;color:var(--ink3)}
+.aw-share{width:auto;height:48px;margin:0 16px 16px;font-size:14.5px}
 </style>
 </head>
 <body>
@@ -6820,7 +6853,7 @@ function lpMigrateStEstevao(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20260930-a · Club 2.1 · five rooms';
+const UI_BUILD='C-20261004-a · Club 2.1 · season awards';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7122,17 +7155,14 @@ function uiH2H(a,b){
   rows.sort((x,y)=>y.date.localeCompare(x.date));
   return {w,l,d:dr,rows};
 }
-// ── club records ──
+// ── club records: all time. This season's numbers live in the season awards above. ──
 function renderRecords(R){
-  const yr=new Date().getFullYear();
-  let lowRound=null,bestDiff=null,lowIdx=null,mostYear=null,mover=null,hot=null,explorer=null;
+  let lowRound=null,bestDiff=null,lowIdx=null,hot=null,explorer=null;
   R.forEach(p=>{
     const st=uiStats(p), f=p.name;
     if(st.bestGross&&(!lowRound||st.bestGross.score<lowRound.v)) lowRound={v:st.bestGross.score,who:f,sub:`${uiShort(st.bestGross.course)}${st.bestGross.date?' · '+uiDay(st.bestGross.date):''}`};
     if(st.bestDiff&&(!bestDiff||st.bestDiff.d<bestDiff.v)) bestDiff={v:st.bestDiff.d,who:f,sub:uiShort(st.bestDiff.course)};
     if(st.lowHI!=null&&(!lowIdx||st.lowHI<lowIdx.v)) lowIdx={v:st.lowHI,who:f,sub:st.lowHIDate?uiDay(st.lowHIDate):''};
-    if(st.roundsYear&&(!mostYear||st.roundsYear>mostYear.v)) mostYear={v:st.roundsYear,who:f,sub:`rounds in ${yr}`};
-    if(st.yearDelta!=null&&st.yearDelta<0&&(!mover||st.yearDelta<mover.v)) mover={v:st.yearDelta,who:f,sub:`since 1 January`};
     if(st.form!=null&&(!hot||st.form<hot.v)) hot={v:st.form,who:f,sub:'last 5 rounds vs index'};
     const nc=st.courses.length; if(nc&&(!explorer||nc>explorer.v)) explorer={v:nc,who:f,sub:'different courses'};
   });
@@ -7140,9 +7170,7 @@ function renderRecords(R){
     ['Lowest round',lowRound,x=>x.v],
     ['Best differential',bestDiff,x=>x.v.toFixed(1)],
     ['Lowest index',lowIdx,x=>x.v.toFixed(1)],
-    ['Biggest mover',mover,x=>'↓'+Math.abs(x.v).toFixed(1)],
     ['In form',hot,x=>(x.v>0?'+':x.v<0?'−':'')+Math.abs(x.v).toFixed(1)],
-    ['Most rounds',mostYear,x=>x.v],
     ['Explorer',explorer,x=>x.v],
   ].filter(r=>r[1]);
   if(!rows.length) return '';
@@ -8968,7 +8996,7 @@ function renderLeagueH2H(){
 function renderHonours(R){
   const k=['records','crown','tournaments','contests'].includes(UI_HON)?UI_HON:'records';
   let h=uiChips([['records','Records'],['crown','Crown'],['tournaments','Tournaments'],['contests','Contests']],k,'UI_HON_O');
-  if(k==='records'){ const r=renderRecords(R); return h+(r||`<div class="ui-crempty">Records appear once rounds are posted.</div>`); }
+  if(k==='records'){ const r=renderRecords(R); return h+renderAwards()+`<div class="ui-lbl">All-time records</div>`+(r||`<div class="ui-crempty">Records appear once rounds are posted.</div>`); }
   if(k==='crown') return h+crownHonour();
   if(k==='contests'){ uiHistLoad(); return h+renderContests(); }
   // tournaments: the champions, then anything still waiting for a winner
@@ -9334,6 +9362,156 @@ window.UI_POST=()=>{
   const _LD=window.LP_DONE;
   window.LP_DONE=()=>{ _LD(); UI_ROOMTAB.play='past'; UI_PAST=null; UI_PASTN=30; HIST=null; LRMSG=null; render(); try{ window.scrollTo(0,0); }catch(e){} };
 })();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SEASON AWARDS · League ▸ Honours ▸ Records
+//
+// Six awards for the season (1 January to 31 December), worked out in the
+// browser from the club's own rounds. A fixed rulebook, printed under the card,
+// so nobody argues at the dinner: every award names its winner and the one
+// number that proves it. Until 31 December it reads "as it stands"; after
+// that the season is final.
+//
+// Read-only: it calls the unchanged engine (calcHI via uiStats, potmIndex*,
+// uiH2H, uiEff) and never writes anything.
+// ═══════════════════════════════════════════════════════════════════════════
+var UI_AWYEAR=null;
+const AW_MINSTEADY=6, AW_MINIMPROVE=3, AW_MINRIVAL=3;
+const AW_RULES=[
+  ['improved','Most improved','The biggest fall in handicap index between 1 January and the end of the season. Needs an index on 1 January and three rounds in the season.','Nobody yet. Needs an index on 1 January, three rounds and a lower index now.'],
+  ['round','Round of the season','The round played furthest below your own index on the day. A nine counts double, so every round is on the same scale.','No rounds against an index yet this season.'],
+  ['steady','Steadiest','The smallest spread of rounds against handicap. Needs six rounds in the season.','Nobody has six rounds against an index yet.'],
+  ['present','Ever-present','The most rounds posted in the season. A tie goes to whoever played more courses.','No rounds posted this season yet.'],
+  ['rivalry','Rivalry of the year','The two who played the same course on the same day most often, at least three times. A tie goes to the closer record.','No two players have three rounds together yet.'],
+  ['near','The near miss','The closest second place in a settled Crown month.','Waits for a Crown month to settle.'],
+];
+const awMinus=v=>(v<0?'−':v>0?'+':'')+Math.abs(v).toFixed(1);
+
+// Every season with a dated round, newest first. The current one always shows.
+function awSeasons(){
+  const ys=new Set([new Date().getFullYear()]);
+  S.players.forEach(p=>(p.scores||[]).forEach(s=>{ if(s&&s.date&&/^\d{4}-/.test(s.date)) ys.add(+s.date.slice(0,4)); }));
+  return [...ys].sort((a,b)=>b-a);
+}
+
+const AW_C=new Map();
+function awCompute(Y){
+  const y0=Y+'-01-01', y1=Y+'-12-31', today=uiToday();
+  const final=today>y1, end=final?y1:today;
+  const res=(S.potm&&S.potm.results)||{};
+  const key=Y+'|'+today+'|'+UI_ME+'|'+S.players.map(uiSig).join(',')+'|'+Object.keys(res).filter(k=>k.startsWith(Y+'-')).map(k=>k+':'+(res[k].settledAt||'')).join(',');
+  if(AW_C.has(key)) return AW_C.get(key);
+  const inY=d=>d&&d>=y0&&d<=y1;
+  const rows=S.players.map(p=>{
+    const tl=uiStats(p).tl, nets=[], courses=new Set(); let n=0;
+    tl.forEach(t=>{
+      if(!inY(t.s.date)) return;
+      const e=uiEff(t.s); if(e==null) return;
+      n++; courses.add(t.s.course);
+      if(t.before!=null) nets.push({v:rd(e-t.before,1),s:t.s});
+    });
+    let delta=null, from=null, to=null;
+    if(n>=AW_MINIMPROVE){
+      from=potmIndexBefore(p,S.courses,y0); to=potmIndexUpTo(p,S.courses,end);
+      if(from!=null&&to!=null) delta=rd(to-from,1);
+    }
+    let sd=null;
+    if(nets.length>=AW_MINSTEADY){
+      const m=nets.reduce((a,x)=>a+x.v,0)/nets.length;
+      sd=rd(Math.sqrt(nets.reduce((a,x)=>a+(x.v-m)*(x.v-m),0)/nets.length),1);
+    }
+    return {p,n,nc:courses.size,nets,delta,from,to,sd};
+  });
+  const byName=(a,b)=>a.p.name.localeCompare(b.p.name);
+  const A={};
+  // Most improved
+  const imp=rows.filter(r=>r.delta!=null&&r.delta<0).sort((a,b)=>a.delta-b.delta||b.n-a.n||byName(a,b))[0];
+  if(imp) A.improved={who:[imp.p],num:awMinus(imp.delta),sub:`${imp.from.toFixed(1)} on 1 January, ${imp.to.toFixed(1)} ${final?'at the end':'now'}`};
+  // Round of the season
+  const best=rows.flatMap(r=>r.nets.map(x=>({r,x}))).sort((a,b)=>a.x.v-b.x.v||(a.x.s.date||'').localeCompare(b.x.s.date||''))[0];
+  if(best){ const v=best.x.v;
+    A.round={who:[best.r.p],num:awMinus(v),sub:`${uiShort(best.x.s.course)} · ${uiDay(best.x.s.date)} · ${v<0?Math.abs(v).toFixed(1)+' better than handicap':v>0?Math.abs(v).toFixed(1)+' over handicap':'level with handicap'}`}; }
+  // Steadiest
+  const st=rows.filter(r=>r.sd!=null).sort((a,b)=>a.sd-b.sd||b.nets.length-a.nets.length||byName(a,b))[0];
+  if(st) A.steady={who:[st.p],num:'±'+st.sd.toFixed(1),sub:`shots either side, across ${st.nets.length} rounds`};
+  // Ever-present
+  const ev=rows.filter(r=>r.n>0).sort((a,b)=>b.n-a.n||b.nc-a.nc||byName(a,b))[0];
+  if(ev) A.present={who:[ev.p],num:String(ev.n),sub:`rounds · ${uiPl(ev.nc,'course')}`};
+  // Rivalry of the year
+  let riv=null;
+  for(let i=0;i<S.players.length;i++) for(let j=i+1;j<S.players.length;j++){
+    const a=S.players[i], b=S.players[j];
+    const rr=uiH2H(a,b).rows.filter(x=>inY(x.date));
+    if(rr.length<AW_MINRIVAL) continue;
+    const w=rr.filter(x=>x.res==='w').length, l=rr.filter(x=>x.res==='l').length, d=rr.length-w-l;
+    const c={a,b,w,l,d,n:rr.length,gap:Math.abs(w-l),last:rr[0].date};
+    if(!riv||c.n>riv.n||(c.n===riv.n&&(c.gap<riv.gap||(c.gap===riv.gap&&c.last>riv.last)))) riv=c;
+  }
+  if(riv){
+    const lead=riv.l>riv.w; const p1=lead?riv.b:riv.a, p2=lead?riv.a:riv.b, hi=Math.max(riv.w,riv.l), lo=Math.min(riv.w,riv.l);
+    A.rivalry={who:[p1,p2],num:`${hi}–${lo}`,
+      sub:`${riv.n} rounds together${riv.d?` · ${riv.d} halved`:''} · ${hi===lo?'all square':uiName(p1)+' leads'}`,
+      view:`${riv.n} rounds together${riv.d?` · ${riv.d} halved`:''} · ${hi===lo?'all square':p1.id===UI_ME?'you lead':uiName(p1)+' leads'}`};
+  }
+  // The near miss
+  let nm=null;
+  Object.keys(res).filter(k=>k.startsWith(Y+'-')).forEach(k=>{
+    const x=res[k]; if(!x||x.void||x.trial||!Array.isArray(x.standings)||x.standings.length<2) return;
+    const s=[...x.standings].sort((a,b)=>b.total-a.total);
+    const m=rd(s[0].total-s[1].total,1);
+    if(!nm||m<nm.m||(m===nm.m&&k>nm.k)) nm={m,k,first:s[0],second:s[1]};
+  });
+  if(nm){
+    const p=S.players.find(q=>q.id===nm.second.id)||{id:nm.second.id,name:nm.second.name};
+    const w=S.players.find(q=>q.id===nm.first.id);
+    const wn=w?uiName(w):String(nm.first.name||'').split(' ')[0], mon=potmMonthName(nm.k).split(' ')[0];
+    const line=n=>`${nm.m?'points behind':'level on points with'} ${n} · ${mon}${nm.m?'':', lost on the tie-break'}`;
+    A.near={who:[p],num:nm.m.toFixed(1),sub:line(wn),view:line(nm.first.id===UI_ME?'you':wn)};
+  }
+  const out={Y,final,A};
+  if(AW_C.size>20) AW_C.clear();
+  AW_C.set(key,out);
+  return out;
+}
+
+function awShareText(c){
+  let t=`The Club · ${c.Y} season awards${c.final?'':' (as it stands)'}\n\n`;
+  AW_RULES.forEach(([k,label])=>{
+    const a=c.A[k]; if(!a) return;
+    t+=`${label}: ${a.who.map(p=>p.name).join(' v ')} · ${a.num}${/^[a-z]/.test(a.sub)?' ':' · '}${a.sub}\n`;
+  });
+  return t;
+}
+
+function renderAwards(){
+  const ys=awSeasons();
+  const Y=ys.includes(UI_AWYEAR)?UI_AWYEAR:ys[0];
+  const c=awCompute(Y);
+  const won=AW_RULES.filter(([k])=>c.A[k]).length;
+  const nm=(p)=>p.id===UI_ME?'You':uiName(p);
+  let h=`<section class="aw-card" aria-label="The ${Y} season awards">
+    <div class="aw-top">
+      <div class="aw-t"><span class="aw-ic">${uiSvg('trophy')}</span><div><div class="aw-h">The ${Y} awards</div>
+        <div class="aw-sub">${c.final?`Final · the season ended 31 December`:`As it stands · final on 31 December`}</div></div></div>
+      ${ys.length>1?`<div class="aw-years" role="tablist">${ys.slice(0,4).map(y=>`<button role="tab" aria-selected="${y===Y}" class="${y===Y?'on':''}" onclick="UI_AWY(${y})">${y}</button>`).join('')}</div>`:''}
+    </div>
+    <div class="aw-list">${AW_RULES.map(([k,label,,none])=>{
+      const a=c.A[k];
+      if(!a) return `<div class="aw-row none" data-award="${k}"><span class="aw-k">${label}</span><span class="aw-w"><small>${c.final?'Not awarded. Nobody met the rule this season.':none}</small></span></div>`;
+      const me=a.who.some(p=>p.id===UI_ME);
+      return `<div class="aw-row${me?' me':''}" data-award="${k}"><span class="aw-k">${label}</span>
+        <span class="aw-w"><b>${a.who.map(nm).join(' v ')}</b><small>${a.view||a.sub}</small></span>
+        <span class="aw-n">${a.num}</span></div>`;
+    }).join('')}</div>
+    <details class="aw-rules"><summary>How the awards are decided<span>${uiSvg('chev')}</span></summary>
+      <ol>${AW_RULES.map(([,label,rule])=>`<li><b>${label}.</b> ${rule}</li>`).join('')}</ol>
+      <p>Worked out from the club's own rounds, the same way for everyone. A round needs a date to count towards a season.</p>
+    </details>
+    ${won?`<a class="ui-btn ui-btn-g aw-share" href="https://wa.me/?text=${encodeURIComponent(awShareText(c))}" target="_blank" rel="noopener">Share to the group</a>`:''}
+  </section>`;
+  return h;
+}
+window.UI_AWY=y=>{ UI_AWYEAR=+y; render(); };
 </script>
 </body>
 </html>
