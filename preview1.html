@@ -2396,6 +2396,84 @@ html.lb-lock,html.lb-lock body{overflow:hidden}
 /* Small phones (320 wide): the four bar items used to hold the bar at 256px and push
    the green button half off the screen. Let them share the room that is there. */
 @media (max-width:359px){.ui-dock{padding:0 12px;gap:8px}.ui-bar{min-width:0}.ui-ti{flex:1 1 0;width:auto;min-width:0}}
+
+/* ════════ C-20261012 · calmer card, watch mode, no sideways wiggle ════════ */
+/* The card: Par, Shots, Net. The hole range sits in the block's label; the shots
+   carry the colour; net is the quieter line under them. */
+.lbc-bh i{font-style:normal;font-weight:500;color:var(--ink3);letter-spacing:0;text-transform:none;margin-left:3px}
+.lbc-none .lbc-bh{margin-bottom:0}
+.lbc-bh span.lbc-ns{font-size:12px;font-weight:500;color:var(--ink3)}
+.lbc-g>.lbc-h{padding:2px 0}
+.lbc-g>.lbc-e{background:none;color:var(--ink3)}
+.lbc-g>.lbc-e.lbc-t{background:var(--off)}
+.lbc-g>.lbc-nv{background:none;font-size:12px;font-weight:500;color:var(--ink2);padding:2px 0 3px}
+.lbc-g>.lbc-nv.lbc-bi,.lbc-g>.lbc-nv.lbc-ea{background:none;color:var(--g);font-weight:700}
+.lbc-g>.lbc-nv.lbc-bo{background:none;color:#9A5B00}
+.lbc-g>.lbc-nv.lbc-db{background:none;color:#B4352A}
+.lbc-g>.lbc-l.lbc-ln{color:var(--ink3)}
+.lbc-f{margin-top:8px}
+.lbc-rec small{display:block;margin-top:3px;color:var(--ink3)}
+
+/* Watching a round you're not in */
+.lw-head{display:flex;flex-direction:column;gap:6px;margin:6px 4px 14px}
+.lw-head .ui-pill{align-self:flex-start}
+.lw-head .ui-s{line-height:1.45}
+.lw-game{padding:10px 14px 12px}
+.lw-unlock{display:block;margin:18px auto 4px;font-size:13px;color:var(--ink2);text-align:center;min-height:44px}
+
+/* Sheets never slide sideways: nothing inside may push them wider, and a
+   vertical scroller never pans horizontally on iOS. */
+html,body{overflow-x:clip}
+.ov,.mo{overflow-x:hidden}
+.mo{overscroll-behavior:contain}
+.mo input,.mo select,.mo textarea{max-width:100%;min-width:0;box-sizing:border-box}
+@supports (-webkit-touch-callout:none){
+  .mo input[type="date"]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-height:44px}
+}
+
+/* ════════ C-20261012-b · the card marked like a paper card ════════
+   One score row. The mark is the NET result on the hole: a circle for a net
+   birdie (two for an eagle), a square for a net bogey (two for worse), a net par
+   plain. C-20261012-c: filled colour (Miguel's pick) — green birdie, gold eagle,
+   light blue bogey, dark blue double or worse. Strokes are dots under each par. */
+.lbc-g{row-gap:3px}
+.lbc-g>.lbc-h{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:none;padding:3px 0 0;height:24px;font-size:11px;color:var(--ink3)}
+.lbc-h em{display:block;font-style:normal;font-size:8px;line-height:1;letter-spacing:1px;color:var(--g);height:7px;margin-top:2px}
+.lbc-h em.neg{color:var(--ink3)}
+.lbc-g>.lbc-s{display:flex;align-items:center;justify-content:center;background:none;padding:0;height:34px;border-radius:0;font-size:14px;font-weight:600;color:var(--ink)}
+.lbc-g>.lbc-s span{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;box-sizing:border-box;line-height:1}
+.lbc-g>.lbc-s.lbc-pa,.lbc-g>.lbc-s.lbc-bi,.lbc-g>.lbc-s.lbc-ea,.lbc-g>.lbc-s.lbc-bo,.lbc-g>.lbc-s.lbc-db,.lbc-g>.lbc-s.lbc-e{background:none}
+.lbc-g>.lbc-s.lbc-bi span{background:var(--g);color:#fff;border-radius:50%}
+.lbc-g>.lbc-s.lbc-ea span{background:#D9A400;color:#fff;border-radius:50%}
+.lbc-g>.lbc-s.lbc-bo span{background:#DCE6F7;color:#2F5FB3;border-radius:6px}
+.lbc-g>.lbc-s.lbc-db span{background:#2F5FB3;color:#fff;border-radius:6px}
+.lbc-g>.lbc-s.lbc-e span{color:var(--ink3)}
+.lbc-key{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 2px 0;font-size:11.5px;color:var(--ink2)}
+.lbc-key span{display:inline-flex;align-items:center;gap:6px}
+.lbc-key .k{display:inline-block;width:12px;height:12px;box-sizing:border-box}
+.lbc-key .k.bi{background:var(--g);border-radius:50%}
+.lbc-key .k.ea{background:#D9A400;border-radius:50%}
+.lbc-key .k.bo{background:#DCE6F7;border-radius:3px}
+.lbc-key .k.db{background:#2F5FB3;border-radius:3px}
+.lbc-g>.lbc-s.lbc-t{cursor:pointer;box-shadow:none}
+.lbc-g>.lbc-s.lbc-t:active span{transform:scale(.9)}
+
+/* ════════ C-20261012-d · the card laid out like a real card ════════
+   Green band of hole numbers, Par, the gross score in colour, the net small and grey
+   underneath, totals in the last column (Miguel's reference: Golf GameBook). */
+.lbc-g.lbc-g2{grid-template-columns:38px repeat(9,minmax(0,1fr)) 36px;column-gap:0;row-gap:2px;margin-top:2px}
+.lbc-g>.lbc-band{background:var(--g);color:#fff;font-size:11.5px;font-weight:600;padding:5px 0;border-radius:0;text-align:center;letter-spacing:0}
+.lbc-g>.lbc-band.lbc-bl{border-radius:8px 0 0 8px;text-align:left;padding-left:8px;font-weight:500;color:rgba(255,255,255,.85)}
+.lbc-g>.lbc-band.lbc-br{border-radius:0 8px 8px 0;font-weight:700}
+.lbc-g>.lbc-tot{background:none;padding:0;font-size:13.5px;font-weight:700;color:var(--ink);text-align:center}
+.lbc-g>.lbc-tot.lbc-tp{font-size:11px;font-weight:500;color:var(--ink3)}
+.lbc-g>.lbc-tot.lbc-tn{font-size:11.5px;font-weight:600;color:var(--ink3)}
+.lbc-g>.lbc-nt{background:none;padding:0 0 3px;font-size:11px;font-weight:500;color:var(--ink3);text-align:center;height:auto}
+.lbc-g2 .lbc-l{padding-left:2px}
+.lbc-key .lbc-key-n{color:var(--ink3)}
+.lbc-g>.lbc-tot{align-self:center}
+.lbc-g>.lbc-tot.lbc-tp{align-self:start;padding-top:3px}
+.lbc-g>.lbc-tot.lbc-tn{align-self:start}
 </style>
 </head>
 <body>
@@ -4646,7 +4724,7 @@ function renderPlay(){
         <span class="ui-pill"><i class="ui-dot ok"></i>Live · thru ${t}</span>
         <span class="ui-live-t">${uiShort(r.course)} · ${r.tee}${r.cfg&&r.cfg!=='18'?' · '+(LPCFG[r.cfg]?LPCFG[r.cfg][0]:r.cfg):''}</span>
         <span class="ui-s">${names}</span>
-        <span class="ui-live-go">${joined(id)?'Back to scoring':mine?'Join':'Watch'} ›</span>
+        <span class="ui-live-go">${joined(id)?(lpWatching()?'Back to the board':'Back to scoring'):(mine||LP_SCOREAS[id])?'Join':'Watch'} ›</span>
       </button>`;
     }).join('');
     h+=`<div class="ui-list" style="margin-top:14px">
@@ -4729,6 +4807,10 @@ function renderPlay(){
       if(cnt>=1) h+=gmFormatStep(step);
       h+=`<button class="ui-btn ui-btn-g ui-teeoff" ${cnt<1?'disabled':''} onclick="LP_GO()">Tee off · ${LPCFG[cfg]?LPCFG[cfg][0]:cfg} · ${cnt} player${cnt===1?'':'s'}</button>`;
     }
+  }
+
+  else if(LPV==='round'&&LR&&lpWatching()){
+    h+=renderWatch();
   }
 
   else if(LPV==='round'&&LR){
@@ -6872,7 +6954,7 @@ function lpMigrateStEstevao(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261011-a · Club 2.1 · Play button named';
+const UI_BUILD='C-20261012-e · Club 2.1 · grey line follows the switch';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -6939,6 +7021,9 @@ function uiPlayHole(){
   return (LR.holeNums&&LR.holeNums[i-1])||i;
 }
 function uiPlayBtn(on){
+  if(typeof lpWatching==='function'&&lpWatching()){
+    return `<button class="ui-play${on?' on':''} live" onclick="UI_GO('play','live')"${on?' aria-current="page"':''} aria-label="Back to the live board"><i class="ui-play-live" aria-hidden="true"></i>${uiSvg('flag')}<span class="ui-play-l">Live</span></button>`;
+  }
   const h=uiPlayHole();
   const inner=h!=null
     ? `<i class="ui-play-live" aria-hidden="true"></i><span class="ui-play-k">Hole</span><b class="ui-play-n">${h}</b>`
@@ -8291,6 +8376,7 @@ window.LP_GO=async()=>{
   const g={...gmSel()};
   await LP_START();
   if(!LR||!LRID) return;
+  LP_SCOREAS[LRID]=true; lpScoreAsSave();
   if(g.fmt!=='none'){
     if(g.fmt==='match'){
       // guests only get their real id at tee-off — map the placeholders across
@@ -8700,8 +8786,9 @@ function lbSub(r,x){
   const fmt=lbFmt(), n=r.holes;
   if(!x.thru) return 'not started';
   const thru=x.thru===n?'finished':`thru ${x.thru}`;
-  if(fmt==='stb') return `${thru} · net ${lbSigned(x.netToPar)} · ${x.gross} gross`;
-  if(fmt==='net') return `${thru} · ${x.stb} pts · ${x.gross} gross`;
+  const net=x.netToPar+x.grossPar;               // actual net shots over the holes played
+  if(fmt==='stb') return `${thru} · ${x.gross} gross · net ${net}`;
+  if(fmt==='net') return `${thru} · net ${net} · ${x.stb} pts`;
   return `${thru} · ${x.gross} shots · plays off ${x.ch}`;
 }
 function lbHeadline(r){
@@ -8721,29 +8808,47 @@ function lbCard(r,x,ctx){
   for(let i=0;i<n;i++) if(lpHasScore(r.scores,i+1,x.id)) netShots+=r.scores[i+1][x.id]-lpStrokes(x.ch,r.siArr[i],n);
   const block=(from,to,label)=>{
     const idx=[]; for(let i=from;i<to;i++) idx.push(i);
-    let gr=0,nt=0,got=0;
-    const cell=(i,net)=>{
-      const tap=fix&&!net?` role="button" tabindex="0" onclick="event.stopPropagation();HOLE_EDIT('${r.id}','${x.id}',${i+1})"`:'';
-      if(!lpHasScore(r.scores,i+1,x.id)) return `<div class="lbc-e${tap?' lbc-t':''}"${tap}>·</div>`;
-      const g=r.scores[i+1][x.id], stk=lpStrokes(x.ch,r.siArr[i],n), v=net?g-stk:g;
-      const d=v-r.parArr[i];
-      const cls=(d<=-2?'lbc-ea':d===-1?'lbc-bi':d===1?'lbc-bo':d>=2?'lbc-db':'')+(tap?' lbc-t':'');
-      return `<div class="${cls}"${tap}>${v}</div>`;
-    };
-    idx.forEach(i=>{ if(lpHasScore(r.scores,i+1,x.id)){ const g=r.scores[i+1][x.id];
-      gr+=g; nt+=g-lpStrokes(x.ch,r.siArr[i],n); got++; } });
+    const num=i=>(r.holeNums&&r.holeNums[i])||i+1;
+    const range=`${num(idx[0])}–${num(idx[idx.length-1])}`;
+    let gr=0,got=0;
+    idx.forEach(i=>{ if(lpHasScore(r.scores,i+1,x.id)){ gr+=r.scores[i+1][x.id]; got++; } });
     const par=idx.reduce((t,i)=>t+r.parArr[i],0);
+    // a nine nobody has started is one quiet line, not two rows of empty boxes
+    if(!got&&!fix) return `<div class="lbc-blk lbc-none"><div class="lbc-bh"><span>${label} <i>${range}</i></span><span class="lbc-ns">not started · par ${par}</span></div></div>`;
+    // Laid out like a real card (Miguel's reference: Golf GameBook): a green band of
+    // hole numbers, Par, the GROSS score in colour, and the net underneath, small and
+    // grey. Colours are by the gross result: green circle birdie, gold circle eagle or
+    // better, light blue square bogey, dark blue square double or worse, par plain.
+    // The strokes you get sit as dots under each par. Totals in the last column.
+    const stkOf=i=>lpStrokes(x.ch,r.siArr[i],n);
+    const dots=k=>k>0?`<em>${'•'.repeat(Math.min(k,3))}</em>`:k<0?`<em class="neg">+</em>`:'<em></em>';
+    // The small grey line under the score follows the switch at the top of the board:
+    // Stableford shows the points on each hole, Net shows the net, Gross shows nothing.
+    const fmt=lbFmt();
+    const sub=i=>{ if(!lpHasScore(r.scores,i+1,x.id)) return null;
+      const g=r.scores[i+1][x.id], k=stkOf(i);
+      return fmt==='stb'?Math.max(0,r.parArr[i]+k-g+2):g-k; };
+    let st=0; idx.forEach(i=>{ const v=sub(i); if(v!=null) st+=v; });
+    const cell=i=>{
+      const tap=fix?` role="button" tabindex="0" onclick="event.stopPropagation();HOLE_EDIT('${r.id}','${x.id}',${i+1})"`:'';
+      if(!lpHasScore(r.scores,i+1,x.id)) return `<div class="lbc-s lbc-e${tap?' lbc-t':''}" aria-label="Hole ${num(i)}, no score"${tap}><span>${tap?'·':''}</span></div>`;
+      const g=r.scores[i+1][x.id], d=g-r.parArr[i], net=g-stkOf(i);
+      const k=d<=-2?'lbc-ea':d===-1?'lbc-bi':d===1?'lbc-bo':d>=2?'lbc-db':'lbc-pa';
+      const say=d<=-2?'eagle or better':d===-1?'birdie':d===0?'par':d===1?'bogey':'double bogey or worse';
+      return `<div class="lbc-s ${k}${tap?' lbc-t':''}" aria-label="Hole ${num(i)}: ${g}, ${say}, net ${net}"${tap}><span>${g}</span></div>`;
+    };
+    const subCell=i=>{ const v=sub(i); return `<div class="lbc-nt">${v==null?'':v}</div>`; };
+    const subRow=fmt==='gross'?'':`<div class="lbc-l lbc-ln">${fmt==='stb'?'Pts':'Net'}</div>${idx.map(i=>subCell(i)).join('')}<div class="lbc-tot lbc-tn">${got?st:''}</div>`;
     return `<div class="lbc-blk">
-      <div class="lbc-bh"><span>${label}</span><span>${got?gr:'–'}<small> / ${par}</small></span></div>
-      <div class="lbc-g">
-        <div class="lbc-l">Hole</div>${idx.map(i=>`<div class="lbc-h">${(r.holeNums&&r.holeNums[i])||i+1}</div>`).join('')}
-        <div class="lbc-l">Par</div>${idx.map(i=>`<div class="lbc-h">${r.parArr[i]}</div>`).join('')}
-        <div class="lbc-l">Shots</div>${idx.map(i=>cell(i,false)).join('')}
-        <div class="lbc-l">Net</div>${idx.map(i=>cell(i,true)).join('')}
+      <div class="lbc-g lbc-g2">
+        <div class="lbc-band lbc-bl">Hole</div>${idx.map(i=>`<div class="lbc-band">${num(i)}</div>`).join('')}<div class="lbc-band lbc-br">${label}</div>
+        <div class="lbc-l">Par</div>${idx.map(i=>`<div class="lbc-h">${r.parArr[i]}${dots(stkOf(i))}</div>`).join('')}<div class="lbc-tot lbc-tp">${par}</div>
+        <div class="lbc-l">Score</div>${idx.map(i=>cell(i)).join('')}<div class="lbc-tot">${got?gr:'–'}</div>
+        ${subRow}
       </div></div>`;
   };
   return `<div class="lbc">
-    ${block(0,single?n:9,single?'Round':'Out')}
+    ${block(0,single?n:9,single?'Holes':'Out')}
     ${single?'':block(9,18,'In')}
     ${lbCardFoot(r,x,ctx,netShots)}
   </div>`;
@@ -8752,22 +8857,14 @@ function lbCard(r,x,ctx){
 // The line under a card: what they shot, what that is net, and — once the round
 // is over — what went on their record. "What was your net?" is answered here.
 function lbCardFoot(r,x,ctx,netShots){
-  if(!x.thru) return `<div class="lbc-f">No scores yet.</div>`;
-  const part=x.thru<r.holes?` <span class="lbc-part">over ${x.thru} hole${x.thru===1?'':'s'}</span>`:'';
-  let h=`<div class="lbc-sum">
-      <div><span>Gross</span><b>${x.gross}</b></div>
-      <div><span>Net</span><b>${netShots}</b><i>${lbSigned(x.netToPar)}</i></div>
-      <div><span>Points</span><b>${x.stb}</b></div>
-      <div><span>Plays off</span><b>${x.ch}</b></div>
-    </div>`;
-  if(part) h+=`<div class="lbc-f">${part}</div>`;
+  const off=`Plays off ${x.ch}${x.ch>0?' · a dot is a stroke you get':''}`;
+  if(!x.thru) return `<div class="lbc-f">${off} · no scores yet</div>`;
   if(ctx&&!x.guest&&!r.noPost){
     const f=uiPostedFacts(r,x.id);
-    if(f) h+=`<div class="lbc-f lbc-rec">On ${x.id===UI_ME?'your':'their'} record: <b>${f.adj}</b>${f.adj!==f.gross?' adjusted':''}${f.diff!=null?` · differential <b>${f.diff.toFixed(1)}</b>`:''}${f.counting?' · <em>counting</em>':''}${f.adj!==f.gross?`<small>Net double bogey caps a blow-up hole for the handicap — the ${f.gross} still stands on the card.</small>`:''}</div>`;
-  }else if(ctx&&x.guest){
-    h+=`<div class="lbc-f">Guest — kept on the card, not posted to a handicap.</div>`;
+    if(f) return `<div class="lbc-f lbc-rec">${off} · on ${x.id===UI_ME?'your':'their'} record <b>${f.adj}</b>${f.adj!==f.gross?' adjusted':''}${f.diff!=null?`, differential <b>${f.diff.toFixed(1)}</b>`:''}${f.counting?' · <em>counting</em>':''}${f.adj!==f.gross?`<small>Net double bogey caps a blow-up hole for the handicap; the ${f.gross} still stands on the card.</small>`:''}</div>`;
   }
-  return h;
+  if(ctx&&x.guest) return `<div class="lbc-f">${off} · guest, not posted to a handicap</div>`;
+  return `<div class="lbc-f">${off}</div>`;
 }
 // The round as it went onto one member's record, if it did.
 var UI_HIC=new Map();
@@ -8871,6 +8968,7 @@ function lbBoardBody(r,ctx){
   h+=`<p class="lb-note">${fmt==='stb'?'Stableford points off each player’s full course handicap.'
        :fmt==='net'?'Net against par, off each player’s full course handicap.'
        :'Shots against par, before any handicap.'} Tap a name for their card.${ctx==='past'&&!r.noPost?' Tap a score on a card to correct it.':''}</p>`;
+  if(rows.some(x=>RS[x.id])) h+=`<p class="lbc-key"><span><i class="k bi"></i>birdie</span><span><i class="k ea"></i>eagle</span><span><i class="k bo"></i>bogey</span><span><i class="k db"></i>double or worse</span>${fmt==='gross'?'':`<span class="lbc-key-n">${fmt==='stb'?'points':'net'} in grey underneath</span>`}</p>`;
   return h;
 }
 function lbDoneHole(r,from){
@@ -8951,6 +9049,48 @@ window.LB_F=f=>{ LRFMT=f; lbRepaint(); };
 window.LB_R=(id,ctx)=>{ const RS=ctx?LB_PROWS:LB_ROWS; RS[id]=!RS[id]; lbRepaint(); };
 // Escape closes it, as a sheet should.
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&LB_OPEN){ LB_X(); } });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WATCHING A ROUND · view only for anyone who isn't playing in it
+// Open a round you're not in and you get the board, not the scoring screen —
+// there's nothing to tap that could change someone else's card. The phone that
+// started the round, or one already holding unsent scores, always scores. A
+// scorer who isn't playing (keeping the card for the group) unlocks it once.
+// ═══════════════════════════════════════════════════════════════════════════
+var LP_SCOREAS={};
+try{ LP_SCOREAS=JSON.parse(localStorage.getItem('club_scoreas_v1')||'{}')||{}; }catch(e){ LP_SCOREAS={}; }
+function lpScoreAsSave(){ try{ localStorage.setItem('club_scoreas_v1',JSON.stringify(LP_SCOREAS)); }catch(e){} }
+function lpWatching(){
+  if(typeof LR==='undefined'||!LR||!LRID) return false;
+  if(LP_SCOREAS[LRID]) return false;
+  if(typeof LPQ!=='undefined'&&LPQ&&LPQ.length) return false;      // this phone has scores waiting to send
+  return !(UI_MEP()&&(LR.players||[]).some(p=>p.id===UI_ME));
+}
+function renderWatch(){
+  const r=LR, t=lpThru(r);
+  lbSync(r);
+  const names=gmList((r.players||[]).map(p=>p.name.split(' ')[0]));
+  const hasGame=r.game&&r.game.fmt&&r.game.fmt!=='none'&&GM_FORMATS[r.game.fmt];
+  let h=`<button class="ui-ico ui-setup-back" onclick="LP_BACK()" aria-label="Back to Live">${uiSvg('back')}</button>`;
+  h+=`<div class="lw-head">
+      <span class="ui-pill"><i class="ui-dot ok"></i>${t?`Live · thru ${t}`:'Live · just started'}</span>
+      <div class="ui-h1">${uiShort(r.course)} · ${r.tee}</div>
+      <div class="ui-s">${names} ${(r.players||[]).length===1?'is':'are'} scoring. You’re watching: the board updates by itself.</div>
+    </div>`;
+  h+=`<div class="ui-card lb-inline" id="lbBoardB">${lbBoardBody(r)}</div>`;
+  if(hasGame){
+    h+=`<div class="lb-h">${GM_FORMATS[r.game.fmt].name}${r.game.stake&&(r.game.fmt==='skins'||r.game.fmt==='match')?` · £${r.game.stake} ${r.game.fmt==='skins'?'a hole':'on the match'}`:''}</div>`;
+    h+=`<div class="ui-card lb-inline lw-game">${lbGameBody(r)}</div>`;
+  }
+  h+=`<button class="ui-link lw-unlock" onclick="LP_SCORE_HERE()">Keeping the card for this group? Score on this phone</button>`;
+  return h;
+}
+window.LP_SCORE_HERE=()=>{
+  if(!LRID) return;
+  if(!confirm('Score this round on this phone?\n\nOnly if you are keeping the card for the group. Every score you enter changes the card for everyone.')) return;
+  LP_SCOREAS[LRID]=true; lpScoreAsSave(); render();
+};
 // ═══════════════════════════════════════════════════════════════════════════
 // CLUB 2.1 · FIVE ROOMS — Home · League · Play · Money · Me
 //
