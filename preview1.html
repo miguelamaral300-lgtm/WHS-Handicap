@@ -2377,6 +2377,25 @@ html.lb-lock,html.lb-lock body{overflow:hidden}
 .aw-rules li b{color:var(--ink);font-weight:600}
 .aw-rules p{margin:4px 16px 14px;font-size:12px;line-height:1.5;color:var(--ink3)}
 .aw-share{width:auto;height:48px;margin:0 16px 16px;font-size:14.5px}
+
+/* ── C-20261011-a · the green button is Play, and says so ───────────────────
+   Same 64px green disc as before; it now carries a flag and the word Play, set
+   like the bar's own labels. While this phone is scoring it reads "Hole 7":
+   the hole number is the biggest thing on it, with a live dot like the rest of
+   the app's live markers. */
+.ui-play{flex-direction:column;gap:2px;place-content:center;position:relative;color:#fff;font-family:inherit;padding:0}
+.ui-play svg{width:22px;height:22px;stroke-width:2;stroke-linejoin:round}
+.ui-play-l{font-size:10.5px;font-weight:600;line-height:1;letter-spacing:0;color:#fff}
+.ui-play-k{font-size:10px;font-weight:500;line-height:1;color:rgba(255,255,255,.82);margin-top:2px}
+.ui-play-n{font-size:23px;font-weight:600;line-height:1;letter-spacing:-.04em;font-feature-settings:'tnum';color:#fff}
+.ui-play-live{position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:#8FF0B4;box-shadow:0 0 0 2px var(--g)}
+.ui-play.live .ui-play-live{animation:uiPlayPulse 2.4s ease-in-out infinite}
+@keyframes uiPlayPulse{0%,100%{box-shadow:0 0 0 2px var(--g),0 0 0 2px rgba(143,240,180,0)}50%{box-shadow:0 0 0 2px var(--g),0 0 0 6px rgba(143,240,180,.35)}}
+@media (prefers-reduced-motion:reduce){.ui-play.live .ui-play-live{animation:none}}
+.lp-none b{font-weight:600;color:var(--ink)}
+/* Small phones (320 wide): the four bar items used to hold the bar at 256px and push
+   the green button half off the screen. Let them share the room that is there. */
+@media (max-width:359px){.ui-dock{padding:0 12px;gap:8px}.ui-bar{min-width:0}.ui-ti{flex:1 1 0;width:auto;min-width:0}}
 </style>
 </head>
 <body>
@@ -4617,8 +4636,8 @@ function renderPlay(){
     const joined=id=>LR&&LRID===id;
     // The room's own header and tabs sit above this — Live is one tab of Play.
     if(!live.length){
-      h+=`<div class="ui-crempty lp-none">Nobody is out on the course right now.<br>Start a round and the rest of the group joins from their own phones.</div>
-        <button class="ui-btn ui-btn-g" style="margin-top:4px" onclick="LP_NEW()">${uiSvg('plus')}Start a new round</button>`;
+      // One way in: New round, top right (rule 5). No second green button down here.
+      h+=`<div class="ui-crempty lp-none">Nobody is out on the course right now.<br>Tap <b>New round</b> to start one, and the rest of the group joins from their own phones.</div>`;
     }else h+=live.map(([id,r])=>{
       const t=lpThru(r);
       const names=(r.players||[]).map(p=>p.name.split(' ')[0]).join(' · ');
@@ -6853,7 +6872,7 @@ function lpMigrateStEstevao(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261004-a · Club 2.1 · season awards';
+const UI_BUILD='C-20261011-a · Club 2.1 · Play button named';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -6906,8 +6925,25 @@ function renderDock(tab){
   const items=[['home','home','Home'],['league','rank','League'],['money','purse','Money'],['me','prof','Me']];
   return `<nav class="ui-dock" aria-label="Main">
     <div class="ui-bar">${items.map(([v,ic,l])=>`<button class="ui-ti${tab===v?' on':''}" onclick="UI_GO('${v}')"${tab===v?' aria-current="page"':''}>${uiSvg(ic)}<span>${l}</span></button>`).join('')}</div>
-    <button class="ui-play${tab==='play'?' on':''}" onclick="UI_GO('play','live')" aria-label="Play">${uiSvg('plus')}</button>
+    ${uiPlayBtn(tab==='play')}
   </nav>`;
+}
+// The green button is Play, and says so. While this phone is scoring a round it
+// shows the hole you'll land on instead, so getting back to the card is one tap
+// from anywhere — and you can see at a glance that the round is still running.
+// The hole is the one SV('play') reopens (LRHOLE), never a guess.
+function uiPlayHole(){
+  if(typeof LR==='undefined'||!LR||!LRID) return null;
+  const n=LR.holes||((LR.parArr||[]).length)||18;
+  const i=Math.min(Math.max(LRHOLE||1,1),n);
+  return (LR.holeNums&&LR.holeNums[i-1])||i;
+}
+function uiPlayBtn(on){
+  const h=uiPlayHole();
+  const inner=h!=null
+    ? `<i class="ui-play-live" aria-hidden="true"></i><span class="ui-play-k">Hole</span><b class="ui-play-n">${h}</b>`
+    : `${uiSvg('flag')}<span class="ui-play-l">Play</span>`;
+  return `<button class="ui-play${on?' on':''}${h!=null?' live':''}" onclick="UI_GO('play','live')"${on?' aria-current="page"':''} aria-label="${h!=null?`Back to scoring, hole ${h}`:'Play'}">${inner}</button>`;
 }
 
 // ── Profile ──
