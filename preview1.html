@@ -2474,6 +2474,59 @@ html,body{overflow-x:clip}
 .lbc-g>.lbc-tot{align-self:center}
 .lbc-g>.lbc-tot.lbc-tp{align-self:start;padding-top:3px}
 .lbc-g>.lbc-tot.lbc-tn{align-self:start}
+
+/* ════════ C-20261012-f · the hole, compact rows ════════ */
+.sr-head{margin:2px 0 10px}
+.sr-head .sr-h{font-size:28px;letter-spacing:-.03em;line-height:1.05}
+.sr-head .meta.lp-hm{margin-top:3px}
+.sr-strip{display:flex;gap:3px;padding:0 2px;margin:0 0 12px;background:none;overflow:visible}
+.sr-strip .sr-seg{flex:1;min-width:0;height:22px;border:none;background:none;padding:0;cursor:pointer;position:relative;border-radius:0}
+.sr-strip .sr-seg::after{content:'';position:absolute;left:0;right:0;top:9px;height:5px;border-radius:3px;background:#D5DED8}
+.sr-strip .sr-seg.done::after{background:var(--g)}
+.sr-strip .sr-seg.cur::after{background:var(--ink);top:8px;height:7px}
+.sr-card.lp-hole{background:#fff;border-radius:20px;padding:2px 0;box-shadow:0 1px 0 var(--line),0 10px 24px -18px rgba(12,26,18,.35);margin:0}
+.sr-row.lp-pl{display:flex;align-items:center;gap:8px;padding:10px 12px 10px 16px;border-bottom:1px solid var(--line);background:none;border-radius:0;margin:0;box-shadow:none}
+.sr-row.lp-pl:last-child{border-bottom:none}
+.sr-nm{flex:1;min-width:0;font-size:16px;font-weight:600;letter-spacing:-.02em;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-nm small{display:block;font-size:12px;font-weight:400;color:var(--ink2);margin-top:2px;letter-spacing:0}
+.sr-nm small b{color:var(--ink);font-weight:600}
+.sr-dots{color:var(--g);font-size:11px;letter-spacing:1px;margin-left:5px;vertical-align:2px}
+.sr-hide{display:none}
+.sr-clr{border:none;background:none;padding:0 2px;font:inherit;font-size:12px;color:var(--ink3);text-decoration:underline;cursor:pointer}
+.sr-ctl.lp-stepper{display:flex;align-items:center;gap:6px;flex:0 0 auto;margin:0}
+.sr-ctl .sr-b{width:44px;height:44px;border-radius:13px;border:none;background:var(--off);color:var(--ink);font-size:24px;line-height:1;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sr-ctl .sr-b:active{transform:scale(.94)}
+.sr-ctl .sr-v{width:52px;height:52px;border:none;background:none;padding:0;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sr-ctl .sr-v span{display:flex;align-items:center;justify-content:center;width:44px;height:44px;font-size:24px;font-weight:650;letter-spacing:-.03em;color:var(--ink);font-feature-settings:'tnum'}
+.sr-ctl .sr-v.sr-e span{color:var(--ink3);font-weight:500}
+.sr-ctl .sr-v.lbc-bi span{background:var(--g);color:#fff;border-radius:50%}
+.sr-ctl .sr-v.lbc-ea span{background:#D9A400;color:#fff;border-radius:50%}
+.sr-ctl .sr-v.lbc-bo span{background:#DCE6F7;color:#2F5FB3;border-radius:11px}
+.sr-ctl .sr-v.lbc-db span{background:#2F5FB3;color:#fff;border-radius:11px}
+.sr-hint{font-size:11.5px;color:var(--ink3);text-align:center;margin:8px 8px 0;line-height:1.4}
+.sr-more{display:flex;gap:8px;margin:12px 0 0}
+.sr-pill{flex:1;min-width:0;min-height:42px;border:none;border-radius:13px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font:inherit;font-size:13px;color:var(--ink2);cursor:pointer;padding:6px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-pill b{color:var(--ink);font-weight:600}
+.sr-pill.on{box-shadow:inset 0 0 0 1.5px var(--g)}
+.sr-more+.gm-ctp,.sr-more+.gp-panel{margin-top:10px}
+.sr-next{display:flex;align-items:center;justify-content:center;width:100%;height:56px;margin:14px 0 0;border:none;border-radius:16px;background:var(--ink);color:#fff;font:inherit;font-size:16.5px;font-weight:600;cursor:pointer}
+.sr-next.fin{background:var(--g)}
+.sr-next:active{transform:scale(.985)}
+.sr-quiet{display:flex;justify-content:center;gap:22px;margin:14px 0 0}
+.sr-quiet button{border:none;background:none;font:inherit;font-size:13px;color:var(--ink2);padding:10px 4px;min-height:44px;cursor:pointer}
+.sr-quiet button.red{color:var(--red)}
+/* the old stepper and pip styles stay for other screens; these win here */
+.sr-ctl .sr-b.st-btn{flex:0 0 44px;width:44px;height:44px;border:none;border-radius:13px;background:var(--off);color:var(--ink);font-size:24px;font-weight:500;box-shadow:none}
+.sr-ctl .sr-v.st-val{flex:0 0 52px;width:52px;height:52px;border:none;border-radius:0;background:none;box-shadow:none;padding:0}
+.sr-strip .sr-seg.lp-pip,.sr-strip .sr-seg.lp-pip.done,.sr-strip .sr-seg.lp-pip.cur{flex:1 1 0;width:auto;height:22px;border:none;border-radius:0;background:none;box-shadow:none;color:transparent;font-size:0}
+.sr-nm .pnet{font-size:inherit;color:inherit}
+.sr-nm .pnet b{font-size:inherit;font-family:inherit;color:var(--ink)}
+.lb-gbar{padding:9px 14px;margin:0 0 12px;border-radius:15px}
+.sr-head+.sr-strip+.lb-gbar .gm-line-l .sv{font-size:14px}
+.sr-head+.sr-strip+.lb-gbar .gm-line-a b{font-size:17px}
+/* leaving and discarding wait below the fold, clear of the bars when you scroll to them */
+.sr-quiet{margin-top:170px}
+.sr-quiet+.lb-spacer{height:170px}
 </style>
 </head>
 <body>
@@ -4704,7 +4757,9 @@ function renderGPS(){
   return h+`</div>`;
 }
 
-var LB_SUMSEEN=null;
+var LB_SUMSEEN=null, LP_XOPEN=null;
+window.LP_XO=k=>{ LP_XOPEN=(LP_XOPEN===k?null:k); render(); };
+window.LP_GPS=()=>{ LP_XOPEN='gps'; GP_ON(); };
 function renderPlay(){
   let h='<div class="lp-wrap">';
   if(LRMSG){h+=`<div class="lp-msg">${LRMSG}</div>`;}
@@ -4814,59 +4869,72 @@ function renderPlay(){
   }
 
   else if(LPV==='round'&&LR){
+    // ── The hole (C-20261012-f, Miguel's pick "A · compact rows") ──
+    // One slim header, a thin progress strip, the game in one line, then one row per
+    // golfer: name, strokes as dots, − score +. Next hole is the one big button.
+    // Contest and GPS sit as two small pills; leaving and discarding are quiet links.
     const n=LR.holes;
     if(LRHOLE>n)LRHOLE=n;
     const par=LR.parArr[LRHOLE-1],si=LR.siArr[LRHOLE-1];
     const done=h2=>LR.players.every(p=>lpHasScore(LR.scores,h2,p.id));
-    const halfN=Math.floor(n/2);
     const isScr=LR.game&&LR.game.fmt==='scramble';
-    // When a game is on, the strokes on the hole are the GAME's strokes. The card
-    // gives everyone their full handicap; a match or a skin is played off the
-    // difference. One number on screen, and it is the one that decides the hole.
+    // When a game is on, the strokes on the hole are the GAME's strokes — the number
+    // that decides the hole. Otherwise each player's full course handicap.
     const _GPH=(LR.game&&LR.game.fmt&&LR.game.fmt!=='none'&&!isScr)?gmPlaying(LR,LR.game.fmt):null;
-
-    // ── PAGE 1 · the hole. Scoring and nothing else. ──
-    let pHole=`<div class="lp-strip">${Array.from({length:n},(_,i)=>i+1).map(x=>
-      `${(n>9&&x===halfN+1)?'<div class="lp-turn">turn</div>':''}<div class="lp-pip${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})">${(LR.holeNums&&LR.holeNums[x-1])||x}</div>`).join('')}</div>`;
     const realH=(LR.holeNums&&LR.holeNums[LRHOLE-1])||LRHOLE;
     const cfgLbl=LR.cfg&&LPCFG[LR.cfg]?LPCFG[LR.cfg][0]:`${n} holes`;
-    // The game, where you can see it without scrolling: straight under the holes.
-    pHole+=lbGameBar(LR);
-    // Previous and next sit either side of the hole number — where the eye already
-    // is — so moving on never means scrolling down past four players to find a button.
-    pHole+=`<div class="lp-hole"><div class="lp-hh lp-hh2">
+
+    let pHole=`<div class="lp-hh lp-hh2 sr-head">
       <button class="lp-arw" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)" aria-label="Previous hole">${uiSvg('back')}</button>
-      <div class="lp-hc"><div class="lbl">${LR.course} · ${LR.tee} · ${cfgLbl}</div><div class="big">Hole ${realH}</div>
-        <div class="meta lp-hm">Par <b>${par}</b> · S.I. <b>${si}</b> · ${LRHOLE} of ${n}</div></div>
+      <div class="lp-hc"><div class="big sr-h">Hole ${realH}</div>
+        <div class="meta lp-hm">Par <b>${par}</b> · S.I. <b>${si}</b> · ${uiShort(LR.course)} ${LR.tee}</div></div>
       <button class="lp-arw" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)" aria-label="Next hole">${uiSvg('chev')}</button></div>`;
-    if(_GPH) pHole+=`<div class="lp-gnote">${gmStrokeNote(LR)}</div>`;
+    pHole+=`<div class="lp-strip sr-strip" role="navigation" aria-label="Holes">${Array.from({length:n},(_,i)=>i+1).map(x=>
+      `<button class="lp-pip sr-seg${done(x)?' done':''}${x===LRHOLE?' cur':''}" onclick="LP_J(${x})" aria-label="Hole ${(LR.holeNums&&LR.holeNums[x-1])||x}${done(x)?', done':''}"></button>`).join('')}</div>`;
+    pHole+=lbGameBar(LR);
+
+    const dots=k=>k>0?`<span class="sr-dots" aria-hidden="true">${'•'.repeat(Math.min(k,3))}</span>`:'';
+    pHole+=`<div class="lp-hole sr-card">`;
     pHole+=isScr?gmTeamRows(LR,LRHOLE,par,si,n):LR.players.map(p=>{
       const g=lpHasScore(LR.scores,LRHOLE,p.id)?LR.scores[LRHOLE][p.id]:null;
       const stk=_GPH?gmStroke(_GPH[p.id],si,n):lpStrokes(p.ch,si,n);
       const empty=g==null;
-      const note=empty?'':lpNote(g,par);
-      return `<div class="lp-pl"><div class="top"><span class="pnm">${p.name}${p.guest?' <span class="gtag">guest</span>':''} <span class="pstk">· ${stk>0?stk+' stroke'+(stk>1?'s':''):'no stroke'}</span></span><span class="pnet">net <b>${empty?'–':g-stk}</b></span></div>
-      <div class="lp-stepper">
-        <button class="st-btn" onclick="LP_INC('${p.id}',-1)">−</button>
-        <div class="st-val ${note}${empty?' empty':''}" onclick="LP_INC('${p.id}',0)">${empty?par:g}${empty?'<small>tap = par</small>':''}</div>
-        <button class="st-btn" onclick="LP_INC('${p.id}',1)">＋</button>
-        <button class="st-clr"${empty?' style="visibility:hidden"':''} onclick="LP_CLR('${p.id}')">✕</button>
-      </div></div>`;
+      const d=empty?null:g-par;
+      const k=empty?'sr-e':d<=-2?'lbc-ea':d===-1?'lbc-bi':d===0?'lbc-pa':d===1?'lbc-bo':'lbc-db';
+      const stkTxt=stk>0?`${stk} stroke${stk>1?'s':''}`:stk<0?'gives one back':'no stroke';
+      return `<div class="lp-pl sr-row">
+        <div class="sr-nm">${gmFirst(LR,p.id)}${p.guest?' <span class="gtag">guest</span>':''}${dots(stk)}
+          <small><span class="pstk">${stkTxt}</span>${empty?`<span class="pnet sr-hide">net <b>–</b></span>`:` · <span class="pnet">net <b>${g-stk}</b></span> · <button class="sr-clr" onclick="LP_CLR('${p.id}')">clear</button>`}</small></div>
+        <div class="lp-stepper sr-ctl">
+          <button class="st-btn sr-b" onclick="LP_INC('${p.id}',-1)" aria-label="One fewer for ${gmFirst(LR,p.id)}">−</button>
+          <button class="st-val sr-v ${k}" onclick="LP_INC('${p.id}',0)" aria-label="${empty?`Give ${gmFirst(LR,p.id)} par`:`${gmFirst(LR,p.id)}: ${g}`}"><span>${empty?par:g}</span></button>
+          <button class="st-btn sr-b" onclick="LP_INC('${p.id}',1)" aria-label="One more for ${gmFirst(LR,p.id)}">+</button>
+        </div></div>`;
     }).join('');
-    pHole+=`</div><div class="lp-nav"><button class="lp-nbtn" ${LRHOLE<=1?'disabled':''} onclick="LP_N(-1)">‹ Prev</button><button class="lp-nbtn next" ${LRHOLE>=n?'disabled':''} onclick="LP_N(1)">Next hole ›</button></div>`;
-    pHole+=gmContestRow(LR,LRHOLE);
-    pHole+=renderGPS();
+    pHole+=`</div>`;
+    if(!isScr) pHole+=`<div class="sr-hint">Tap a grey number to give par.${_GPH?' '+gmStrokeNote(LR):''}</div>`;
 
-    // One screen. The hole, then the game's green bar, then everything else is a
-    // sheet you open when you want it: the leaderboard from its bar at the bottom,
-    // the game from its bar under the hole.
-    h+=pHole;
-    if(LPQ.length) h+=`<div class="lp-offline">⟳ ${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
+    // the two small extras: the hole's contest, and GPS
+    const ck=gmContestKind(LR,LRHOLE), cw=(LR.ctp||{})[LRHOLE]||null;
+    let gps='GPS distances';
+    if(GPON){ try{ const gh=gpHole(); gps=(GPPOS&&gh&&gh.c)?`GPS · ${gpUnit(gpDist(GPPOS,gh.c))} ${GPUNIT==='y'?'yd':'m'}`:'GPS · finding you…'; }catch(e){ gps='GPS · on'; } }
+    pHole+=`<div class="sr-more">
+      <button class="sr-pill${LP_XOPEN==='ctp'?' on':''}" onclick="LP_XO('ctp')">${gmContestName(ck)} · <b>${cw?gmFirst(LR,cw):'tap who'}</b></button>
+      <button class="sr-pill${LP_XOPEN==='gps'?' on':''}" onclick="${GPON?"LP_XO('gps')":"LP_GPS()"}"><b>${gps}</b></button></div>`;
+    if(LP_XOPEN==='ctp') pHole+=gmContestRow(LR,LRHOLE);
+    if(LP_XOPEN==='gps'&&GPON) pHole+=renderGPS();
+
     const _board=lpBoard(LR);
     const allDone=_board.length>0 && _board.every(p=>p.thru===n);
-    h+=`<div class="lp-fin"><button class="lp-fbtn disc" onclick="LP_X()">Discard</button><button class="lp-fbtn post" ${allDone?'':'disabled'} onclick="LP_FIN()">Finish round</button></div>`;
-    if(!allDone)h+=`<div class="lp-hint">Finishing unlocks when every player has all ${n} holes in. The round is saved live — closing the app never loses it.</div>`;
-    h+=`<button class="lp-ghost sm" onclick="LP_BACK()">‹ Leave (round keeps running)</button>`;
+    if(allDone) pHole+=`<button class="sr-next fin" onclick="LP_FIN()">Finish round</button>`;
+    else if(LRHOLE<n) pHole+=`<button class="sr-next" onclick="LP_N(1)">Next hole ›</button>`;
+    else {
+      const miss=Array.from({length:n},(_,i)=>i+1).filter(x=>!done(x));
+      pHole+=`<button class="sr-next" onclick="LP_J(${miss[0]||n})">Hole ${(LR.holeNums&&LR.holeNums[(miss[0]||n)-1])||miss[0]} still needs scores ›</button>`;
+    }
+    h+=pHole;
+    if(LPQ.length) h+=`<div class="lp-offline">${LPQ.length} score${LPQ.length>1?'s':''} saved on this phone, waiting for signal · <b onclick="LP_RETRY()">retry now</b></div>`;
+    h+=`<div class="sr-quiet"><button onclick="LP_BACK()">Leave · round keeps running</button><button class="red" onclick="LP_X()">Discard round</button></div>`;
     h+=lbRender(LR);
   }
 
@@ -6954,7 +7022,7 @@ function lpMigrateStEstevao(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261012-e · Club 2.1 · grey line follows the switch';
+const UI_BUILD='C-20261012-f · Club 2.1 · compact hole screen';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
