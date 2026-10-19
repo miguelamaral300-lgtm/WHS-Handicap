@@ -4205,6 +4205,7 @@ onValue(dbRef,snap=>{
     try{lpMigrateLondon();}catch(e){}
     try{lpMigrateStEstevao();}catch(e){}
     try{lpMigrateMonteRei();}catch(e){}
+    try{lpMigrateMorocco();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -7064,11 +7065,53 @@ function lpMigrateMonteRei(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// COURSE IMPORT · Marrakech (for posting rounds; no hole-by-hole cards)
+// Source: the Fédération Royale Marocaine de Golf's own score-card calculator
+// (eds.frmg.ma, "Carte de score"), read 19 Oct 2026, men's ("Homme") rows only.
+// A tee goes in only when the federation's figure is clean and nothing contradicts it:
+//  · Royal Golf Marrakech, Old Course — all five tees. Black/White/Yellow match an
+//    independent card exactly, and Yellow 68.3/123 matches the row already in the app.
+//  · Al Maaden — Black/White/Yellow. The federation stores slope with a decimal
+//    (141.7, 137.3, 136.1); rounded they match an independent card (142, 137, 136).
+//    Blue and Red left OUT: the federation (69/135, 67/120) and the other card
+//    (68.8/128, 65.1/116) disagree. Par 73 (18th is a par 5).
+//  · Samanah — Black/White/Yellow/Blue, whole-number ratings as the federation holds
+//    them (White 73.0/143 and Yellow 72.0/138 confirmed elsewhere). Red left OUT: the
+//    men's row is a copy of the ladies' (73/134).
+// Format, as the London import:  Club name | Tee~rating~par~slope
+// ═══════════════════════════════════════════════════════════════════════════
+const MAR_SRC='FRMG official calculator (Morocco), men’s tees, read 2026-10-19';
+const MAR=[
+  "Royal Golf Marrakech Old Course|Black~71.3~72~134;White~70.4~72~131;Yellow~68.3~72~123;Blue~66.8~72~121;Red~65.2~72~117",
+  "Al Maaden Golf Resort|Black~75.1~73~142;White~73.3~73~137;Yellow~70.3~73~136",
+  "Samanah Golf Club|Black~76~72~149;White~73~72~143;Yellow~72~72~138;Blue~71~72~133"
+];
+function lpMigrateMorocco(){
+  if(!S||!Array.isArray(S.courses))return;
+  const have=new Set(S.courses.map(c=>c.name+'\u0000'+c.tee+'\u0000'+(c.holes||(c.rating<40?'F9':'18'))));
+  const add=[];
+  MAR.forEach(line=>{
+    const i=line.indexOf('|'); if(i<0)return;
+    const name=line.slice(0,i);
+    line.slice(i+1).split(';').forEach(t=>{
+      const f=t.split('~'); if(f.length<4)return;
+      const tee=f[0], rating=parseFloat(f[1]), par=parseInt(f[2],10), slope=parseInt(f[3],10);
+      if(!isFinite(rating)||!isFinite(slope))return;
+      const key=name+'\u0000'+tee+'\u0000'+'18';
+      if(have.has(key))return;
+      have.add(key);
+      add.push({name,tee,holes:'18',rating,slope,par,src:'verified',imported:MAR_SRC});
+    });
+  });
+  if(add.length) upd({...S,courses:[...S.courses,...add]});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261019-a · Club 2.1 · Monte Rei card';
+const UI_BUILD='C-20261019-b · Club 2.1 · Marrakech courses';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
