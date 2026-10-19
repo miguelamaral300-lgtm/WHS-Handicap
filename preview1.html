@@ -4204,6 +4204,7 @@ onValue(dbRef,snap=>{
     try{lpMigrateCrewsHill();}catch(e){}
     try{lpMigrateLondon();}catch(e){}
     try{lpMigrateStEstevao();}catch(e){}
+    try{lpMigrateMonteRei();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -7040,12 +7041,34 @@ function lpMigrateStEstevao(){
   upd(S);
 }
 
+// COURSE CARD · Monte Rei Golf & Country Club, North Course (Vila Nova de Cacela, Tavira)
+// The club's tees and ratings were already in the app from the FPG import (men's: Blue
+// 75.6/147, Yellow 72.9/142, White 71.3/138, Red 67.0/130, with both nines). This adds
+// the hole-by-hole card so it can be used for live scoring. Pars and stroke indexes are
+// from the club's own course map (monte-rei.com/en/golf/course-map) and agree hole for
+// hole with three independent published cards. Nothing is estimated. The North Course
+// reopened in September 2026 after a six-month restoration (greens, bunkers, wider
+// tees); it was restored, not redesigned, so the card is unchanged.
+//   out 36 · in 36 · par 72 · five par 3s (5, 7, 9, 11, 14), five par 5s (2, 6, 8, 16, 18)
+function lpMigrateMonteRei(){
+  if(!S.courseHoles)return;
+  const NAME='Monte Rei Golf & Country Club';
+  if(S.courseHoles[NAME])return;
+  S.courseHoles[NAME]={
+    holes:18,
+    par:[4,5,4,4,3,5,3,5,3, 4,3,4,4,3,4,5,4,5],
+    si: [10,6,2,14,16,4,8,12,18, 5,11,7,9,17,1,13,3,15],
+    source:'Monte Rei club course map, cross-checked with three published cards, 2026-10'
+  };
+  upd(S);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261018-a · Club 2.1 · land at the top';
+const UI_BUILD='C-20261019-a · Club 2.1 · Monte Rei card';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7236,7 +7259,7 @@ function uiName(p){
   const last=String(p.name||'').split(' ').slice(-1)[0];
   return first+' '+(last?last[0]+'.':'');
 }
-function uiShort(n){ return String(n||'').replace(/\s+(Golf Club|Golf Course|Golf|GC|Club)$/i,'').replace(/^Quinta da /,'').trim()||n; }
+function uiShort(n){ return String(n||'').replace(/\s+(Golf (?:&|and) Country Club|Golf Club|Golf Course|Golf|GC|Club)$/i,'').replace(/^Quinta da /,'').trim()||n; }
 function uiDay(d){ try{ const x=new Date(d+'T12:00:00'); return x.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+(x.getFullYear()!==new Date().getFullYear()?' '+x.getFullYear():''); }catch(e){ return fmtDate(d); } }
 function uiWeekday(d){ try{ const x=new Date(d+'T12:00:00'); return x.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }catch(e){ return fmtDate(d); } }
 function uiToday(){ return new Date().toISOString().slice(0,10); }
