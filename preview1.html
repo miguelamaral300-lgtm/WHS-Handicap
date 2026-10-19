@@ -2524,9 +2524,11 @@ html,body{overflow-x:clip}
 .lb-gbar{padding:9px 14px;margin:0 0 12px;border-radius:15px}
 .sr-head+.sr-strip+.lb-gbar .gm-line-l .sv{font-size:14px}
 .sr-head+.sr-strip+.lb-gbar .gm-line-a b{font-size:17px}
-/* leaving and discarding wait below the fold, clear of the bars when you scroll to them */
-.sr-quiet{margin-top:170px}
-.sr-quiet+.lb-spacer{height:170px}
+/* C-20261018-a · land at the top: the hole card ends just under Next hole. Leave and
+   Discard sit straight below it (Discard still asks twice), and the page stops just
+   past them, clear of the leaderboard bar, with no empty band to scroll through. */
+.sr-quiet{margin-top:14px}
+.sr-quiet+.lb-spacer{height:14px}
 </style>
 </head>
 <body>
@@ -4978,6 +4980,23 @@ function renderPlay(){
   return h+'</div>';
 }
 
+// ── Land at the top (C-20261018-a) ───────────────────────────────────────
+// A new screen opens at its own top: Tee off lands on "Hole 1", Next hole on the new
+// hole's header, Finish round on the winner, a room or tab on its name. The key names
+// the screen, not its contents, so a repaint of the same screen (a score from another
+// phone, a stepper tap, a contest pick) never moves you.
+var UI_SCREEN=null;
+function uiScreenKey(AP,AT){
+  let k=V+'|'+(UI_ROOMTAB[V]||'');
+  if(AP) k+='|p:'+AP.id+':'+UI_PTAB;
+  else if(AT) k+='|t:'+AT.id;
+  else if(V==='play'){
+    k+='|'+LPV;
+    if(LPV==='round'&&LR) k+=':'+LRID+':'+LRHOLE;
+    else if(LPV==='summary'&&SUMMARY) k+=':'+(SUMMARY.rid||SUMMARY.finishedAt||'');
+  }
+  return k;
+}
 function render(){
   const root=document.getElementById('app');
   if(!INIT){root.innerHTML='<div class="ui-loading"><div class="ui-spin"></div>Connecting to The Club…</div>';return;}
@@ -5052,6 +5071,10 @@ function render(){
     }
   }
   root.className='ui-v-'+(AP?'player':AT?'event':V);
+
+  { const k=uiScreenKey(AP,AT);
+    if(k!==UI_SCREEN){ const first=UI_SCREEN===null; UI_SCREEN=k;
+      if(!first) try{ window.scrollTo(0,0); }catch(e){} } }
 
   // Whenever the score modal is open, paint the course picker and let UM() fill in tee,
   // hole configuration and the live differential. (The old check looked for an input that
@@ -7022,7 +7045,7 @@ function lpMigrateStEstevao(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261012-f · Club 2.1 · compact hole screen';
+const UI_BUILD='C-20261018-a · Club 2.1 · land at the top';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
