@@ -7078,13 +7078,19 @@ function lpMigrateMonteRei(){
 //  · Samanah — Black/White/Yellow/Blue, whole-number ratings as the federation holds
 //    them (White 73.0/143 and Yellow 72.0/138 confirmed elsewhere). Red left OUT: the
 //    men's row is a copy of the ladies' (73/134).
+//  · Assoufid (added C-20261019-c) — Black/White/Yellow, the men's tees. The federation
+//    holds the same figures under Homme and Dame; Blue and Red are the ladies' tees (their
+//    74.8/72.2 sit above Yellow), so they are left OUT. Slopes stored with a decimal
+//    (135.7, 135.4) are rounded. Independent sites carry older, conflicting figures
+//    (one lists White and Yellow both 70.1/129), so the federation's are used as issued.
 // Format, as the London import:  Club name | Tee~rating~par~slope
 // ═══════════════════════════════════════════════════════════════════════════
 const MAR_SRC='FRMG official calculator (Morocco), men’s tees, read 2026-10-19';
 const MAR=[
   "Royal Golf Marrakech Old Course|Black~71.3~72~134;White~70.4~72~131;Yellow~68.3~72~123;Blue~66.8~72~121;Red~65.2~72~117",
   "Al Maaden Golf Resort|Black~75.1~73~142;White~73.3~73~137;Yellow~70.3~73~136",
-  "Samanah Golf Club|Black~76~72~149;White~73~72~143;Yellow~72~72~138;Blue~71~72~133"
+  "Samanah Golf Club|Black~76~72~149;White~73~72~143;Yellow~72~72~138;Blue~71~72~133",
+  "Assoufid Golf Club|Black~74.6~72~134;White~72.3~72~136;Yellow~70.7~72~135"
 ];
 function lpMigrateMorocco(){
   if(!S||!Array.isArray(S.courses))return;
@@ -7111,7 +7117,7 @@ function lpMigrateMorocco(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261019-b · Club 2.1 · Marrakech courses';
+const UI_BUILD='C-20261019-c · Club 2.1 · Marrakech courses + Assoufid';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
