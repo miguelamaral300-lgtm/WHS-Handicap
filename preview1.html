@@ -2548,6 +2548,24 @@ html,body{overflow-x:clip}
 .ui-done-avs{gap:8px}
 #lbSumTop .ui-h1.sh{font-size:28px;line-height:1.15}
 #lbSumTop .ui-h1{text-wrap:balance}
+/* ── Club 3 (C-20261026-a): three places and one Play button ── */
+.ui-back{display:inline-flex;align-items:center;gap:4px;border:none;background:none;font:inherit;font-size:15px;font-weight:500;color:var(--g);padding:8px 8px 8px 0;margin:4px 0 -6px;min-height:44px;cursor:pointer}
+.ui-back svg{width:18px;height:18px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ui-home-post{width:100%;margin:0 0 14px;min-height:56px;font-size:17px}
+.ui-home-all{display:block;margin:10px auto 0;color:var(--g);font-weight:600}
+.ui-lbl-act{display:flex;align-items:center;justify-content:space-between}
+.ui-lbl-act .ui-link{font-size:13px;color:var(--g);font-weight:600;text-transform:none;letter-spacing:0;padding:6px 0}
+.ui-h2hs{margin-left:auto;margin-right:6px;font-size:15px;color:var(--ink2)}
+.ui-h2hs b{color:var(--ink);font-weight:700}
+.ui-pick{padding:22px 18px 18px}
+.ui-pick-h{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 4px 14px}
+.ui-pick-b{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:none;background:#fff;box-shadow:inset 0 0 0 1px var(--line);border-radius:18px;padding:16px;margin-bottom:10px;font:inherit;cursor:pointer;color:var(--ink)}
+.ui-pick-b .ui-row-t{font-size:17px;font-weight:600}
+.ui-pick-b .ui-row-t small{display:block;font-size:13.5px;font-weight:400;color:var(--ink2);margin-top:3px;line-height:1.35}
+.ui-pick-i{flex:0 0 44px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--off);color:var(--ink)}
+.ui-pick-i.g{background:var(--g);color:#fff}
+.ui-pick-i svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ui-pick-x{display:block;margin:6px auto 0;min-height:44px}
 </style>
 </head>
 <body>
@@ -3698,7 +3716,7 @@ function renderCrown(){
         <span class="ui-row-t">${e.name}<small>${e.rounds.length} of ${st.minRounds} round${st.minRounds===1?'':'s'}</small></span></div>`).join('')}</div>`;
   }
   h+=uiCrownLinks(ym,st,r);
-  if(r.winner)h+=`<button class="ui-btn ui-btn-w" style="margin-top:14px" onclick="CROWN_SHARE('${ym}')">Share standings</button>`;
+
   return h+`</div>`;
 }
 // The rows under the board: each one says what's behind it.
@@ -4807,8 +4825,6 @@ function renderPlay(){
         <span class="ui-live-go">${joined(id)?(lpWatching()?'Back to the board':'Back to scoring'):(mine||LP_SCOREAS[id])?'Join':'Watch'} ›</span>
       </button>`;
     }).join('');
-    h+=`<div class="ui-list" style="margin-top:14px">
-      <button class="ui-sign" onclick="UI_TO('play','past')"><span class="ui-row-t">Played without the app?<small>Post the score in Past</small></span><span class="ui-room">Past ›</span></button></div>`;
     if(live.length) h+=`<button class="ui-link lp-clear" onclick="LP_CLEARALL()">Clear stuck rounds</button>`;
   }
 
@@ -5026,6 +5042,7 @@ function render(){
   if(AP) h+=renderPlayerDetail(AP);
   else if(AT) h+=renderTournamentDetail(AT);
   else if(V==='league') h+=renderLeague(R);
+  else if(V==='rounds') h+=renderRounds();
   else if(V==='play') h+=renderPlayRoom();
   else if(V==='money') h+=renderMoney();
   else if(V==='me') h+=renderMe(R);
@@ -5042,12 +5059,13 @@ function render(){
   if(MOD==='contest') h+=renderContestModal();
   if(MOD==='purse-edit') h+=renderPurseEditModal();
   if(MOD==='predict') h+=renderPredictModal();
+  if(MOD==='playpick') h+=renderPlayPick();
   if(UI_DONE&&!MOD) h+=renderPosted();
   if(MOD!=='course') UI_NC=null;
   if(MOD!=='score'&&MOD!=='course') UI_KEEP=null;
   if(!(V==='league'&&UI_ROOMTAB.league==='crown')) UI_CRD=null;     // the Crown's own pages belong to the Crown
 
-  // Floating bottom bar: Home · League · Money · Me + green Play. A player page or an
+  // Floating bottom bar: Home · Rounds · League + green Play. A player page or an
   // event keeps the room it was opened from lit.
   h+=renderDock(V);
 
@@ -5176,7 +5194,7 @@ function renderPlayerDetail(p){
   return h+uiPlayerOverview(p);
 }
 
-// ── Stats tab: most played, badges, personal bests ──
+// ── Stats tab: most played, personal bests ──
 function renderStatsTab(p,st){
   let h='';
   if(st.courses.length){
@@ -5191,12 +5209,7 @@ function renderStatsTab(p,st){
       ${st.lowHI!=null?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Lowest index ever<small>${st.lowHIDate?fmtDate(st.lowHIDate):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.lowHI.toFixed(1)}</span></div>`:''}
     </div>`;
   }
-  const badges=potmBadges(p,S.courses);
-  if(badges.length){
-    h+=`<div class="ui-lbl">Badges</div><div class="ui-list">${badges.map(b=>`
-      <div class="ui-row" style="cursor:default"><span class="ui-fairtick">${uiSvg('tick')}</span>
-        <span class="ui-row-t">${b.name}<small>${b.note}</small></span></div>`).join('')}</div>`;
-  }
+  // Club 3: badges removed — they repeated what the numbers above already say.
   return h||`<div class="ui-crempty">Nothing to show yet — post a few rounds and this fills up.</div>`;
 }
 
@@ -7126,14 +7139,20 @@ function lpMigrateMorocco(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261025-a · Club 2.1 · who wins a tie';
+const UI_BUILD='C-20261026-a · Club 3 · three places and one Play button';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
 
-const UI_MAIN=['home','league','play','money','me'];
+// Club 3 (26 Oct 2026): three places on the bar — Home (you), Rounds, League — and the
+// green Play button. Money, Settings and the live-round screens are pages you reach from
+// those, never a room of their own.
+const UI_MAIN=['home','rounds','league','play','money','me'];
+const UI_BAR=['home','rounds','league'];
 const UI_I={
   home:'<path d="M4 10.5 12 4l8 6.5V20H4z"/>',
+  rounds:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+  post:'<path d="M12 5v14M5 12h14"/>',
   rank:'<path d="M5 19V9M12 19V5M19 19v-7"/>',
   crown:'<path d="m4 8 4 3.5L12 5l4 6.5L20 8v10H4z"/>',
   prof:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.8 4-5.5 7-5.5s5.8 1.7 7 5.5"/>',
@@ -7176,7 +7195,9 @@ function renderTopBar(AP,AT){
 
 // ── floating bottom bar ──
 function renderDock(tab){
-  const items=[['home','home','Home'],['league','rank','League'],['money','purse','Money'],['me','prof','Me']];
+  const items=[['home','home','Home'],['rounds','rounds','Rounds'],['league','rank','League']];
+  // a page reached from a place keeps that place lit
+  tab=tab==='money'?'league':tab==='me'?'home':tab;
   return `<nav class="ui-dock" aria-label="Main">
     <div class="ui-bar">${items.map(([v,ic,l])=>`<button class="ui-ti${tab===v?' on':''}" onclick="UI_GO('${v}')"${tab===v?' aria-current="page"':''}>${uiSvg(ic)}<span>${l}</span></button>`).join('')}</div>
     ${uiPlayBtn(tab==='play')}
@@ -7200,7 +7221,7 @@ function uiPlayBtn(on){
   const inner=h!=null
     ? `<i class="ui-play-live" aria-hidden="true"></i><span class="ui-play-k">Hole</span><b class="ui-play-n">${h}</b>`
     : `${uiSvg('flag')}<span class="ui-play-l">Play</span>`;
-  return `<button class="ui-play${on?' on':''}${h!=null?' live':''}" onclick="UI_GO('play','live')"${on?' aria-current="page"':''} aria-label="${h!=null?`Back to scoring, hole ${h}`:'Play'}">${inner}</button>`;
+  return `<button class="ui-play${on?' on':''}${h!=null?' live':''}" onclick="${h!=null?"UI_GO('play','live')":'UI_PLAY()'}"${on?' aria-current="page"':''} aria-label="${h!=null?`Back to scoring, hole ${h}`:'Play'}">${inner}</button>`;
 }
 
 // ── Profile ──
@@ -7225,7 +7246,7 @@ function renderSettings(){
       <div class="ui-row" style="cursor:default"><span class="ui-row-t">Sync<small>${syncTxt}</small></span><i class="ui-dot ${SC[SYNC]}"></i></div>
       <button class="ui-row" onclick="EXPORT_DATA()"><span class="ui-row-t">Backup<small>Download everything as a file</small></span>${uiSvg('chev','ui-chev')}</button>
       <button class="ui-row" onclick="PL_ADD()"><span class="ui-row-t">Players<small>Add a player to the club</small></span>${uiSvg('chev','ui-chev')}</button>
-      <button class="ui-row" onclick="OM('crownset')"><span class="ui-row-t">Crown settings<small>Entries, weights, stakes</small></span>${uiSvg('chev','ui-chev')}</button>
+      <button class="ui-row" onclick="UI_GO('play','courses')"><span class="ui-row-t">Courses<small>Every course and tee the club plays · add one</small></span>${uiSvg('chev','ui-chev')}</button>
     </div>
     <div class="ui-lbl">This phone</div>
     <div class="ui-list">
@@ -7242,14 +7263,22 @@ function renderSettings(){
 // ── handlers ──
 // Go to a room (and, optionally, one of its tabs). Old names still work.
 window.UI_GO=(v,tab)=>{
-  UI_MENU=false;
+  UI_MENU=false; if(MOD==='playpick') MOD=null;   // going anywhere answers the Play question
   const r=UI_ROUTE[v];
   if(r){ v=r[0]; tab=tab||r[1]; if(r[2]) UI_HON=r[2]; if(r[0]==='money'&&r[1]==='ledger') UI_LEDG='tournaments'; }
+  // Club 3: Past and Upcoming are one list now (Rounds); "Me" is Home, and its
+  // settings are a page behind your initials.
+  if(v==='play'&&(tab==='past'||tab==='upcoming')){ v='rounds'; tab=null; }
+  if(v==='me'&&tab!=='settings'&&UI_MEP()){ v='home'; tab=null; }
+  if(v==='money'&&!tab) tab='settle';
   if(!UI_MAIN.includes(v)) v='home';
-  if(tab) UI_ROOMTAB[v]=tab; else if(v==='play') UI_ROOMTAB.play='live';   // the green button always lands on Live
+  if(tab) UI_ROOMTAB[v]=tab; else if(v==='play') UI_ROOMTAB.play='live';
+  else if(v==='league') UI_ROOMTAB.league='rankings';   // the bar always opens the table
   UI_FROM=V; PID=null; TID=null; UI_PTAB='overview'; UI_SPOST=false; OPEN_SCORE=null;
   if(typeof LB_OPEN!=='undefined'){ LB_OPEN=null; LB_PASTID=null; }
-  if(v==='play'&&UI_ROOMTAB.play!=='live'){
+  if(v==='rounds'){ try{ UI_LIVE_AT=0; }catch(e){} }
+  if(v==='rounds'||v==='money'||v==='me'){ V=v; OPEN_SCORE=null; OPEN_COURSE=null; if(LPV==='round'){ try{ GPON=false; gpStop(); }catch(e){} } render(); }
+  else if(v==='play'&&UI_ROOMTAB.play!=='live'){
     // Upcoming, Past and Courses never drop you into the scoring screen. A round in
     // progress keeps running; Live shows it with "Back to scoring".
     if(LPV==='round'){ try{ GPON=false; gpStop(); }catch(e){} }
@@ -7263,7 +7292,7 @@ window.UI_MENU_X=()=>{UI_MENU=false;render();};
 window.UI_MENU_GO=v=>UI_GO(v);
 window.UI_SETME=id=>{
   UI_ME=id; try{ CLUB_SET('club_me_v1',id); }catch(e){}
-  PID=null; V='me'; UI_ROOMTAB.me='overview'; render(); try{ window.scrollTo(0,0); }catch(e){}
+  PID=null; V='home'; render(); try{ window.scrollTo(0,0); }catch(e){}
 };
 // The app could never be signed out: the function existed but nothing called it, so a
 // shared or lost phone stayed logged in for good.
@@ -7278,6 +7307,26 @@ window.UI_ME_CLEAR=()=>{
   UI_ME=null; try{ CLUB_DEL('club_me_v1'); }catch(e){}
   UI_GO('me','overview');
 };
+// The green Play button asks one question. While you're scoring it goes straight back
+// to the hole, and while a round you're watching is on it goes to the board.
+window.UI_PLAY=()=>{ MOD='playpick'; render(); };
+window.UI_PLAY_LIVE=()=>{
+  MOD=null;
+  const live=ROUNDS?Object.values(ROUNDS).filter(r=>r&&r.active).length:0;
+  if(live) UI_GO('play','live'); else { UI_GO('play','live'); LP_NEW(); }
+};
+window.UI_PLAY_POST=()=>{ MOD=null; UI_POST(); };
+function renderPlayPick(){
+  const live=ROUNDS?Object.values(ROUNDS).filter(r=>r&&r.active):[];
+  return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo ui-pick">
+    <div class="ui-pick-h">What are you doing?</div>
+    <button class="ui-pick-b" onclick="UI_PLAY_POST()"><span class="ui-pick-i">${uiSvg('pen')}</span>
+      <span class="ui-row-t">Post a round I’ve played<small>Course, tees and your score. It goes straight on your record.</small></span></button>
+    <button class="ui-pick-b" onclick="UI_PLAY_LIVE()"><span class="ui-pick-i g">${uiSvg('flag')}</span>
+      <span class="ui-row-t">${live.length?'Live rounds':'Score a round live'}<small>${live.length?`${uiPl(live.length,'round')} on now · join, watch or start another`:'Everyone in the group scores on their own phone, hole by hole.'}</small></span></button>
+    <button class="ui-link ui-pick-x" onclick="CM()">Cancel</button>
+  </div></div>`;
+}
 // UI_POST lives in rooms.js: the form opens over the room you're in.
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -7479,13 +7528,16 @@ function uiLivePeek(){
   fetch(`${LRS_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{
     UI_LIVE=d||{};
     const sig=Object.keys(UI_LIVE).map(k=>k+':'+(UI_LIVE[k]&&UI_LIVE[k].active?lpThru(UI_LIVE[k]):'x')).join(',');
-    if(sig!==UI_LIVE_SIG){ UI_LIVE_SIG=sig; if(V==='home'&&!PID&&!TID&&!MOD&&!UI_MENU) render(); }
+    if(sig!==UI_LIVE_SIG){ UI_LIVE_SIG=sig; if((V==='home'||V==='rounds')&&!PID&&!TID&&!MOD&&!UI_MENU) render(); }
   }).catch(()=>{});
 }
-setInterval(()=>{ if(V==='home'&&!PID&&!TID&&document.visibilityState!=='hidden') uiLivePeek(); },20000);
+setInterval(()=>{ if((V==='home'||V==='rounds')&&!PID&&!TID&&document.visibilityState!=='hidden') uiLivePeek(); },20000);
 function renderLiveCards(){
-  if(!UI_LIVE) return '';
-  const live=Object.entries(UI_LIVE).filter(([id,r])=>r&&r.active&&Array.isArray(r.players)&&r.players.length&&Array.isArray(r.parArr));
+  // what this phone already has live (ROUNDS, kept in sync while a round is on) wins over the 20-second peek
+  const src=Object.assign({},UI_LIVE||{},(typeof ROUNDS!=='undefined'&&ROUNDS)||{});
+  if(typeof LR!=='undefined'&&LR&&LRID) src[LRID]=LR;
+  if(!Object.keys(src).length) return '';
+  const live=Object.entries(src).filter(([id,r])=>r&&r.active&&Array.isArray(r.players)&&r.players.length&&Array.isArray(r.parArr));
   return live.map(([id,r])=>{
     let thru=0, lead='', mine='';
     try{
@@ -7521,7 +7573,7 @@ function renderHome(R){
   let h=`<div class="ui-hero ui-panel">
     <div class="ui-hero-top"><div class="ui-brand w">The Club</div>
       <div class="ui-top-r">${uiSync(true)}
-        ${me?`<button class="ui-av w" onclick="UI_GO('me','overview')" aria-label="Me">${uiInit(me.name)}</button>`:''}
+        ${me?`<button class="ui-av w" onclick="UI_GO('me','settings')" aria-label="Settings">${uiInit(me.name)}</button>`:''}
       </div></div>`;
   if(me){
     const st=uiStats(me);
@@ -7538,45 +7590,36 @@ function renderHome(R){
       <div class="ui-hero-sub">Pick yourself once and Home shows your handicap, what you need to shoot, and your Crown position.</div>
       <button class="ui-btn ui-btn-w" onclick="UI_GO('me','overview')">Choose player</button>`;
   }
-  h+=`</div><div class="ui-home-body"><div class="ui-signs">`;
-  // live now
-  h+=renderLiveCards();
-  // next up
+  h+=`</div><div class="ui-home-body">`;
+  // Club 3: Home is you. The one thing everyone does — post a round — is the first
+  // button; anything live, coming up or owed appears only when there is one.
+  if(me) h+=`<button class="ui-btn ui-btn-g ui-home-post" onclick="UI_POST()">${uiSvg('plus')}Post a round</button>`;
+  let signs=renderLiveCards();
   const now=uiToday();
   const next=[...(S.upcoming||[])].filter(t=>t&&t.date&&t.date>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
   if(next){
     const n=(next.players||[]).length, inIt=me&&(next.players||[]).includes(me.name);
-    h+=uiSign("UI_TO('play','upcoming')",`<span class="ui-sk">Next up · ${uiWeekday(next.date)}</span>${next.name||'Next round'}`,
-      `${next.course?uiShort(next.course)+' · ':''}${n} in${me?(inIt?' · you’re in':' · you’re not in yet'):''}`,'Play');
+    signs+=uiSign("UI_GO('rounds')",`<span class="ui-sk">Next up · ${uiWeekday(next.date)}</span>${next.name||'Next round'}`,
+      `${next.course?uiShort(next.course)+' · ':''}${n} in${me?(inIt?' · you’re in':' · you’re not in yet'):''}`,'Rounds');
   }
-  // the Crown
   try{
-    const ym=potmThisYM(), r=uiCrown(ym), mon=potmMonthName(ym).split(' ')[0];
-    if(!potmSettledRecord(ym)){
-      const e=me?r.entrants.find(x=>x.pid===me.id):null;
-      const days=uiDaysLeft(ym), left=days==null?'':days===0?' · last day':days===1?' · 1 day left':` · ${days} days left`;
-      let line='';
-      if(me&&e&&e.qualified){
-        const i=r.qualified.findIndex(x=>x.pid===me.id), lead=r.qualified[0];
-        line=`${uiOrd(i+1)}${i===0?(r.qualified[1]?` · ${rd(lead.total-r.qualified[1].total,1)} pts clear`:' · leading'):` · ${rd(lead.total-e.total,1)} pts behind ${lead.name.split(' ')[0]}`}`;
-      }else if(me&&e) line=`${e.rounds.length} of ${r.settings.minRounds} rounds to qualify`;
-      else if(r.winner) line=`${r.winner.name.split(' ')[0]} leads on ${r.winner.total.toFixed(1)}`;
-      else line=me&&!e?'You’re not entered this month':'Nobody ranked yet';
-      h+=uiSign("UI_TO('league','crown')",`<span class="ui-sk">The ${mon} Crown${left}</span>${line}`,'','League');
-    }
+    const M=uiMoneyOpen(), mine=me?(M.pnl[me.id]||0):0;
+    if(mine) signs+=uiSign("UI_GO('money')",`<span class="ui-sk">Money</span>${uiMoneyKey(M)}`,`Settle up when you see each other`,'Money');
   }catch(err){}
-  // money
-  try{
-    const M=uiMoneyOpen();
-    {
-      const mine=me?(M.pnl[me.id]||0):0;
-      const who=me?M.pays.filter(x=>x.to===me.id||x.from===me.id).length:0;
-      h+=uiSign("UI_TO('money','settle')",`<span class="ui-sk">Money</span>${uiMoneyKey(M)}`,
-        mine>0?`From ${who===1?'one player':who+' players'}`:mine<0?`To ${who===1?'one player':who+' players'}`:M.pays.length?`${uiPl(M.pays.length,'payment')} between the group`:'Nothing waiting',
-        'Money');
+  if(signs) h+=`<div class="ui-signs">${signs}</div>`;
+  if(me){
+    const p=S.players.find(x=>x.id===me.id);
+    const ord=[...orderScores(p.scores||[])].reverse().slice(0,5);
+    if(ord.length){
+      h+=`<div class="ui-lbl">Your last ${ord.length} · counting rounds in green</div><div class="ui-hist">${ord.map(e=>{
+        const s2=e.s, f=uiRoundFacts(p,e.i);
+        return `<button class="ui-hrow${f.counting?' cnt':''}${f.issue?' bad':''}" onclick="UI_PASTGO('${p.id}',${e.i})">
+          <span class="ui-row-t">${uiShort(s2.course)}${s2.tee?' · '+s2.tee:''}<small>${s2.date?uiDay(s2.date):'no date'} · ${f.gross}${f.adj!==f.gross?`, adjusted ${f.adj}`:''}</small></span>
+          <span class="ui-hdf">${f.diff!=null?f.diff.toFixed(1):'–'}</span></button>`;}).join('')}</div>
+        <button class="ui-link ui-home-all" onclick="UI_PASTGO('${p.id}')">All ${uiPl((p.scores||[]).length,'round')} ›</button>`;
     }
-  }catch(err){}
-  h+=`</div></div>`;
+  }
+  h+=`</div>`;
   return h;
 }
 
@@ -7701,7 +7744,7 @@ window.UI_SAVE_ROUND=pid=>{
   if(pos1&&pos0&&pos1<pos0) hl.push(`Up to ${uiOrd(pos1)} in the club`);
   if(pos1&&pos0&&pos1>pos0) hl.push(`Down to ${uiOrd(pos1)} in the club`);
   if(hi0==null&&r1.hi!=null) hl.push(`First handicap index: ${r1.hi.toFixed(1)}`);
-  potmBadges(p1,S.courses).forEach(b=>{ if(!b0.has(b.name)) hl.push(`New badge — ${b.name}`); });
+
   UI_DONE={pid,name:p1.name,score:s.score,course:s.course,tee:s.tee,holes:s.holes||'18',date:s.date,
     d:m&&m.eighteenhDiff!=null?m.eighteenhDiff:(c?calcDiff(s.score,c.rating,c.slope):null),
     counts:!!(r1.countingIdx&&r1.countingIdx.has(idx)),hi0,hi1:r1.hi,hl};
@@ -9411,19 +9454,19 @@ function lbSumTop(rec){
 // Old addresses (rankings, crown, purse, upcoming…) still work: render() sends
 // each one to its new shelf, so no link anywhere in the app goes dead.
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_ROOMS=['home','league','play','money','me'];
-var UI_ROOMTAB={league:'rankings',play:'live',money:'settle',me:'overview'};
+const UI_ROOMS=['home','rounds','league','play','money','me'];
+var UI_ROOMTAB={league:'rankings',play:'live',money:'settle',me:'settings'};
 var UI_HON='records', UI_LEDG='all', UI_PAST=null, UI_PASTN=30, UI_H2HWHO=null, UI_SPOST=false, UI_HLOAD=false;
 const UI_ROUTE={
   rankings:['league','rankings'], crown:['league','crown'],
   tournaments:['league','honours','tournaments'], winners:['league','honours','tournaments'],
   contests:['league','honours','contests'],
-  upcoming:['play','upcoming'], courses:['play','courses'],
-  purse:['money','ledger'], profile:['me','overview'], settings:['me','settings'],
+  upcoming:['rounds'], courses:['play','courses'],
+  purse:['money','ledger'], profile:['me','settings'], settings:['me','settings'],
 };
 function uiRoute(){
   const r=UI_ROUTE[V]; if(!r) return false;
-  V=r[0]; UI_ROOMTAB[r[0]]=r[1];
+  V=r[0]; if(r[1]) UI_ROOMTAB[r[0]]=r[1];
   if(r[2]) UI_HON=r[2];
   if(r[0]==='money') UI_LEDG='tournaments';
   return true;
@@ -9436,6 +9479,10 @@ function uiRoomHead(title,key,action){
 function uiRoomTabs(tabs,cur){
   return `<div class="ui-seg ui-seg-full ui-evtabs ui-roomtabs" role="tablist">${tabs.map(([k,l])=>
     `<button role="tab" aria-selected="${cur===k}" class="${cur===k?'on':''}" onclick="UI_RT('${k}')">${l}</button>`).join('')}</div>`;
+}
+// A page you reach from one of the three places: a back link names where it goes.
+function uiBack(onclick,label){
+  return `<button class="ui-back" onclick="${onclick}">${uiSvg('back')}<span>${label}</span></button>`;
 }
 function uiAdd(onclick,label){ return `<button class="ui-btn ui-btn-g ui-btn-sm" onclick="${onclick}">${uiSvg('plus')}${label}</button>`; }
 function uiChips(list,cur,handler){
@@ -9456,16 +9503,31 @@ function renderLeague(R){
   const t=UI_ROOMTAB.league;
   const y0=new Date().getFullYear()+'-01-01';
   const ry=S.players.reduce((a,p)=>a+(p.scores||[]).filter(s=>s.date&&s.date>=y0).length,0);
-  let act='';
-  if(t==='crown') act=uiAdd("OM('register')",'Declare');
-  if(t==='honours'&&UI_HON==='tournaments') act=uiAdd("OM('tournament')",'Result');
-  if(t==='honours'&&UI_HON==='contests') act=uiAdd("OM('contest')",'Result');
-  let h=uiRoomHead('League',`${uiPl(S.players.length,'member')} · ${uiPl(ry,'round')} this year`,act)
-    +uiRoomTabs([['rankings','Rankings'],['crown','Crown'],['h2h','Head to head'],['honours','Honours']],t);
-  if(t==='crown') return h+renderCrown();
-  if(t==='h2h') return h+renderLeagueH2H();
-  if(t==='honours') return h+renderHonours(R);
-  return h+renderRanking(R);
+  // Club 3: the League is the table. The Crown, head to head, records and money are
+  // pages one tap below it, each with a way back — not tabs fighting for the top.
+  if(t==='crown'||t==='h2h'||t==='honours'){
+    let act='';
+    if(t==='crown') act=uiAdd("OM('register')",'Declare');
+    if(t==='honours'&&UI_HON==='tournaments') act=uiAdd("OM('tournament')",'Result');
+    if(t==='honours'&&UI_HON==='contests') act=uiAdd("OM('contest')",'Result');
+    const title={crown:'The Crown',h2h:'Head to head',honours:'Records'}[t];
+    const h=uiBack("UI_GO('league')",'League')+uiRoomHead(title,'',act);
+    if(t==='crown') return h+renderCrown();
+    if(t==='h2h') return h+renderLeagueH2H();
+    return h+renderHonours(R);
+  }
+  let h=uiRoomHead('League',`${uiPl(S.players.length,'member')} · ${uiPl(ry,'round')} this year`,'')+renderRanking(R);
+  let crownSub='Monthly competition';
+  try{ const ym=potmThisYM(), d=uiDaysLeft(ym);
+    crownSub=`${potmMonthName(ym)}${d==null?'':d===0?' · last day':d===1?' · 1 day left':` · ${d} days left`}`; }catch(e){}
+  const row=(on,ic,t1,sub)=>`<button class="ui-row" onclick="${on}"><span class="ui-av">${uiSvg(ic)}</span><span class="ui-row-t">${t1}<small>${sub}</small></span>${uiSvg('chev','ui-chev')}</button>`;
+  h+=`<div class="ui-lbl">More</div><div class="ui-list">
+    ${row("UI_GO('league','crown')",'crown','The Crown',crownSub)}
+    ${row("UI_GO('league','h2h')",'rank','Head to head','Everyone’s record against everyone')}
+    ${row("UI_GO('league','honours')",'trophy','Records','Awards, records, champions')}
+    ${row("UI_GO('money')",'purse','Money',uiMoneyKey())}
+  </div>`;
+  return h;
 }
 // Head to head: the career record, one player at a time. Defaults to you.
 function renderLeagueH2H(){
@@ -9480,7 +9542,7 @@ function renderLeagueH2H(){
 // Honours: every winner of everything, in one roll.
 function renderHonours(R){
   const k=['records','crown','tournaments','contests'].includes(UI_HON)?UI_HON:'records';
-  let h=uiChips([['records','Records'],['crown','Crown'],['tournaments','Tournaments'],['contests','Contests']],k,'UI_HON_O');
+  let h=uiChips([['records','Records'],['tournaments','Champions'],['contests','Contests']],k==='crown'?'':k,'UI_HON_O');
   if(k==='records'){ const r=renderRecords(R); return h+renderAwards()+`<div class="ui-lbl">All-time records</div>`+(r||`<div class="ui-crempty">Records appear once rounds are posted.</div>`); }
   if(k==='crown') return h+crownHonour();
   if(k==='contests'){ uiHistLoad(); return h+renderContests(); }
@@ -9512,32 +9574,31 @@ function uiLiveContests(){
 // ═══════════════════════════════ PLAY ═════════════════════════════════════
 // Every round of golf, in time order: coming up, happening, finished.
 function renderPlayRoom(){
-  if(LPV==='hist'){ LPV='list'; UI_ROOMTAB.play='past'; }
+  if(LPV==='hist'){ LPV='list'; V='rounds'; return renderRounds(); }
   // setup, the scoring screen and the end-of-round card are full screen
   if(LPV!=='list') return renderPlay();
   const t=UI_ROOMTAB.play;
-  let key='', act='';
-  if(t==='upcoming'){
-    const n=uiUpcomingList().length;
-    key=n?`${uiPl(n,'round')} coming up`:'Nothing in the diary';
-    act=uiAdd("OM('upcoming')",'Event');
-  }else if(t==='past'){
-    const n=S.players.reduce((a,p)=>a+(p.scores||[]).length,0);
-    key=`${uiPl(n,'round')} on the record`;
-    act=uiAdd('UI_POST()','Post a score');
-  }else if(t==='courses'){
-    key=`${uiPl(new Set(S.courses.map(c=>c.name)).size,'course')}`;
-    act=uiAdd("OM('course')",'Course');
-  }else{
-    const live=ROUNDS?Object.values(ROUNDS).filter(r=>r&&r.active).length:0;
-    key=live?`${live} live now`:'Everyone scores on their own phone';
-    act=uiAdd('LP_NEW()','New round');
+  if(t==='courses'){
+    const n=new Set(S.courses.map(c=>c.name)).size;
+    return uiBack("UI_GO('me','settings')",'Settings')+uiRoomHead('Courses',uiPl(n,'course'),uiAdd("OM('course')",'Course'))+renderCourses();
   }
-  let h=uiRoomHead('Play',key,act)+uiRoomTabs([['upcoming','Upcoming'],['live','Live'],['past','Past'],['courses','Courses']],t);
-  if(t==='upcoming') return h+renderUpcoming();
-  if(t==='past') return h+renderPast();
-  if(t==='courses') return h+renderCourses();
-  return h+renderPlay();
+  if(t==='upcoming'||t==='past'){ V='rounds'; return renderRounds(); }
+  const live=ROUNDS?Object.values(ROUNDS).filter(r=>r&&r.active).length:0;
+  return uiBack("UI_GO('home')",'Home')+uiRoomHead('Live rounds',live?`${live} on now`:'Nobody out right now',uiAdd('LP_NEW()','New round'))+renderPlay();
+}
+// ═══════════════════════════════ ROUNDS ═══════════════════════════════════
+// Every round, one list: anything live on top, then what's coming up, then everything
+// played, newest first. Filter by a player for their handicap record.
+function renderRounds(){
+  const n=S.players.reduce((a,p)=>a+(p.scores||[]).length,0);
+  let h=uiRoomHead('Rounds',`${uiPl(n,'round')} on the record`,uiAdd('UI_POST()','Post a round'));
+  uiLivePeek();
+  const lc=renderLiveCards();
+  if(lc) h+=`<div class="ui-lbl">Live now</div><div class="ui-signs">${lc}</div>`;
+  const up=uiUpcomingList();
+  if(up.length) h+=`<div class="ui-lbl ui-lbl-act"><span>Coming up</span><button class="ui-link" onclick="OM('upcoming')">Add an event</button></div>`+renderUpcoming();
+  h+=`<div class="ui-lbl ui-lbl-act"><span>Played</span>${up.length?'':`<button class="ui-link" onclick="OM('upcoming')">Add an event</button>`}</div>`;
+  return h+renderPast();
 }
 function uiUpcomingList(){
   const now=new Date();
@@ -9644,7 +9705,7 @@ function uiMoneyKey(M){
 function renderMoney(){
   const t=UI_ROOMTAB.money, M=uiMoneyOpen();
   const act=t==='ledger'&&UI_LEDG==='tournaments'?`<button class="ui-btn ui-btn-g ui-btn-sm" onclick="SET_PURSE(null)">${uiSvg('plus')}Record</button>`:'';
-  let h=uiRoomHead('Money',uiMoneyKey(M),act)+uiRoomTabs([['settle','Settle up'],['ledger','Ledger']],t);
+  let h=uiBack("UI_GO('league')",'League')+uiRoomHead('Money',uiMoneyKey(M),act)+uiRoomTabs([['settle','Settle up'],['ledger','Ledger']],t);
   return h+(t==='ledger'?renderLedger():renderSettle(M));
 }
 function renderSettle(M){
@@ -9662,7 +9723,6 @@ function renderSettle(M){
   if(M.open.length){
     h+=`<div class="ui-lbl">Waiting to be settled</div><div class="ui-list">${[...M.open].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>uiMatchRow(m)).join('')}</div>`;
   }
-  h+=`<div class="ui-list" style="margin-top:14px">${uiSign("UI_TO('money','ledger')",'Everything ever won and paid','Matches, the Crown and tournaments','Ledger')}</div>`;
   return h;
 }
 function uiMatchRow(m){
@@ -9734,20 +9794,14 @@ function uiCrownMoney(){
 // Your own card. Your rounds and your head-to-heads are signposts into Play and
 // the League — the same screens, filtered to you.
 function renderMe(R){
-  const t=UI_ROOMTAB.me;
+  // Club 3: there is no "Me" room — Home is you. This is Settings, behind your initials.
   if(!UI_MEP()){
-    let h=uiRoomHead('Me','Who’s this phone for?','')+uiRoomTabs([['overview','Choose player'],['settings','Settings']],t==='settings'?'settings':'overview');
-    if(t==='settings') return h+renderSettings();
-    return h+renderProfilePick(true);
+    return uiRoomHead('Who’s this phone for?','Pick yourself once','')+renderProfilePick(true)
+      +`<div class="ui-lbl">Settings</div>`+renderSettings();
   }
   const p=S.players.find(x=>x.id===UI_ME);
-  const st=uiStats(p), rp=R.find(x=>x.id===p.id)||{};
-  const key=`${p.name}${rp.hi!=null?' · index '+rp.hi.toFixed(1):''}`;
   const act=`<button class="ui-ico" onclick="PL_EDIT('${p.id}')" aria-label="Edit my details">${uiSvg('pen')}</button>`;
-  let h=uiRoomHead('Me',key,act)+uiRoomTabs([['overview','Overview'],['stats','Stats'],['settings','Settings']],t);
-  if(t==='stats') return h+renderStatsTab(p,st);
-  if(t==='settings') return h+renderSettings();
-  return h+uiPlayerOverview(p)+renderProfileFoot(p);
+  return uiBack("UI_GO('home')",'Home')+uiRoomHead('Settings',p.name,act)+renderSettings();
 }
 // Shared by Me and every other player's page.
 function uiPlayerOverview(p){
@@ -9763,7 +9817,7 @@ function uiPlayerOverview(p){
   <div class="ui-stat3">
     <div><span>Low</span><b>${st.lowHI!=null?st.lowHI.toFixed(1):'—'}</b></div>
     <div><span>Best</span><b>${st.bestGross?st.bestGross.score:'—'}</b></div>
-    <div><span>Crowns</span><b>${st.crowns}</b></div>
+    <div><span>Rounds</span><b>${(p.scores||[]).length}</b></div>
   </div>`;
   const tg=uiTarget(p); if(tg) h+=uiTargetCard(tg,false);
   // the last five, counting rounds in green — the full list is a tap away in Play
@@ -9775,16 +9829,13 @@ function uiPlayerOverview(p){
         <span class="ui-row-t">${uiShort(s2.course)}${s2.tee?' · '+s2.tee:''}<small>${s2.date?uiDay(s2.date):'no date'} · ${f.gross}${f.adj!==f.gross?`, adjusted ${f.adj}`:''}</small></span>
         <span class="ui-hdf">${f.diff!=null?f.diff.toFixed(1):'–'}</span></button>`;}).join('')}</div>`;
   }
-  // signposts, not copies
-  const h2=S.players.filter(o=>o.id!==p.id).map(o=>({o,r:uiH2H(p,o)})).filter(x=>x.r.rows.length)
-    .sort((a,b)=>(b.r.w-b.r.l)-(a.r.w-a.r.l)||b.r.rows.length-a.r.rows.length);
-  const best=h2[0];
+  // one line: all their rounds; on someone else's page, how you do against them
+  const meP=UI_MEP()&&!mine?S.players.find(o=>o.id===UI_ME):null;
+  const vs=meP?uiH2H(meP,p):null;
   h+=`<div class="ui-list" style="margin-top:14px">
-    ${uiSign(`UI_PASTGO('${p.id}')`,`All ${fn} rounds`,`${uiPl((p.scores||[]).length,'round')} · tap one for the card`,'Play')}
-    ${uiSign(`UI_H2HGO('${p.id}')`,`${mine?'Me':uiName(p)} against everyone`,best?`Best record: v ${uiName(best.o)}, ${best.r.w}–${best.r.l}${best.r.d?'–'+best.r.d:''}`:'No rounds alongside anyone yet','League')}
+    <button class="ui-row" onclick="UI_PASTGO('${p.id}')"><span class="ui-row-t">All ${fn} rounds<small>${uiPl((p.scores||[]).length,'round')} · tap one for the card</small></span>${uiSvg('chev','ui-chev')}</button>
+    ${vs&&vs.rows.length?`<button class="ui-row" onclick="UI_H2HGO('${UI_ME}')"><span class="ui-row-t">You v ${uiName(p)}<small>${uiPl(vs.rows.length,'round')} together</small></span><span class="ui-h2hs"><b>${vs.w}</b>–<b>${vs.l}</b>${vs.d?'–'+vs.d:''}</span>${uiSvg('chev','ui-chev')}</button>`:''}
   </div>`;
-  const badges=potmBadges(p,S.courses);
-  if(badges.length) h+=`<div class="ui-lbl">Badges</div><div class="ui-chips-x ui-badges">${badges.map(b=>`<span class="ui-chip sm">${b.name}</span>`).join('')}</div>`;
   return h;
 }
 
@@ -9813,7 +9864,7 @@ window.UI_PASTGO=(pid,idx)=>{
 };
 // A finished card, from anywhere: the money ledger, a player's round.
 window.UI_CARD=rid=>{
-  if(V!=='play'||UI_ROOMTAB.play!=='past'){ UI_TO('play','past'); }
+  if(V!=='rounds'){ UI_GO('rounds'); }
   if(HIST===null){ UI_HLOAD=true;
     fetch(`${RH_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{ HIST=d||{}; })
       .catch(()=>{ HIST={}; }).finally(()=>{ UI_HLOAD=false;
@@ -9845,7 +9896,7 @@ window.UI_POST=()=>{
   // "Done" at the end of a round files it where you'll look for it: Play ▸ Past,
   // at the top, fetched fresh so the card you just finished is there.
   const _LD=window.LP_DONE;
-  window.LP_DONE=()=>{ _LD(); UI_ROOMTAB.play='past'; UI_PAST=null; UI_PASTN=30; HIST=null; LRMSG=null; render(); try{ window.scrollTo(0,0); }catch(e){} };
+  window.LP_DONE=()=>{ _LD(); V='rounds'; UI_PAST=null; UI_PASTN=30; HIST=null; LRMSG=null; render(); try{ window.scrollTo(0,0); }catch(e){} };
 })();
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -9992,7 +10043,7 @@ function renderAwards(){
       <ol>${AW_RULES.map(([,label,rule])=>`<li><b>${label}.</b> ${rule}</li>`).join('')}</ol>
       <p>Worked out from the club's own rounds, the same way for everyone. A round needs a date to count towards a season.</p>
     </details>
-    ${won?`<a class="ui-btn ui-btn-g aw-share" href="https://wa.me/?text=${encodeURIComponent(awShareText(c))}" target="_blank" rel="noopener">Share to the group</a>`:''}
+
   </section>`;
   return h;
 }
