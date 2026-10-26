@@ -2529,6 +2529,25 @@ html,body{overflow-x:clip}
    past them, clear of the leaderboard bar, with no empty band to scroll through. */
 .sr-quiet{margin-top:14px}
 .sr-quiet+.lb-spacer{height:14px}
+
+/* ── C-20261025-a · who wins a tie ─────────────────────────────────────────
+   One quiet line under a level pair, once they've finished: what settled it.
+   It belongs to the pair, so the row above it gives up its rule. */
+.lb-row.cbp{border-bottom-color:transparent}
+.lbc:has(+.lb-cb){border-bottom-color:transparent}
+.lb-cb{font-size:12px;line-height:1.45;text-wrap:pretty;color:var(--ink2);padding:0 2px 12px 84px;margin-top:-6px;
+  border-bottom:1px solid var(--line);font-feature-settings:'tnum'}
+.lb-cb:last-child{border-bottom:none}
+.gm-row:has(+.gm-cb){border-bottom-color:transparent}
+.lb-cb.gm-cb{padding-left:38px;margin-top:-4px}
+/* the green panel at the end of a round: the tie in one line, on the green */
+.ui-done-cb{display:inline-block;margin:8px auto 6px;text-wrap:balance;padding:6px 12px;border-radius:999px;
+  background:rgba(255,255,255,.14);color:#fff;font-size:12.5px;line-height:1.4;max-width:100%;font-feature-settings:'tnum'}
+.ui-done-avs{display:flex;justify-content:center}
+.ui-done-avs .ui-av.lg{width:56px;height:56px;font-size:19px}
+.ui-done-avs{gap:8px}
+#lbSumTop .ui-h1.sh{font-size:28px;line-height:1.15}
+#lbSumTop .ui-h1{text-wrap:balance}
 </style>
 </head>
 <body>
@@ -4541,13 +4560,15 @@ function lpThru(r){ let t=0; for(let h=1;h<=r.holes;h++){ if(r.players.every(p=>
 // The WhatsApp message at the end of a round. It used to say "net" beside the
 // GROSS score against par; now each line carries gross, real net and points.
 function lpShareText(rec){
-  const B=lpBoard(rec);
+  // Same order as the board and the green panel: Stableford, ties on countback.
+  const RK=lbRank0(rec,'stb'), B=RK.rows;
   const d=rec.date.split('-').reverse().join('/');
   const sg=v=>v>0?'+'+v:v===0?'E':String(v);
   let t=`⛳ The Club — ${rec.course} (${rec.tee}) · ${d}\n`;
   B.forEach((p,i)=>{
     let net=0; for(let h=1;h<=rec.holes;h++) if(lpHasScore(rec.scores,h,p.id)) net+=rec.scores[h][p.id]-lpStrokes(p.ch,rec.siArr[h-1],rec.holes);
-    t+=`${i+1}. ${p.name}${p.guest?' (guest)':''} — ${p.gross} gross · net ${net} (${sg(p.netToPar)}) · ${p.stb} pts\n`;
+    t+=`${p.thru?p.pos:i+1}. ${p.name}${p.guest?' (guest)':''} — ${p.gross} gross · net ${net} (${sg(p.netToPar)}) · ${p.stb} pts\n`;
+    const note=RK.notes[p.id]; if(note) t+=`   ${cbNoteText('stb',p,note)}\n`;
   });
   return t;
 }
@@ -4943,20 +4964,8 @@ function renderPlay(){
   }
 
   else if(LPV==='summary'&&SUMMARY){
-    const B0=lpBoard(SUMMARY);
-    const byId={}; B0.forEach(x=>byId[x.id]=x);
-    const B=SUMMARY.players.map(p=>{const x=byId[p.id]||{gross:0,ch:p.ch};return {...x,...lpNetFromRow(SUMMARY,p,x),name:p.name,guest:p.guest};}).sort((a,b)=>a.netToPar-b.netToPar||b.stb-a.stb);
-    const sing=SUMMARY.holes<=9;
-    const w=B[0];
-    const wUnder=w?w.netToPar:0;
-    const parLine=wUnder===0?'net level par':`${Math.abs(wUnder)} ${wUnder<0?'under':'over'} net`;
-    h+=`<div class="ui-done-top ui-panel" style="border-radius:24px;margin-bottom:14px">
-      <span class="ui-av g lg" style="margin:0 auto;background:#fff;color:var(--g)">${uiInit(w.name)}</span>
-      <div class="ui-h1" style="color:#fff;margin-top:14px">${w.name.split(' ')[0]}${w.guest?' (guest)':''} wins</div>
-      <div class="ui-done-s">Net ${w.net} · ${parLine} · ${w.stb} points</div>
-      <div class="ui-done-s">Kept for good in Play ▸ Past</div>
-      <div class="ui-done-s" style="margin-top:2px">${uiShort(SUMMARY.course)} · ${SUMMARY.tee} · ${uiDay(SUMMARY.date)}</div>
-    </div>`;
+    // The winner is the board's winner, ties settled on countback (s9_tie.js).
+    h+=lbSumTop(SUMMARY);
     // The same leaderboard as on the course: tap a name and their card opens —
     // gross, net, points, and what went on their record.
     if(!LB_SUMSEEN||LB_SUMSEEN!==(SUMMARY.rid||SUMMARY.finishedAt)){
@@ -7117,7 +7126,7 @@ function lpMigrateMorocco(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261019-c · Club 2.1 · Marrakech courses + Assoufid';
+const UI_BUILD='C-20261025-a · Club 2.1 · who wins a tie';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7481,11 +7490,15 @@ function renderLiveCards(){
     let thru=0, lead='', mine='';
     try{
       thru=lpThru(r);
-      const b=lpBoard(r).filter(x=>x.thru>0);
+      // the board's order: Stableford, a tie shown as a tie (settled on countback once finished)
+      const b=lbRows(r,'stb').filter(x=>x.thru>0);
       if(b.length){
-        lead=`${b[0].name.split(' ')[0]} leads`;
-        const mi=b.findIndex(x=>x.id===UI_ME);
-        if(mi===0) lead='You lead'; else if(mi>0) mine=` · you’re ${uiOrd(mi+1)}`;
+        const level=String(b[0].pos)[0]==='T';
+        lead=level?'Level at the top':`${b[0].name.split(' ')[0]} leads`;
+        const me=b.find(x=>x.id===UI_ME);
+        if(me&&!level&&me===b[0]) lead='You lead';
+        else if(me&&level&&me.pos===b[0].pos) lead='You’re level at the top';
+        else if(me) mine=` · you’re ${String(me.pos)[0]==='T'?'joint ':''}${uiOrd(parseInt(String(me.pos).replace('T',''),10))}`;
       }
     }catch(e){}
     const me=r.players.find(x=>x.id===UI_ME);
@@ -8467,15 +8480,23 @@ function gmSideNote(fmt,s){
 // ── the live panel ─────────────────────────────────────────────────────────
 function gmFirst(r,id){ const p=r.players.find(x=>x.id===id); return p?p.name.split(' ')[0]:'?'; }
 
+// Stableford game rows in order: points, then (once level and finished) countback
+// off the game's own allowance (s9_tie.js).
+function gmStbRank(r,PH,ids){
+  const base=gmStableford(r,PH,ids).map(x=>({...x,stb:x.pts}))
+    .sort((a,b)=>(!a.thru)-(!b.thru)||b.pts-a.pts||b.thru-a.thru);
+  return cbRank(r,base,x=>-x.pts,'stb',x=>x.ph);
+}
 function gmPanel(r){
   const g=r.game; if(!g||g.fmt==='none'||!GM_FORMATS[g.fmt]) return '';
   const F=GM_FORMATS[g.fmt], PH=gmPlaying(r,g.fmt), ids=gmIds(r);
   let body='';
   if(g.fmt==='stableford'){
-    const rows=gmStableford(r,PH,ids);
-    body=`<div class="gm-rows">${rows.map((x,i)=>`<div class="gm-row${i===0&&x.thru?' lead':''}">
-      <span class="gm-pos">${i+1}</span><span class="gm-nm">${x.name}<small>off ${x.ph}</small></span>
-      <span class="gm-val">${x.pts}<small>pts · thru ${x.thru}</small></span></div>`).join('')}</div>`;
+    // Level on points: a tie until they finish, then countback off the game's own allowance.
+    const rk=gmStbRank(r,PH,ids), rows=rk.rows;
+    body=`<div class="gm-rows">${rows.map((x,i)=>`<div class="gm-row${(x.pos===1||x.pos==='T1')&&x.thru?' lead':''}">
+      <span class="gm-pos">${x.thru?x.pos:i+1}</span><span class="gm-nm">${x.name}<small>off ${x.ph}</small></span>
+      <span class="gm-val">${x.pts}<small>pts · thru ${x.thru}</small></span></div>${rk.notes[x.id]?`<div class="lb-cb gm-cb">${cbNoteText('stb',x,rk.notes[x.id])}</div>`:''}`).join('')}</div>`;
   }
   if(g.fmt==='skins'){
     const s=gmSkins(r,PH,ids,g.stake||0);
@@ -8792,9 +8813,12 @@ function gmStripInner(r){
     msg=sc.A.thru||sc.B.thru?`${sc.A.gross} – ${sc.B.gross}`:'Not started';
     amt=sc.A.thru?String(sc.A.net):'–'; sub='team A net';
   } else {
-    const rows=gmStableford(r,PH,ids);
+    const rows=gmStbRank(r,PH,ids).rows, top=rows[0];
     const mine=me?rows.find(x=>x.id===me):rows[0];
-    title='Stableford'; msg=mine?`${gmFirst(r,mine.id)} leads on ${rows[0].pts}`:'';
+    // the leader is the leader — a tie is said as a tie, countback only once they've finished
+    title='Stableford'; msg=!top||!top.thru?'Not started'
+      :String(top.pos)[0]==='T'?`Level at the top on ${top.pts}`
+      :`${gmFirst(r,top.id)} leads${top.cbWon?' on countback,':' on'} ${top.pts}`;
     amt=mine?String(mine.pts):'0'; sub=me?'your points':'points';
   }
   return `<span class="gm-line-l"><span class="sl">${title}</span><span class="sv">${msg}</span></span>
@@ -8913,8 +8937,8 @@ function lbSync(r){
 }
 
 // ── the numbers ────────────────────────────────────────────────────────────
-function lbRows(r){
-  const fmt=lbFmt();
+function lbRank0(r,fmtArg){
+  const fmt=fmtArg||lbFmt();
   const rows=lpBoard(r).map(b=>{
     const p=r.players.find(x=>x.id===b.id)||b;
     return {...b,name:p.name,ch:p.ch,guest:p.guest};
@@ -8926,18 +8950,11 @@ function lbRows(r){
     if(!B.thru) return -1;
     return (key(A)-key(B)) || (fmt==='stb'?A.netToPar-B.netToPar:B.stb-A.stb) || (B.thru-A.thru);
   });
-  // Golf leaderboards share a position on a tie and mark it T.
-  let last=null,pos=0;
-  rows.forEach((x,i)=>{
-    if(!x.thru){ x.pos='–'; return; }
-    const k=key(x);
-    if(k!==last){ pos=i+1; last=k; }
-    x.pos=pos;
-  });
-  const seen={}; rows.forEach(x=>{ if(x.thru) seen[x.pos]=(seen[x.pos]||0)+1; });
-  rows.forEach(x=>{ if(x.thru&&seen[x.pos]>1) x.pos='T'+x.pos; });
-  return rows;
+  // Golf leaderboards share a position on a tie and mark it T — until the round is
+  // over. Then a tie is settled on countback (s9_tie.js), the way clubs do it.
+  return cbRank(r,rows,key,fmt,x=>x.ch);
 }
+function lbRows(r,fmtArg){ return lbRank0(r,fmtArg).rows; }
 function lbValue(x){
   const fmt=lbFmt();
   if(!x.thru) return '–';
@@ -8960,7 +8977,8 @@ function lbHeadline(r){
   const fmt=lbFmt(), first=lead.name.split(' ')[0];
   const tied=typeof lead.pos==='string'&&lead.pos[0]==='T';
   const what=fmt==='stb'?`${lead.stb} points`:fmt==='net'?`net ${lbSigned(lead.netToPar)}`:`${lbSigned(lead.toPar)} gross`;
-  return tied?`Tied at the top on ${what}`:`${first} leads on ${what}`;
+  if(tied) return `${rows[0].thru===r.holes&&rows[1]&&rows[1].thru===r.holes?'Level':'Tied'} at the top on ${what}`;
+  return lead.cbWon?`${first} leads on countback, ${what}`:`${first} leads on ${what}`;
 }
 
 // ── a player's card, dropped open under their row ──────────────────────────
@@ -9116,17 +9134,18 @@ function lbTeamRows(r){
 function lbBoardBody(r,ctx){
   const isScr=r.game&&r.game.fmt==='scramble';
   if(isScr) return lbTeamRows(r);
-  const fmt=lbFmt(), rows=lbRows(r), RS=ctx?LB_PROWS:LB_ROWS;
+  const fmt=lbFmt(), rk=lbRank0(r,fmt), rows=rk.rows, RS=ctx?LB_PROWS:LB_ROWS;
   let h=`<div class="lb-seg" role="tablist">${['stb','net','gross'].map(f=>
     `<button role="tab" aria-selected="${f===fmt}" class="${f===fmt?'on':''}" onclick="LB_F('${f}')">${LB_FMTN[f]}</button>`).join('')}</div>`;
   h+=rows.map(x=>{
     const open=!!RS[x.id];
-    return `<button class="lb-row${x.pos===1||x.pos==='T1'?' lead':''}${open?' open':''}${x.id===UI_ME?' me':''}" onclick="LB_R('${x.id}','${ctx||''}')" aria-expanded="${open}">
+    const note=rk.notes[x.id];
+    return `<button class="lb-row${x.pos===1||x.pos==='T1'?' lead':''}${open?' open':''}${x.id===UI_ME?' me':''}${note&&!open?' cbp':''}" onclick="LB_R('${x.id}','${ctx||''}')" aria-expanded="${open}">
       <span class="lb-p">${x.pos}</span>
       <span class="lb-av">${uiInit(x.name)}</span>
       <span class="lb-n">${x.name}${x.guest?' <i class="lb-g">guest</i>':''}<small>${lbSub(r,x)}</small></span>
       <span class="lb-v">${lbValue(x)}</span>
-      <span class="lb-c">${uiSvg('chev')}</span></button>${open?lbCard(r,x,ctx):''}`;
+      <span class="lb-c">${uiSvg('chev')}</span></button>${open?lbCard(r,x,ctx):''}${note?`<div class="lb-cb">${cbNoteText(fmt,x,note)}</div>`:''}`;
   }).join('');
   h+=`<p class="lb-note">${fmt==='stb'?'Stableford points off each player’s full course handicap.'
        :fmt==='net'?'Net against par, off each player’s full course handicap.'
@@ -9206,7 +9225,8 @@ function lbRepaint(){
     ['lbHead','lbHead2'].forEach(k=>{ const e=document.getElementById(k); if(e) e.textContent=t; });
   }
   const pr=uiPastRec(); if(pr) paint('lbPastB',()=>lbPastBody(pr));
-  if(SUMMARY) paint('lbSumB',()=>lbBoardBody({...SUMMARY,id:SUMMARY.rid||null},'sum'));
+  if(SUMMARY){ paint('lbSumB',()=>lbBoardBody({...SUMMARY,id:SUMMARY.rid||null},'sum'));
+    const top=document.getElementById('lbSumTop'); if(top) top.outerHTML=lbSumTop(SUMMARY); }
 }
 window.LB_F=f=>{ LRFMT=f; lbRepaint(); };
 window.LB_R=(id,ctx)=>{ const RS=ctx?LB_PROWS:LB_ROWS; RS[id]=!RS[id]; lbRepaint(); };
@@ -9254,6 +9274,132 @@ window.LP_SCORE_HERE=()=>{
   if(!confirm('Score this round on this phone?\n\nOnly if you are keeping the card for the group. Every score you enter changes the card for everyone.')) return;
   LP_SCOREAS[LRID]=true; lpScoreAsSave(); render();
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WHO WINS A TIE · countback, said in one line
+//
+// Two players level at the end of a round used to sit there as T1 and T1, while
+// the green panel above announced one of them as the winner (whoever happened to
+// sort first). Now every place that says who is winning uses one rule, the one
+// clubs use: the back nine, then the last six, the last three and the last hole.
+// Stableford compares points, Net compares net shots, Gross compares shots, each
+// hole exactly as it reads on the card — so anyone can check it from the card's
+// "In" column. Only players who have finished are separated; until then a tie is
+// simply a tie (T1). If they are still level after the last hole, they share it.
+// Pure functions of the round: nothing here writes, posts or touches a handicap.
+// ═══════════════════════════════════════════════════════════════════════════
+function cbSteps(n){
+  const s=[[9,'the back nine'],[6,'the last six'],[3,'the last three'],[1,'the last hole']];
+  return n>=18?s:s.slice(1).filter(x=>x[0]<n);
+}
+// one hole, as it reads on the card
+function cbHole(r,id,ch,fmt,i){
+  const g=r.scores[i+1][id], k=lpStrokes(ch,r.siArr[i],r.holes);
+  return fmt==='stb'?Math.max(0,r.parArr[i]+k-g+2):fmt==='net'?g-k:g;
+}
+// a finished player's countback line: totals over the back nine, last six, last three, last hole
+function cbLine(r,id,ch,fmt){
+  const n=r.holes;
+  return cbSteps(n).map(([k])=>{ let t=0; for(let i=n-k;i<n;i++) t+=cbHole(r,id,ch,fmt,i); return t; });
+}
+// <0 when a is ahead. Points: more is better. Net and gross: fewer is better.
+function cbCmp(a,b,fmt){
+  for(let j=0;j<a.length;j++){ if(a[j]!==b[j]) return fmt==='stb'?b[j]-a[j]:a[j]-b[j]; }
+  return 0;
+}
+function cbFirst(name){ return String(name||'?').split(' ')[0]; }
+function cbSay(fmt,v){ return fmt==='net'?`net\u00a0${v}`:String(v); }
+// "34 to 28" never splits over two lines
+function cbPair(fmt,a,b){ return `${cbSay(fmt,a)}\u00a0to\u00a0${b}`; }
+
+// Takes rows already sorted by the total (each with id, ch, thru, name) and the
+// total for each; re-orders any group that is level and finished, and returns
+// positions (1, 2, T3…) plus one plain line for each separated group.
+//   key(x) = the total that decides the order (lower is better)
+function cbRank(r,rows,key,fmt,chOf){
+  const n=r.holes, out=rows.slice();
+  const notes={};                         // id of the group's last row -> the line
+  let i=0;
+  while(i<out.length){
+    let j=i; while(j+1<out.length&&out[j+1].thru&&out[i].thru&&key(out[j+1])===key(out[i])) j++;
+    const grp=out.slice(i,j+1);
+    const done=grp.length>1&&grp.every(x=>x.thru===n);
+    if(done){
+      grp.forEach(x=>{ x._cb=cbLine(r,x.id,chOf(x),fmt); });
+      grp.sort((a,b)=>cbCmp(a._cb,b._cb,fmt));
+      out.splice(i,grp.length,...grp);
+      const steps=cbSteps(n), parts=[];
+      for(let k=0;k+1<grp.length;k++){
+        const A=grp[k],B=grp[k+1]; let at=-1;
+        for(let s=0;s<A._cb.length;s++) if(A._cb[s]!==B._cb[s]){ at=s; break; }
+        if(at<0) continue;
+        const who=grp.length>2?`${cbFirst(A.name)} ahead of ${cbFirst(B.name)}`:`${cbFirst(A.name)} ahead`;
+        parts.push(`${who} on ${steps[at][1]}, ${cbPair(fmt,A._cb[at],B._cb[at])}`);
+      }
+      const shared=grp.some((x,k)=>k&&cbCmp(grp[k-1]._cb,x._cb,fmt)===0);
+      if(shared) parts.push(parts.length?'the rest level all the way':'level all the way back to the last hole, so they share it');
+      notes[grp[grp.length-1].id]={parts,ids:grp.map(x=>x.id)};
+    }
+    i=j+1;
+  }
+  // positions: equal total and (if separated) equal countback = shared
+  let pos=0;
+  out.forEach((x,k)=>{
+    if(!x.thru){ x.pos='–'; return; }
+    const p=out[k-1];
+    const same=p&&p.thru&&key(p)===key(x)&&(!x._cb||!p._cb||cbCmp(p._cb,x._cb,fmt)===0);
+    if(!same) pos=k+1;
+    x.pos=pos;
+  });
+  const seen={}; out.forEach(x=>{ if(x.thru) seen[x.pos]=(seen[x.pos]||0)+1; });
+  out.forEach(x=>{ if(x.thru&&seen[x.pos]>1) x.pos='T'+x.pos; x.cbWon=!!x._cb&&!String(x.pos).startsWith('T'); });
+  return {rows:out,notes};
+}
+function cbTotalWord(fmt,x){
+  // the real numbers a golfer says out loud: 57 points, net 49, 70 gross
+  return fmt==='stb'?`${x.stb} points`:fmt==='net'?`net ${x.netToPar+x.grossPar}`:`${x.gross} gross`;
+}
+// "Level on 57 points · António ahead on the back nine, 34 to 28"
+function cbNoteText(fmt,row,note){
+  return `Level on ${fmt==='stb'?row.stb:cbTotalWord(fmt,row)} · ${note.parts.join(' · ')}`;
+}
+
+// ── the green panel at the end of a round: the same winner as the board under it ──
+function lbSumTop(rec){
+  const fmt=lbFmt(), res=lbRank0(rec,fmt), rows=res.rows.filter(x=>x.thru);
+  const w=rows[0]; if(!w) return '';
+  const byId={}; lpBoard(rec).forEach(x=>byId[x.id]=x);
+  const facts=x=>{ const p=rec.players.find(y=>y.id===x.id)||x; return {...x,...lpNetFromRow(rec,p,byId[x.id]),name:p.name,guest:p.guest}; };
+  const top=rows.filter(x=>x.pos===w.pos);
+  const W=facts(w);
+  const shared=top.length>1;
+  const names=top.map(x=>cbFirst(x.name)+(x.guest?' (guest)':''));
+  const head=shared?`${names.slice(0,-1).join(', ')} and ${names[names.length-1]} share it`:`${names[0]} wins`;
+  const u=W.netToPar, parLine=u===0?'net level par':`${Math.abs(u)} ${u<0?'under':'over'} net`;
+  const g=W.toPar, grossLine=g===0?'level par':`${Math.abs(g)} ${g<0?'under':'over'} par`;
+  const line=fmt==='stb'?`${W.stb} points · net ${W.net} · ${W.gross} gross`
+            :fmt==='net'?`Net ${W.net} · ${parLine} · ${W.stb} points`
+            :`${W.gross} gross · ${grossLine} · ${W.stb} points`;
+  // the tie, said once, the same words as the board
+  let cb='';
+  const note=Object.values(res.notes).find(n=>n.ids.includes(w.id));
+  if(note){
+    const others=note.ids.filter(id=>id!==w.id).map(id=>cbFirst((rows.find(x=>x.id===id)||{}).name));
+    if(shared) cb=`Level on ${cbTotalWord(fmt,W)} and on every countback`;
+    else { const second=rows[1];
+      let at=-1; for(let s=0;s<w._cb.length;s++) if(w._cb[s]!==second._cb[s]){ at=s; break; }
+      cb=`Level with ${others.join(' and ')} on ${cbTotalWord(fmt,W)} · ${cbSteps(rec.holes)[at][1].replace(/^the /,'')} ${cbPair(fmt,w._cb[at],second._cb[at])}`; }
+  }
+  return `<div class="ui-done-top ui-panel" id="lbSumTop" style="border-radius:24px;margin-bottom:14px">
+      ${shared?`<span class="ui-done-avs">${top.slice(0,3).map(x=>`<span class="ui-av g lg" style="background:#fff;color:var(--g)">${uiInit(x.name)}</span>`).join('')}</span>`
+              :`<span class="ui-av g lg" style="margin:0 auto;background:#fff;color:var(--g)">${uiInit(W.name)}</span>`}
+      <div class="ui-h1${shared?' sh':''}" style="color:#fff;margin-top:14px">${head}</div>
+      <div class="ui-done-s">${line}</div>
+      ${cb?`<div class="ui-done-cb">${cb}</div>`:''}
+      <div class="ui-done-s">Kept for good in Play ▸ Past</div>
+      <div class="ui-done-s" style="margin-top:2px">${uiShort(rec.course)} · ${rec.tee} · ${uiDay(rec.date)}</div>
+    </div>`;
+}
 // ═══════════════════════════════════════════════════════════════════════════
 // CLUB 2.1 · FIVE ROOMS — Home · League · Play · Money · Me
 //
