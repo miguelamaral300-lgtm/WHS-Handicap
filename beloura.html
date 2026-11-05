@@ -127,6 +127,14 @@ button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
 .ti{min-width:116px;min-height:48px;border-radius:999px;font-size:15px;font-weight:600;color:var(--ink2)}
 .ti.on{background:var(--ink);color:#fff}
 
+/* watch-only (?watch): the card, live, and nothing to tap */
+body.watch .dock,body.watch .gear,body.watch #vHole,body.watch #hcp button{display:none!important}
+body.watch{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+.wl{display:none;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--ink2);margin-top:16px}
+body.watch .wl{display:flex}
+.wl i{width:8px;height:8px;border-radius:50%;background:var(--g);animation:wp 1.6s ease-in-out infinite}
+@keyframes wp{50%{opacity:.3}}
+
 /* settings sheet */
 .ov{position:fixed;inset:0;background:rgba(10,20,14,.42);z-index:50;display:none;align-items:flex-end;justify-content:center}
 .ov.open{display:flex}
@@ -170,6 +178,7 @@ button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
 
   <!-- CARD -->
   <div class="view" id="vCard">
+    <div class="wl" id="wl"><i></i><span id="wlT">Watching live · updates by itself</span></div>
     <div class="final" id="final"></div>
     <div class="tot" id="tot"></div>
     <div class="sec">The card</div>
@@ -224,6 +233,8 @@ const TEAM=[
 const ALLOW=[0.25,0.20,0.15,0.10];    // lowest course handicap to highest
 const DEFAULTS={tee:'White',hcp:null,minDrives:4};
 const DB='https://whs-handicap-default-rtdb.firebaseio.com/poppy_day_2026';
+// beloura.html?watch → view only: the live card, no buttons, never writes
+const WATCH=/[?&#]watch\b/i.test(location.search+location.hash);
 
 let ST={settings:{...DEFAULTS},scores:{},drives:{},mine:{}};
 const ME='MA';   // Miguel: his own count of his shots the team used
@@ -266,6 +277,11 @@ function render(){
   document.getElementById('hSub').innerHTML=`<span class="dot${ok?'':' off'}" id="sync"></span>`+
     (c.thru?`Gross ${c.g} · net ${c.n} · team handicap ${c.t}`:`Team handicap ${c.t} · tee off 9am on hole 2`)
     +(isOver()?' · <b>from the pro shop card</b>':'');
+  if(WATCH){
+    let last=null; ORDER.forEach(h=>{ if(c.res[h].g!=null) last=h; });
+    const w=document.getElementById('wlT');
+    if(w) w.textContent=last?`Watching live · last in: hole ${last}, ${c.res[last].g} (par ${PAR[last-1]})`:'Watching live · they tee off 9am on hole 2';
+  }
   if(view==='hole') renderHole(c); else renderCard(c);
 }
 
@@ -408,6 +424,7 @@ function resetAll(){
 let pending=0;
 function setOk(v){ ok=v; const d=document.getElementById('sync'); if(d) d.className='dot'+(v?'':' off'); }
 async function push(path,val,method){
+  if(WATCH) return;
   pending++;
   try{ await fetch(`${DB}/${path}.json`,{method:method||'PUT',body:JSON.stringify(val)}); setOk(true); }
   catch(e){ setOk(false); }
@@ -434,6 +451,9 @@ document.getElementById('vHole').addEventListener('touchstart',e=>{tx=e.touches[
 document.getElementById('vHole').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6) step(dx<0?1:-1);},{passive:true});
 
 (async()=>{
+  if(WATCH){ document.body.classList.add('watch'); view='card';
+    document.getElementById('vHole').classList.remove('on'); document.getElementById('vCard').classList.add('on');
+    document.title='Watching · Poppy Day Scramble'; }
   render();
   await pull();
   const c=calc(); const gap=ORDER.find(h=>c.res[h].g==null); cur=gap||1;
