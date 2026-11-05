@@ -2566,6 +2566,14 @@ html,body{overflow-x:clip}
 .ui-pick-i.g{background:var(--g);color:#fff}
 .ui-pick-i svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .ui-pick-x{display:block;margin:6px auto 0;min-height:44px}
+
+/* C-20261101-a · New round: Just the card and Stableford up front; every other game
+   and the scoring caps behind one quiet "More games" row */
+.gm-more{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;
+  border-radius:18px;background:transparent;box-shadow:inset 0 0 0 1px var(--line);
+  padding:12px 15px;margin-top:8px;color:var(--ink)}
+.gm-more .gm-rt{font-weight:500}
+.gm-moret{margin-top:8px}
 </style>
 </head>
 <body>
@@ -7139,7 +7147,7 @@ function lpMigrateMorocco(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261026-a · Club 3 · three places and one Play button';
+const UI_BUILD='C-20261101-a · Club 3 · More games on New round';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -8419,7 +8427,7 @@ function gmSettle(r){
 // attaches the game to it.
 var GM_DEF={fmt:'none',stake:2,sides:null};
 
-window.LP_NEW=()=>{ LPV='setup'; LRMSG=null; GM_PAGE=0;
+window.LP_NEW=()=>{ LPV='setup'; LRMSG=null; GM_PAGE=0; GM_MORE=false; GM_STAB='game';
   LRSEL={course:null,tee:null,cfg:null,players:{},guests:[],game:{...GM_DEF},rules:{...GM_RDEF}};
   render(); };
 
@@ -8463,14 +8471,28 @@ function gmSetupStep(step){
   const g=gmSel(), ids=gmSetupIds(), n=ids.length;
   const tile=(f,name,blurb)=>`<button class="gm-tile${g.fmt===f?' on':''}" onclick="LP_G('${f}')">
       ${gmIcon(f)}<span class="gm-tt"><b>${name}</b><small>${blurb}</small></span></button>`;
+  // Just the card and Stableford are what the group plays. Every other game, and
+  // the scoring cap, sit behind one "More games" row: closed until you open it, and
+  // open by itself whenever one of them is already picked, so a choice is never hidden.
+  const forced=gmMoreForced();
+  const more=GM_MORE||forced;
   let body=`<div class="gm-tiles">${tile('none','Just the card','Handicaps only, no game')}`;
-  Object.keys(GM_FORMATS).forEach(f=>{
-    const F=GM_FORMATS[f];
-    if(F.sides&&n<2)return;
-    if(f==='betterball'&&n<4)return;
-    body+=tile(f,F.name,F.blurb);
-  });
+  if(GM_FORMATS.stableford) body+=tile('stableford',GM_FORMATS.stableford.name,GM_FORMATS.stableford.blurb);
   body+=`</div>`;
+  if(!forced) body+=`<button class="gm-more${more?' open':''}" onclick="LP_MORE()">
+      <span class="gm-rt">${more?'Fewer games':'More games'}<small>${more?'Back to Stableford or just the card':'Skins, match play, scramble \u00b7 scoring caps'}</small></span>
+      <span class="gm-rc${more?' up':''}">${uiSvg('chev','ui-chev')}</span></button>`;
+  if(more){
+    body+=`<div class="gm-tiles gm-moret">`;
+    Object.keys(GM_FORMATS).forEach(f=>{
+      if(f==='stableford')return;
+      const F=GM_FORMATS[f];
+      if(F.sides&&n<2)return;
+      if(f==='betterball'&&n<4)return;
+      body+=tile(f,F.name,F.blurb);
+    });
+    body+=`</div>`;
+  }
   // What you play off, said once, under the game you picked — rather than printed
   // on all five tiles where it is just noise.
   if(g.fmt!=='none'&&GM_FORMATS[g.fmt]){
@@ -8501,7 +8523,7 @@ function gmSetupStep(step){
     }).join('')}</div><div class="ui-note" style="margin:8px 2px 0">Tap a name to move them. ${gmSideNote(g.fmt,sd)}</div>`;
   }
   if(g.fmt==='scramble') body+=`<div class="ui-note" style="margin:8px 2px 0"><b>One score a hole per team.</b> A scramble produces no individual scores, so this round is kept in your history but never counts towards anybody's handicap.</div>`;
-  if(g.fmt!=='none'||true){
+  if(more){
     const R=gmRules();
     const rl=R.cap==='none'?'Medal — every shot counts':R.cap==='mult'?`${R.mult}× net double bogey`:GM_RULES[R.cap].name;
     body+=`<button class="gm-rule" onclick="LP_STAB('${GM_STAB==='scoring'?'game':'scoring'}')">
@@ -8511,6 +8533,12 @@ function gmSetupStep(step){
   }
   return body;
 }
+// "More games" stays open by itself while a game or cap from inside it is chosen
+// (or the scoring rules are open), so nothing picked is ever out of sight.
+var GM_MORE=false;
+function gmMoreForced(){ const g=gmSel(), R=gmRules();
+  return (g.fmt!=='none'&&g.fmt!=='stableford')||R.cap!=='none'||GM_STAB==='scoring'; }
+window.LP_MORE=()=>{ GM_MORE=!GM_MORE; render(); };
 function gmSideNote(fmt,s){
   const A=s.A.length,B=s.B.length;
   if(fmt==='scramble') return `Teams of ${A} and ${B}. Everyone hits, you play the best ball, one score goes down.`;
@@ -8873,7 +8901,7 @@ function gmStripInner(r){
 
 // ── setup: one question ────────────────────────────────────────────────────
 var GM_STAB='game';
-window.LP_STAB=k=>{ GM_STAB=k; render(); };
+window.LP_STAB=k=>{ GM_STAB=k; if(k==='scoring')GM_MORE=true; render(); };
 function gmFormatStep(step){
   const g=gmSel(), R=gmRules();
   const gl=g.fmt==='none'?'No game':GM_FORMATS[g.fmt].name;
