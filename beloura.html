@@ -3,590 +3,440 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0A1A0E">
-<title>Beloura Match · 21 June</title>
+<meta name="theme-color" content="#0E7A3E">
+<title>Poppy Day Scramble · Hendon · 8 Nov</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* A one-off scorer for one team on one day. It shares nothing with The Club:
+   its own page, its own spot in the database (poppy_day_2026), nobody's index touched. */
 :root{
-  --bg:#0A1A0E; --bg2:#0F2218; --bg3:#071009;
-  --felt:#13301E; --felt2:#0C2114;
-  --panel:rgba(255,255,255,.04); --line:rgba(201,168,76,.16);
-  --gold:#C9A84C; --gold-lt:#E6CE80; --gold-dim:rgba(201,168,76,.55);
-  --teamA:#E6CE80; --teamA-d:#C9A84C; --teamA-glow:rgba(201,168,76,.28);
-  --teamB:#79B6D6; --teamB-d:#5C97B8; --teamB-glow:rgba(111,168,199,.26);
-  --text:#ECE8DA; --text2:#9DA89D; --text3:#647061;
-  --birdie:#7FB069; --bogey:#D8A24A; --dbl:#CF6B5C;
+  --g:#0E7A3E; --g2:#0A5F30; --gl:#E3F1E8; --ink:#14211A; --ink2:#5B6B62; --ink3:#93A199;
+  --off:#F3F6F4; --line:#DCE4DF; --card:#fff;
+  --bi:#1E9E57; --ea:#C9A227; --bo:#7FB3D9; --db:#2F5D8C; --red:#C2453A;
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
-html,body{background:var(--bg);color:var(--text);font-family:'Barlow',system-ui,sans-serif;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
-body{min-height:100vh;min-height:100dvh;
-  background:radial-gradient(130% 50% at 50% -5%, #14301E 0%, var(--bg) 50%, var(--bg3) 100%);
-  -webkit-font-smoothing:antialiased;padding-bottom:84px}
-.wrap{max-width:560px;margin:0 auto;padding:0 15px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--off);color:var(--ink);font-family:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:-.01em;overflow-x:clip;overscroll-behavior:none}
+body{min-height:100dvh;padding-bottom:calc(96px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
 
-/* ── slim status bar ── */
-.status{position:sticky;top:0;z-index:20;background:linear-gradient(180deg, rgba(8,16,9,.96), rgba(8,16,9,.82));backdrop-filter:blur(10px);
-  border-bottom:0.5px solid var(--line);margin:0 -15px;padding:11px 15px 10px}
-.status .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.status .nm{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:19px;color:var(--gold);letter-spacing:.3px}
-.status .gear{width:32px;height:32px;border:0.5px solid var(--line);border-radius:50%;background:var(--panel);color:var(--gold);font-size:14px;display:grid;place-items:center;flex-shrink:0}
-.status .live{font-family:'Barlow',sans-serif;font-size:11.5px;color:var(--text2);letter-spacing:.3px;margin-top:3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.status .live b{color:var(--gold-lt);font-weight:600}
-.status .live .potchip{color:var(--gold-lt);font-weight:600}
-.syncdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--birdie);flex-shrink:0}
-.syncdot.off{background:#B5654D}
+/* hero */
+.hero{background:var(--g);color:#fff;border-radius:0 0 28px 28px;margin:0 -16px;padding:calc(14px + env(safe-area-inset-top)) 20px 20px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 90% 0%,rgba(255,255,255,.12),transparent 70%);pointer-events:none}
+.htop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{font-weight:600;font-size:16px}
+.brand small{display:block;font-weight:400;font-size:12.5px;opacity:.8;margin-top:2px}
+.gear{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);display:grid;place-items:center;color:#fff}
+.gear svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hbig{display:flex;align-items:flex-end;gap:12px;margin-top:16px}
+.hbig .n{font-size:72px;font-weight:600;letter-spacing:-.04em;line-height:.82}
+.hbig .u{font-size:14px;opacity:.85;padding-bottom:6px;line-height:1.3}
+.hsub{font-size:13px;opacity:.85;margin-top:10px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7CE0A3;margin-right:6px;vertical-align:1px}
+.dot.off{background:#F29A8F}
 
-/* ── views ── */
-.view{display:none;animation:fade .25s ease}
-.view.on{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.view{display:none}.view.on{display:block}
 
-/* ── hole navigator strip ── */
-.navstrip{display:flex;gap:5px;overflow-x:auto;padding:14px 2px 4px;scrollbar-width:none;-ms-overflow-style:none}
-.navstrip::-webkit-scrollbar{display:none}
-.pip{flex:0 0 auto;width:26px;height:30px;border-radius:7px;border:0.5px solid var(--line);background:var(--panel);
-  display:flex;align-items:center;justify-content:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:13px;color:var(--text3);position:relative}
-.pip.done{color:var(--text)}
-.pip.done.A{background:rgba(201,168,76,.16);border-color:rgba(201,168,76,.35)}
-.pip.done.B{background:rgba(111,168,199,.16);border-color:rgba(111,168,199,.35)}
-.pip.done.tie{background:rgba(157,168,157,.12)}
-.pip.cur{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold), 0 0 14px -4px var(--gold);color:var(--gold-lt)}
+/* hole screen */
+.hhead{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.arw{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.arw:disabled{opacity:.25}
+.arw svg{width:20px;height:20px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hc{text-align:center}
+.hc .t{font-size:30px;font-weight:600;letter-spacing:-.03em}
+.hc .m{font-size:13.5px;color:var(--ink2);margin-top:3px}
+.hc .m b{color:var(--ink);font-weight:600}
+.strip{display:flex;gap:3px;margin:0 0 14px}
+.seg{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.seg.done{background:var(--g)}
+.seg.cur{background:var(--ink);height:8px;margin-top:-1px}
+.card{background:var(--card);border-radius:22px;box-shadow:0 1px 2px rgba(20,33,26,.05),0 8px 24px -12px rgba(20,33,26,.12);padding:18px}
+.lbl{font-size:12.5px;color:var(--ink2);font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.lbl .stk{color:var(--g);font-weight:600}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sb{width:64px;height:64px;border-radius:20px;background:var(--off);font-size:32px;font-weight:500;color:var(--ink)}
+.sb:active{transform:scale(.95)}
+.sv{flex:1;display:flex;flex-direction:column;align-items:center}
+.sv button{width:84px;height:84px;display:grid;place-items:center;font-size:44px;font-weight:600;letter-spacing:-.03em;color:var(--ink)}
+.sv button.e{color:var(--ink3)}
+.sv button.bi{background:var(--bi);color:#fff;border-radius:50%}
+.sv button.ea{background:var(--ea);color:#fff;border-radius:50%;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--ea)}
+.sv button.bo{background:var(--bo);color:#fff;border-radius:14px}
+.sv button.db{background:var(--db);color:#fff;border-radius:14px}
+.sv small{font-size:13px;color:var(--ink2);margin-top:6px;min-height:17px}
+.drv{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dp{display:flex;align-items:center;justify-content:space-between;gap:6px;border-radius:14px;background:var(--off);padding:12px 12px;font-size:15px;font-weight:500;min-height:48px;text-align:left}
+.dp .c{font-size:12.5px;color:var(--ink2);font-weight:500}
+.dp.sel{background:var(--g);color:#fff}
+.dp.sel .c{color:rgba(255,255,255,.85)}
+.dp.short:not(.sel) .c{color:var(--red)}
+.mine{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.mine .l{font-size:15px;font-weight:500}
+.mine .l small{display:block;font-size:12.5px;color:var(--ink2);font-weight:400;margin-top:2px}
+.ms{display:flex;align-items:center;gap:6px}
+.ms button{width:44px;height:44px;border-radius:14px;background:var(--off);font-size:22px;font-weight:500}
+.ms b{min-width:34px;text-align:center;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.ms b.z{color:var(--ink3)}
+.hint{text-align:center;font-size:12.5px;color:var(--ink3);margin-top:12px}
+.hint.warn{color:var(--red)}
+.next{display:block;width:100%;margin-top:14px;min-height:56px;border-radius:18px;background:var(--ink);color:#fff;font-size:17px;font-weight:600}
+.next.fin{background:var(--g)}
 
-/* ── current hole card ── */
-.holecard{background:linear-gradient(170deg, var(--felt), var(--felt2));border:0.5px solid var(--line);border-radius:22px;
-  padding:18px 16px 20px;margin-top:8px;box-shadow:0 18px 50px -34px #000, inset 0 1px 0 rgba(255,255,255,.04);position:relative;overflow:hidden}
-.holecard::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 40% at 80% 0%, rgba(127,176,105,.07), transparent 70%);pointer-events:none}
-.hh{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px}
-.hh .lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);font-weight:600}
-.hh .big{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:54px;line-height:.8;color:var(--gold);text-shadow:0 0 30px rgba(201,168,76,.25)}
-.hh .flag{font-size:21px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
-.hpar{text-align:right;font-size:12px;color:var(--text2);letter-spacing:.4px;line-height:1.45}
-.hpar b{color:var(--gold-lt);font-weight:600}
-
-/* ── team entry block ── */
-.teamblk{margin-top:15px;border-radius:14px;padding:12px 12px 13px;border:0.5px solid var(--line);background:rgba(0,0,0,.16)}
-.teamblk.A{box-shadow:inset 3px 0 0 var(--teamA-d)}
-.teamblk.B{box-shadow:inset 3px 0 0 var(--teamB-d)}
-.tbhd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.tbnm{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:17px}
-.teamblk.A .tbnm{color:var(--teamA)} .teamblk.B .tbnm{color:var(--teamB)}
-.tbsub{font-size:9.5px;letter-spacing:.5px;color:var(--text3);text-transform:uppercase;margin-top:1px}
-.tbnet{text-align:right;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;line-height:1.2}
-.tbnet b{display:block;font-family:'Barlow Semi Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-top:1px}
-.teamblk.A .tbnet b{color:var(--teamA)} .teamblk.B .tbnet b{color:var(--teamB)}
-.stkdot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold-dim);margin-left:3px;vertical-align:middle}
-
-/* score chips */
-.chips{display:flex;gap:6px;justify-content:space-between}
-.chip{flex:1;aspect-ratio:1/1.04;max-width:46px;border-radius:11px;border:0.5px solid var(--line);background:var(--bg3);
-  display:flex;align-items:center;justify-content:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:19px;color:var(--text2);
-  transition:transform .08s, background .12s, color .12s, border-color .12s;position:relative}
-.chip:active{transform:scale(.9)}
-.chip.sel{color:#10210F;background:var(--gold);border-color:var(--gold);box-shadow:0 4px 16px -6px var(--gold-glow,rgba(201,168,76,.6))}
-.teamblk.A .chip.sel{background:var(--teamA);border-color:var(--teamA)}
-.teamblk.B .chip.sel{background:var(--teamB);border-color:var(--teamB);color:#08171F}
-/* par-relative notation rings on the SELECTED chip */
-.chip.sel.birdie{border-radius:50%}
-.chip.sel.eagle{border-radius:50%;box-shadow:0 0 0 2px var(--bg3),0 0 0 3.5px currentColor}
-.chip.sel.bogey{border-radius:5px}
-.chip.sel.dbl{border-radius:5px;box-shadow:0 0 0 2px var(--bg3),0 0 0 3.5px var(--dbl)}
-.chip .ghost{position:absolute;bottom:1px;font-size:7px;letter-spacing:.5px;opacity:.0}
-
-/* result ribbon */
-.result{margin-top:15px;text-align:center;border-radius:13px;padding:11px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;
-  border:0.5px solid var(--line);background:rgba(0,0,0,.18);min-height:44px;display:flex;align-items:center;justify-content:center}
-.result.A{color:var(--teamA);border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.07)}
-.result.B{color:var(--teamB);border-color:rgba(111,168,199,.3);background:rgba(111,168,199,.07)}
-.result.tie{color:var(--text2)}
-.result.wait{color:var(--text3)}
-
-/* nav buttons */
-.holenav{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:14px}
-.nbtn{border:0.5px solid var(--line);border-radius:13px;background:var(--panel);color:var(--text2);font-family:'Barlow',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;padding:14px;display:flex;align-items:center;justify-content:center;gap:7px}
-.nbtn:active{transform:scale(.97)}
-.nbtn.prev{color:var(--text3)}
-.nbtn.next{background:linear-gradient(135deg, var(--gold), #B0883A);color:#16100A;border:none;font-weight:700}
-.nbtn.next.pulse{animation:nextpulse 1.6s ease-in-out infinite}
-@keyframes nextpulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.0)}50%{box-shadow:0 0 22px -4px rgba(201,168,76,.7)}}
-.nbtn:disabled{opacity:.32}
-
-/* ── CLUBHOUSE ── */
-.board{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin:16px 0 4px}
-.tcard{border-radius:16px;padding:15px 12px 14px;border:0.5px solid var(--line);background:var(--panel);text-align:center}
-.tcard.A.lead{background:linear-gradient(165deg, rgba(201,168,76,.15), rgba(201,168,76,.03));border-color:rgba(201,168,76,.42)}
-.tcard.B.lead{background:linear-gradient(165deg, rgba(111,168,199,.15), rgba(111,168,199,.03));border-color:rgba(111,168,199,.42)}
-.tcard .tag{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);font-weight:600}
-.tcard .nm{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:18px;line-height:1.05;margin:3px 0 2px}
-.tcard.A .nm{color:var(--teamA)} .tcard.B .nm{color:var(--teamB)}
-.tcard .off{font-size:9.5px;color:var(--text3);margin-bottom:9px}
-.tcard .net{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:42px;line-height:.85}
-.tcard.A .net{color:var(--teamA)} .tcard.B .net{color:var(--teamB)}
-.tcard .nl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px}
-.vs{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:48px;gap:5px}
-.vs .v{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--text3)}
-.vs .th{font-size:8.5px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;text-align:center;line-height:1.3}
-.leadb{text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;padding:8px 0 2px}
-.leadb.A{color:var(--teamA)} .leadb.B{color:var(--teamB)} .leadb.tie{color:var(--text2)}
-.skins{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin:12px 0 4px;align-items:center}
-.sbox{border:0.5px solid var(--line);border-radius:12px;background:var(--panel);padding:10px;text-align:center}
-.sbox .c{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:22px}
-.sbox.A .c{color:var(--teamA)} .sbox.B .c{color:var(--teamB)}
-.sbox .l{font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:1px}
-.sbox .e{font-size:12px;color:var(--text2);font-weight:600;margin-top:2px}
-.pot{text-align:center;min-width:70px}
-.pot .pv{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:19px;color:var(--gold-lt)}
-.pot .pl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);line-height:1.3}
-.pot.live .pv{animation:potpulse 2s ease-in-out infinite}
-@keyframes potpulse{0%,100%{opacity:1}50%{opacity:.45}}
-
-.sechd{display:flex;align-items:center;gap:10px;margin:22px 4px 10px}
-.sechd .t{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);font-weight:600;white-space:nowrap}
-.sechd .ln{flex:1;height:0.5px;background:var(--line)}
-
-/* scorecard grid */
-.card9{border:0.5px solid var(--line);border-radius:13px;overflow:hidden;margin-bottom:11px}
-.crow{display:grid;grid-template-columns:38px 1fr 1fr 50px;align-items:center;border-bottom:0.5px solid rgba(201,168,76,.08);background:var(--bg2)}
-.crow:last-child{border-bottom:none}
-.crow.head{background:rgba(0,0,0,.25)}
-.crow.head div{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-weight:600;padding:7px 6px}
-.crow .hn{padding:9px 6px;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--gold);text-align:center}
-.crow .hn small{display:block;font-size:8px;color:var(--text3);font-weight:500;letter-spacing:.3px}
-.cscore{padding:8px 6px;text-align:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--text)}
-.cscore .mk{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;line-height:1}
-.cscore.empty{color:var(--text3);font-weight:500}
-.mk.birdie{border:1.5px solid var(--birdie);border-radius:50%;color:var(--birdie)}
-.mk.eagle{border:1.5px solid var(--gold);border-radius:50%;color:var(--gold);box-shadow:0 0 0 2px var(--bg2),0 0 0 3px var(--gold)}
-.mk.bogey{border:1.5px solid var(--bogey);border-radius:4px;color:var(--bogey)}
-.mk.dbl{border:1.5px solid var(--dbl);border-radius:4px;color:var(--dbl)}
-.cwin{padding:7px 5px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.5px}
-.cwin.A{color:var(--teamA)} .cwin.B{color:var(--teamB)} .cwin.tie{color:var(--text3)}
-.crow.totals{background:rgba(0,0,0,.28)}
-.crow.totals .hn{color:var(--text2);font-size:11px}
-.crow.totals .cscore{color:var(--text);font-size:15px}
-
-.final{text-align:center;border:0.5px solid rgba(201,168,76,.4);border-radius:16px;background:linear-gradient(165deg,rgba(201,168,76,.13),rgba(201,168,76,.02));padding:18px;margin:6px 0 4px;display:none}
+/* card view */
+.sec{font-size:12.5px;color:var(--ink2);font-weight:500;margin:22px 4px 10px}
+.tot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.tot div{background:var(--card);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:0 1px 2px rgba(20,33,26,.05)}
+.tot span{display:block;font-size:12px;color:var(--ink2)}
+.tot b{display:block;font-size:28px;font-weight:600;letter-spacing:-.03em;margin-top:2px}
+.sc{background:var(--card);border-radius:18px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 2px rgba(20,33,26,.05)}
+.sg{display:grid;grid-template-columns:40px repeat(9,minmax(0,1fr)) 38px;align-items:center;text-align:center}
+.sg>div{padding:7px 0;font-size:14px}
+.sg .band{background:var(--g);color:#fff;font-weight:600;font-size:12.5px}
+.sg .rl{font-size:11.5px;color:var(--ink2);text-align:left;padding-left:10px}
+.sg .par{color:var(--ink2);font-size:13px;position:relative}
+.sg .par i{position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--g)}
+.sg .s span{display:inline-grid;place-items:center;width:24px;height:24px;font-weight:600}
+.sg .s.bi span{background:var(--bi);color:#fff;border-radius:50%}
+.sg .s.ea span{background:var(--ea);color:#fff;border-radius:50%}
+.sg .s.bo span{background:var(--bo);color:#fff;border-radius:5px}
+.sg .s.db span{background:var(--db);color:#fff;border-radius:5px}
+.sg .nt{font-size:11.5px;color:var(--ink3);padding-top:0}
+.sg .tc{font-weight:600}
+.key{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink2);margin:4px 4px 0}
+.key i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+.list{background:var(--card);border-radius:18px;box-shadow:0 1px 2px rgba(20,33,26,.05);overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line);font-size:15px}
+.row:last-child{border-bottom:none}
+.row small{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px}
+.row .v{font-weight:600;font-size:16px;white-space:nowrap}
+.row .v.ok{color:var(--g)} .row .v.short{color:var(--red)}
+.row.total{background:var(--gl)}
+.note{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:10px 4px 0}
+.final{background:var(--g);color:#fff;border-radius:22px;padding:20px;text-align:center;margin-top:18px;display:none}
 .final.show{display:block}
-.final .ft{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);font-weight:600}
-.final .fw{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:30px;color:var(--gold);margin:5px 0;text-shadow:0 0 30px rgba(201,168,76,.3)}
-.final .fd{font-size:12px;color:var(--text2);line-height:1.5}
+.final .k{font-size:13px;opacity:.85}
+.final .n{font-size:56px;font-weight:600;letter-spacing:-.04em;margin:4px 0}
+.final .d{font-size:14px;opacity:.9;line-height:1.45}
 
-/* ── bottom tab bar ── */
-.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:30;display:flex;justify-content:center;gap:8px;
-  padding:9px 14px calc(11px + env(safe-area-inset-bottom));background:linear-gradient(0deg, rgba(7,14,8,.99), rgba(7,14,8,.86));backdrop-filter:blur(12px);border-top:0.5px solid var(--line)}
-.tab{flex:1;max-width:240px;border:0.5px solid transparent;border-radius:14px;background:transparent;color:var(--text3);
-  font-family:'Barlow',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;
-  padding:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
-.tab .ic{font-size:18px;line-height:1}
-.tab.on{color:var(--gold-lt);background:var(--panel);border-color:var(--line)}
+/* bottom bar */
+.dock{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:30;pointer-events:none}
+.bar{pointer-events:auto;display:flex;gap:4px;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-radius:999px;padding:6px;box-shadow:0 10px 30px -10px rgba(20,33,26,.28),inset 0 0 0 1px var(--line)}
+.ti{min-width:116px;min-height:48px;border-radius:999px;font-size:15px;font-weight:600;color:var(--ink2)}
+.ti.on{background:var(--ink);color:#fff}
 
-/* settings */
-.modal{position:fixed;inset:0;background:rgba(4,9,5,.8);backdrop-filter:blur(6px);z-index:50;display:none;align-items:flex-end;justify-content:center}
-.modal.open{display:flex}
-.sheet{width:100%;max-width:560px;background:var(--bg2);border-radius:22px 22px 0 0;border:0.5px solid var(--line);padding:20px 18px calc(26px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
-.sheet h2{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:23px;color:var(--gold);text-align:center;margin-bottom:3px}
-.sheet .sd{text-align:center;font-size:10.5px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:17px}
-.fld{margin-bottom:14px}
-.fld label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);font-weight:600;display:block;margin-bottom:6px}
-.fld input{width:100%;background:var(--bg3);border:0.5px solid var(--line);border-radius:10px;color:var(--text);font-size:16px;font-weight:600;padding:11px 13px;outline:none;-webkit-user-select:text;user-select:text}
-.fld input:focus{border-color:var(--gold)}
-.fld .hint{font-size:10.5px;color:var(--text3);margin-top:5px;line-height:1.4}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn{width:100%;border:none;border-radius:11px;padding:13px;font-family:'Barlow',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;margin-top:6px}
-.btn-g{background:linear-gradient(135deg,var(--gold),#B08F3C);color:#1A1306}
-.btn-x{background:transparent;color:var(--text3);border:0.5px solid var(--line);margin-top:10px}
-.btn-danger{background:transparent;color:#C77;border:0.5px solid rgba(204,119,119,.3);margin-top:18px;font-size:12px}
-
-/* drive selector (Play) */
-.driverow{display:flex;align-items:center;gap:6px;margin-top:9px}
-.dlbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-weight:600}
-.dpill{flex:1;border:0.5px solid var(--line);border-radius:9px;background:var(--bg3);color:var(--text2);font-family:'Barlow',sans-serif;font-weight:600;font-size:12.5px;padding:8px 5px;display:flex;align-items:center;justify-content:center;gap:6px}
-.dpill:active{transform:scale(.96)}
-.dpill .dn{font-family:'Barlow Semi Condensed',sans-serif;font-size:11px;color:var(--text3);background:rgba(255,255,255,.06);border-radius:6px;padding:1px 6px;min-width:18px;text-align:center}
-.teamblk.A .dpill.sel{background:var(--teamA);border-color:var(--teamA);color:#16100A}
-.teamblk.B .dpill.sel{background:var(--teamB);border-color:var(--teamB);color:#08171F}
-.dpill.sel .dn{background:rgba(0,0,0,.18);color:inherit}
-.dpill.behind:not(.sel) .dn{color:var(--bogey)}
-.dwarn{text-align:center;font-size:10.5px;color:var(--bogey);margin-top:10px;letter-spacing:.3px}
-/* drives panel (Clubhouse) */
-.drives{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.dteam{border:0.5px solid var(--line);border-radius:12px;background:var(--panel);padding:11px 11px 8px}
-.dteam .dh{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:14px;margin-bottom:9px}
-.dteam.A .dh{color:var(--teamA)} .dteam.B .dh{color:var(--teamB)}
-.drow{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;margin-bottom:3px}
-.drow .pn{color:var(--text2)}
-.drow .pv{font-family:'Barlow Semi Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--text)}
-.drow .pv small{font-size:10px;color:var(--text3);font-weight:500}
-.drow .st{font-size:9.5px;letter-spacing:.3px;color:var(--text3)}
-.drow.met .pv{color:var(--birdie)} .drow.met .st{color:var(--birdie)}
-.drow.warn .st{color:var(--bogey)}
-.drow.bad .pv,.drow.bad .st{color:var(--dbl)}
-.dbar{height:3px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;margin:0 0 9px}
-.dbar i{display:block;height:100%;border-radius:3px}
-.dteam.A .dbar i{background:var(--teamA)} .dteam.B .dbar i{background:var(--teamB)}
-.dnote{font-size:10px;line-height:1.4;margin-top:5px;padding-top:7px;border-top:0.5px solid var(--line)}
-.dnote.warn{color:var(--bogey)} .dnote.bad{color:var(--dbl)}
+/* settings sheet */
+.ov{position:fixed;inset:0;background:rgba(10,20,14,.42);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.ov.open{display:flex}
+.mo{width:100%;max-width:520px;background:#fff;border-radius:26px 26px 0 0;padding:22px 18px calc(24px + env(safe-area-inset-bottom));max-height:90dvh;overflow-y:auto;overflow-x:hidden}
+.mo h2{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.mo .s{font-size:13px;color:var(--ink2);margin:4px 0 16px}
+.fl{font-size:12.5px;color:var(--ink2);font-weight:500;margin:14px 0 8px}
+.seg2{display:flex;gap:6px;background:var(--off);border-radius:14px;padding:4px}
+.seg2 button{flex:1;min-height:42px;border-radius:11px;font-size:15px;font-weight:500;color:var(--ink2)}
+.seg2 button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(20,33,26,.12)}
+.in{width:100%;max-width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:17px;font-weight:600;color:var(--ink);background:#fff}
+.fh{font-size:12.5px;color:var(--ink3);margin-top:6px;line-height:1.4}
+.btn{display:block;width:100%;min-height:52px;border-radius:16px;font-size:16px;font-weight:600;margin-top:16px}
+.btn.g{background:var(--g);color:#fff}
+.btn.w{background:var(--off);color:var(--ink)}
+.btn.r{background:none;color:var(--red);font-size:14px;margin-top:8px}
 </style>
 </head>
 <body>
-
 <div class="wrap">
-  <div class="status">
-    <div class="top">
-      <div class="nm" id="matchName">The Beloura Match</div>
-      <div class="gear" onclick="openSettings()">⚙</div>
+  <div class="hero">
+    <div class="htop">
+      <div class="brand">Poppy Day Scramble<small>Hendon · Sun 8 Nov · shotgun, hole 2</small></div>
+      <button class="gear" onclick="openSet()" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg></button>
     </div>
-    <div class="live"><span class="syncdot" id="syncdot"></span><span id="liveLine">Tee it up — Texas Scramble · 21 June</span></div>
+    <div class="hbig"><div class="n" id="hNum">–</div><div class="u" id="hUnit">net to par</div></div>
+    <div class="hsub" id="hSub"><span class="dot" id="sync"></span>Tee off 9am on hole 2</div>
   </div>
 
-  <!-- PLAY VIEW -->
-  <div class="view on" id="playView">
-    <div class="navstrip" id="navstrip"></div>
-    <div class="holecard" id="holecard"></div>
-    <div class="holenav">
-      <button class="nbtn prev" id="prevBtn" onclick="goHole(-1)">‹ Prev</button>
-      <button class="nbtn next" id="nextBtn" onclick="goHole(1)">Next hole ›</button>
+  <!-- HOLE -->
+  <div class="view on" id="vHole">
+    <div class="hhead">
+      <button class="arw" id="prev" onclick="step(-1)" aria-label="Previous hole"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="hc"><div class="t" id="hT">Hole 2</div><div class="m" id="hM"></div></div>
+      <button class="arw" id="nxt" onclick="step(1)" aria-label="Next hole"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
+    <div class="strip" id="strip"></div>
+    <div class="card" id="hCard"></div>
+    <button class="next" id="nextBtn" onclick="nextBtn()">Next hole</button>
   </div>
 
-  <!-- CLUBHOUSE VIEW -->
-  <div class="view" id="boardView">
+  <!-- CARD -->
+  <div class="view" id="vCard">
     <div class="final" id="final"></div>
-    <div class="board" id="board"></div>
-    <div class="leadb" id="leadb"></div>
-    <div class="skins" id="skins"></div>
-    <div class="sechd"><span class="t">Drives Used · min <span id="minLbl">6</span> each</span><span class="ln"></span></div>
-    <div class="drives" id="drives"></div>
-    <div class="sechd"><span class="t">The Card</span><span class="ln"></span></div>
-    <div id="scorecard"></div>
-    <div style="text-align:center;font-size:10.5px;color:var(--text3);line-height:1.7;margin-top:16px;padding:0 8px">
-      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--gold-dim);margin-bottom:5px">Lower net total wins the match · skins ride hole to hole</div>
-      Losing team helps cover the winners' dinner.
-    </div>
+    <div class="tot" id="tot"></div>
+    <div class="sec">The card</div>
+    <div id="sc"></div>
+    <div class="key"><span><i style="background:var(--bi);border-radius:50%"></i>birdie</span><span><i style="background:var(--ea);border-radius:50%"></i>eagle</span><span><i style="background:var(--bo);border-radius:2px"></i>bogey</span><span><i style="background:var(--db);border-radius:2px"></i>double or worse</span><span>net in grey</span></div>
+    <div class="sec">Miguel’s shots</div>
+    <div class="list" id="mineCard"></div>
+    <div class="sec">Drives · at least <span id="minL">4</span> each</div>
+    <div class="list" id="drives"></div>
+    <div class="sec">Team handicap</div>
+    <div class="list" id="hcp"></div>
+    <div class="note">Texas Scramble, medal: everyone drives, the team picks the best shot each time and all play from there. Lowest net total wins. Not counting for handicaps.</div>
   </div>
 </div>
 
-<div class="tabbar">
-  <button class="tab on" id="tabPlay" onclick="setView('play')"><span class="ic">⛳</span>Play</button>
-  <button class="tab" id="tabBoard" onclick="setView('board')"><span class="ic">🏆</span>Clubhouse</button>
-</div>
+<nav class="dock"><div class="bar">
+  <button class="ti on" id="tHole" onclick="setView('hole')">Hole</button>
+  <button class="ti" id="tCard" onclick="setView('card')">Card</button>
+</div></nav>
 
-<div class="modal" id="modal">
-  <div class="sheet">
-    <h2>Match Settings</h2>
-    <div class="sd">Shared live with the group</div>
-    <div class="fld">
-      <label>Skin value per hole (€)</label>
-      <input type="number" id="setSkin" inputmode="decimal" step="0.5" min="0">
-      <div class="hint">Tie a hole and the money carries to the next (classic skins).</div>
-    </div>
-    <div class="fld">
-      <label>Minimum drives per player</label>
-      <input type="number" id="setMin" inputmode="numeric" min="0" max="18">
-      <div class="hint">Each player's tee shot must be used at least this many times across the 18 holes.</div>
-    </div>
-    <div class="two">
-      <div class="fld"><label>Team A handicap</label><input type="number" id="setHcpA" inputmode="numeric"><div class="hint" id="hintA"></div></div>
-      <div class="fld"><label>Team B handicap</label><input type="number" id="setHcpB" inputmode="numeric"><div class="hint" id="hintB"></div></div>
-    </div>
-    <button class="btn btn-g" onclick="saveSettings()">Save settings</button>
-    <button class="btn btn-x" onclick="closeSettings()">Cancel</button>
-    <button class="btn btn-danger" onclick="resetMatch()">Reset match — clear all scores</button>
-  </div>
-</div>
+<div class="ov" id="ov" onclick="if(event.target===this)closeSet()"><div class="mo">
+  <h2>Settings</h2>
+  <div class="s">Shared live with the four of you</div>
+  <div class="fl">Tees</div>
+  <div class="seg2" id="teeSeg"></div>
+  <div class="fl">Team playing handicap</div>
+  <input class="in" id="setH" type="number" inputmode="numeric" min="0" max="54" placeholder="from the pro shop card">
+  <div class="fh" id="setHh"></div>
+  <button class="btn w" id="useRule" onclick="useRule()" style="display:none;margin-top:10px">Go back to the rule</button>
+  <div class="fl">Drives each player must give</div>
+  <input class="in" id="setD" type="number" inputmode="numeric" min="0" max="4">
+  <button class="btn g" onclick="saveSet()">Save</button>
+  <button class="btn w" onclick="closeSet()">Cancel</button>
+  <button class="btn r" onclick="resetAll()">Clear all scores</button>
+</div></div>
 
 <script>
-// ── COURSE: Quinta da Beloura, Yellow (Amarelas-Homens) · par+SI verified vs scorecard & DataGolf ──
-const HOLES=[
-  {h:1,par:5,si:3},{h:2,par:4,si:13},{h:3,par:3,si:15},{h:4,par:4,si:11},{h:5,par:3,si:17},
-  {h:6,par:5,si:9},{h:7,par:4,si:1},{h:8,par:4,si:5},{h:9,par:4,si:7},
-  {h:10,par:5,si:4},{h:11,par:4,si:12},{h:12,par:3,si:18},{h:13,par:4,si:10},{h:14,par:4,si:16},
-  {h:15,par:4,si:8},{h:16,par:5,si:2},{h:17,par:3,si:14},{h:18,par:4,si:6}
+// ── Hendon Golf Club, from The Club's verified card (par 70) ──
+const PAR=[4,4,4,4,4,3,4,5,3, 4,4,5,3,4,4,4,3,4];
+const SI =[13,1,7,11,5,3,15,9,17, 8,2,10,14,16,18,6,12,4];
+const TEES={White:{cr:70.5,sr:127},Yellow:{cr:69.5,sr:124}};
+const COURSE_PAR=70;
+// shotgun start on hole 2: 2, 3 … 18, then 1
+const ORDER=[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,1];
+// The team, with handicap indexes as entered on Intelligent Golf
+const TEAM=[
+  {k:'MJ',n:'Mans',full:'Mans Johansson',hi:5.2},
+  {k:'MA',n:'Miguel',full:'Miguel Amaral',hi:24.3},
+  {k:'AA',n:'António',full:'António Afonso',hi:27.5},
+  {k:'FX',n:'Francisco',full:'Francisco Xavier',hi:32.9},
 ];
-const ROSTER={
-  A:{name:'Miguel & Toni', members:'Miguel 21 · Toni 37', drivers:[{k:'M',n:'Miguel'},{k:'T',n:'Toni'}]},
-  B:{name:'Branco & Xavi', members:'Branco 28 · Xavi 37', drivers:[{k:'B',n:'Branco'},{k:'X',n:'Xavi'}]}
-};
-const DEFAULTS={ skinValue:5, hcpA:13, hcpB:15, minDrives:6 };
-const DB='https://whs-handicap-default-rtdb.firebaseio.com/beloura_match';
+const ALLOW=[0.25,0.20,0.15,0.10];    // lowest course handicap to highest
+const DEFAULTS={tee:'White',hcp:null,minDrives:4};
+const DB='https://whs-handicap-default-rtdb.firebaseio.com/poppy_day_2026';
 
-let STATE={ settings:{...DEFAULTS}, scores:{} };
-let curHole=1;
-let view='play';
+let ST={settings:{...DEFAULTS},scores:{},drives:{},mine:{}};
+const ME='MA';   // Miguel: his own count of his shots the team used
+let cur=2, view='hole', ok=true;
 
-function buzz(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms);}catch(e){} }
-function strokesOn(teamHcp, si){ const base=Math.floor(teamHcp/18); return base + (si <= (((teamHcp%18)+18)%18) ? 1 : 0); }
-const eur=n=>'€'+(Math.round(n*100)/100).toString().replace(/\.00$/,'');
-
-function noteClass(gross,par){ if(gross==null)return''; const d=gross-par; if(d<=-2)return'eagle'; if(d===-1)return'birdie'; if(d===1)return'bogey'; if(d>=2)return'dbl'; return''; }
-function driveStats(){
-  const out={A:{},B:{}}; let asA=0, asB=0;
-  ROSTER.A.drivers.forEach(d=>out.A[d.k]=0);
-  ROSTER.B.drivers.forEach(d=>out.B[d.k]=0);
-  for(const ho of HOLES){ const sc=STATE.scores?.[ho.h]||{};
-    if(sc.da){out.A[sc.da]=(out.A[sc.da]||0)+1;asA++;}
-    if(sc.db){out.B[sc.db]=(out.B[sc.db]||0)+1;asB++;}
-  }
-  return {out, remA:18-asA, remB:18-asB};
+const ch=(hi,t)=>Math.round(hi*TEES[t].sr/113+(TEES[t].cr-COURSE_PAR));
+function hcpCalc(t){
+  const rows=TEAM.map(p=>({...p,ch:ch(p.hi,t)})).sort((a,b)=>a.ch-b.ch);
+  rows.forEach((r,i)=>{ r.pct=ALLOW[i]; r.part=r.ch*ALLOW[i]; });
+  const sum=rows.reduce((a,r)=>a+r.part,0);
+  return {rows,sum,team:Math.round(sum)};
 }
+const isOver=()=>ST.settings.hcp!=null&&ST.settings.hcp!=='';
+const teamHcp=()=>ST.settings.hcp!=null&&ST.settings.hcp!==''?Number(ST.settings.hcp):hcpCalc(ST.settings.tee).team;
+const strokes=(h,t)=>{ const s=SI[h-1]; return Math.floor(t/18)+(s<=t%18?1:0); };
+const mark=(g,p)=>{ if(g==null) return 'e'; const d=g-p; return d<=-2?'ea':d===-1?'bi':d===1?'bo':d>=2?'db':''; };
+const sgn=v=>v===0?'E':(v>0?'+':'−')+Math.abs(v);
+function buzz(ms){ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} }
 
-function compute(){
-  const sv=Number(STATE.settings.skinValue)||0;
-  const hA=Number(STATE.settings.hcpA), hB=Number(STATE.settings.hcpB);
-  let netA=0,netB=0,thru=0,skinsA=0,skinsB=0,valA=0,valB=0,pot=0,grossA=0,grossB=0;
-  const res=[];
-  for(const ho of HOLES){
-    const sc=STATE.scores?.[ho.h]||{};
-    const gA=(sc.a===0||sc.a)?sc.a:null, gB=(sc.b===0||sc.b)?sc.b:null;
-    const stkA=strokesOn(hA,ho.si), stkB=strokesOn(hB,ho.si);
-    let nA=null,nB=null,winner='none',award=null;
-    const bothIn=(gA!=null&&gB!=null);
-    if(bothIn){
-      nA=gA-stkA; nB=gB-stkB; netA+=nA; netB+=nB; grossA+=gA; grossB+=gB; thru++;
-      const thisPot=sv+pot;
-      if(nA<nB){winner='A';skinsA++;valA+=thisPot;award={team:'A',amt:thisPot};pot=0;}
-      else if(nB<nA){winner='B';skinsB++;valB+=thisPot;award={team:'B',amt:thisPot};pot=0;}
-      else{winner='tie';pot=thisPot;award={team:'carry',amt:thisPot};}
-    }
-    res.push({ho,gA,gB,stkA,stkB,nA,nB,winner,award,bothIn});
-  }
-  return {netA,netB,thru,skinsA,skinsB,valA,valB,pot,grossA,grossB,res};
-}
-
-// ── status bar ──
-function renderStatus(c){
-  const leadA=c.netA<c.netB, tie=c.netA===c.netB;
-  let s='';
-  if(!c.thru) s='Tee it up — Texas Scramble · 21 June';
-  else if(tie) s=`Thru ${c.thru} · <b>All square</b>`;
-  else s=`Thru ${c.thru} · <b>${leadA?ROSTER.A.name:ROSTER.B.name} +${Math.abs(c.netA-c.netB)}</b>`;
-  if(c.pot>0) s+=` · <span class="potchip">pot ${eur(c.pot)}</span>`;
-  document.getElementById('liveLine').innerHTML=`<span class="syncdot" id="syncdot"></span>`+s;
-  setSync(lastSyncOk);
-}
-
-// ── PLAY view ──
-function renderPlay(c){
-  // nav strip
-  document.getElementById('navstrip').innerHTML=c.res.map(r=>{
-    const cls=r.bothIn?('done '+(r.winner==='A'?'A':r.winner==='B'?'B':'tie')):'';
-    return `<div class="pip ${cls} ${r.ho.h===curHole?'cur':''}" onclick="jumpHole(${r.ho.h})">${r.ho.h}</div>`;
-  }).join('');
-
-  const ds=driveStats(); const min=Number(STATE.settings.minDrives)||0; const scCur=STATE.scores?.[curHole]||{};
-  const r=c.res[curHole-1];
-  const teamBlock=(key)=>{
-    const team=key==='A'?ROSTER.A:ROSTER.B;
-    const g=key==='A'?r.gA:r.gB, net=key==='A'?r.nA:r.nB, stk=key==='A'?r.stkA:r.stkB;
-    const lo=Math.max(1, r.ho.par-2), hi=r.ho.par+5;
-    let chips='';
-    for(let v=lo; v<=hi; v++){
-      const sel=g===v?('sel '+noteClass(v,r.ho.par)):'';
-      chips+=`<div class="chip ${sel}" onclick="setScore('${key}',${v})">${v}</div>`;
-    }
-    const dots='●'.repeat(Math.min(stk,3))+(stk>3?`+${stk-3}`:'');
-    return `<div class="teamblk ${key}">
-      <div class="tbhd">
-        <div><div class="tbnm">${team.name}</div><div class="tbsub">${team.members}${stk>0?' · gets '+stk+' stroke'+(stk>1?'s':'')+' here':' · no stroke here'}</div></div>
-        <div class="tbnet">net<b>${net??'–'}</b></div>
-      </div>
-      <div class="chips">${chips}</div>
-      <div class="driverow"><span class="dlbl">Drive</span>${team.drivers.map(d=>{const cnt=ds.out[key][d.k]||0;const seld=(key==='A'?scCur.da:scCur.db)===d.k?'sel':'';const beh=cnt<min?'behind':'';return `<button class="dpill ${seld} ${beh}" onclick="setDrive('${key}','${d.k}')">${d.n}<span class="dn">${cnt}</span></button>`;}).join('')}</div>
-    </div>`;
-  };
-
-  let ribbon='';
-  if(!r.bothIn) ribbon=`<div class="result wait">Tap both teams' scores for hole ${curHole}</div>`;
-  else if(r.winner==='A') ribbon=`<div class="result A">⛳ ${ROSTER.A.name} take hole ${curHole} — ${eur(r.award.amt)}</div>`;
-  else if(r.winner==='B') ribbon=`<div class="result B">⛳ ${ROSTER.B.name} take hole ${curHole} — ${eur(r.award.amt)}</div>`;
-  else ribbon=`<div class="result tie">Halved — ${eur(r.award.amt)} carries to hole ${curHole<18?curHole+1:'…'}</div>`;
-
-  document.getElementById('holecard').innerHTML=`
-    <div class="hh">
-      <div><div class="lbl">Hole</div><div class="big">${r.ho.h}</div></div>
-      <div class="hpar"><span class="flag">⛳</span><br>Par <b>${r.ho.par}</b><br>S.I. <b>${r.ho.si}</b></div>
-    </div>
-    ${teamBlock('A')}
-    ${teamBlock('B')}
-    ${ribbon}
-    ${(r.bothIn && (!scCur.da||!scCur.db)) ? `<div class="dwarn">↑ tap which drive each team used on this hole</div>`:''}`;
-
-  // nav buttons
-  document.getElementById('prevBtn').disabled = curHole<=1;
-  const nb=document.getElementById('nextBtn');
-  nb.disabled = curHole>=18;
-  nb.classList.toggle('pulse', r.bothIn && curHole<18);
-  nb.textContent = curHole>=18 ? 'Final hole' : 'Next hole ›';
-
-  // keep current pip in view
-  const cur=document.querySelector('.pip.cur'); if(cur) cur.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
-}
-
-// ── CLUBHOUSE view ──
-function renderBoard(c){
-  const ds=driveStats(); const min=Number(STATE.settings.minDrives)||0;
-  const leadA=c.netA<c.netB, tie=c.netA===c.netB;
-  document.getElementById('board').innerHTML=`
-    <div class="tcard A ${!tie&&leadA&&c.thru?'lead':''}">
-      <div class="tag">Team A</div><div class="nm">${ROSTER.A.name}</div><div class="off">off ${STATE.settings.hcpA}</div>
-      <div class="net">${c.thru?c.netA:'–'}</div><div class="nl">Net · thru ${c.thru}</div>
-    </div>
-    <div class="vs"><div class="v">vs</div><div class="th">${c.thru}/18</div></div>
-    <div class="tcard B ${!tie&&!leadA&&c.thru?'lead':''}">
-      <div class="tag">Team B</div><div class="nm">${ROSTER.B.name}</div><div class="off">off ${STATE.settings.hcpB}</div>
-      <div class="net">${c.thru?c.netB:'–'}</div><div class="nl">Net · thru ${c.thru}</div>
-    </div>`;
-  const lb=document.getElementById('leadb');
-  if(!c.thru){lb.className='leadb tie';lb.textContent='No holes played yet';}
-  else if(tie){lb.className='leadb tie';lb.textContent='All square';}
-  else{lb.className='leadb '+(leadA?'A':'B');lb.textContent=`${leadA?ROSTER.A.name:ROSTER.B.name} lead by ${Math.abs(c.netA-c.netB)} net`;}
-
-  document.getElementById('skins').innerHTML=`
-    <div class="sbox A"><div class="c">${c.skinsA}</div><div class="l">A skins</div><div class="e">${eur(c.valA)}</div></div>
-    <div class="pot ${c.pot>0?'live':''}"><div class="pv">${c.pot>0?eur(c.pot):'–'}</div><div class="pl">${c.pot>0?'in the pot':'no carry'}</div></div>
-    <div class="sbox B"><div class="c">${c.skinsB}</div><div class="l">B skins</div><div class="e">${eur(c.valB)}</div></div>`;
-
-  // scorecard nines
-  const mk=(g,par)=>g==null?`<span class="mk">–</span>`:`<span class="mk ${noteClass(g,par)}">${g}</span>`;
-  const nine=(from,to,label)=>{
-    let rows=`<div class="crow head"><div>${label}</div><div style="text-align:center">A</div><div style="text-align:center">B</div><div style="text-align:center">Skin</div></div>`;
-    let pa=0,gA=0,gB=0,anyA=false,anyB=false;
-    for(let i=from;i<=to;i++){
-      const r=c.res[i-1]; pa+=r.ho.par; if(r.gA!=null){gA+=r.gA;anyA=true;} if(r.gB!=null){gB+=r.gB;anyB=true;}
-      const w=r.winner==='A'?`<div class="cwin A">A ${eur(r.award.amt)}</div>`:r.winner==='B'?`<div class="cwin B">B ${eur(r.award.amt)}</div>`:r.winner==='tie'?`<div class="cwin tie">carry</div>`:`<div class="cwin tie">–</div>`;
-      rows+=`<div class="crow"><div class="hn">${r.ho.h}<small>par ${r.ho.par}</small></div>
-        <div class="cscore ${r.gA==null?'empty':''}">${mk(r.gA,r.ho.par)}</div>
-        <div class="cscore ${r.gB==null?'empty':''}">${mk(r.gB,r.ho.par)}</div>${w}</div>`;
-    }
-    rows+=`<div class="crow totals"><div class="hn">${label==='Out'?'OUT':'IN'}<small>par ${pa}</small></div>
-      <div class="cscore">${anyA?gA:'–'}</div><div class="cscore">${anyB?gB:'–'}</div><div class="cwin tie"></div></div>`;
-    return `<div class="card9">${rows}</div>`;
-  };
-  document.getElementById('scorecard').innerHTML=nine(1,9,'Out')+nine(10,18,'In');
-
-  // drives-used panel
-  const dpanel=(key)=>{
-    const team=key==='A'?ROSTER.A:ROSTER.B, rem=key==='A'?ds.remA:ds.remB;
-    let totalNeed=0; team.drivers.forEach(d=>{totalNeed+=Math.max(0,min-(ds.out[key][d.k]||0));});
-    const impossible=totalNeed>rem, forced=totalNeed>0 && totalNeed===rem;
-    const rows=team.drivers.map(d=>{
-      const u=ds.out[key][d.k]||0, need=Math.max(0,min-u), cls=u>=min?'met':(impossible?'bad':'warn');
-      const st=u>=min?'\u2713 met':`needs ${need} more`, pct=min>0?Math.min(100,Math.round(u/min*100)):100;
-      return `<div class="drow ${cls}"><span class="pn">${d.n}</span><span class="pv">${u}<small>/${min}</small></span><span class="st">${st}</span></div><div class="dbar"><i style="width:${pct}%"></i></div>`;
-    }).join('');
-    const note=impossible?`<div class="dnote bad">\u26a0 Can't reach the minimum \u2014 too few holes left</div>`:(forced?`<div class="dnote warn">Every remaining hole is now forced to balance drives</div>`:'');
-    return `<div class="dteam ${key}"><div class="dh">${team.name}</div>${rows}${note}</div>`;
-  };
-  document.getElementById('drives').innerHTML=dpanel('A')+dpanel('B');
-  const ml=document.getElementById('minLbl'); if(ml) ml.textContent=min;
-
-  const fin=document.getElementById('final');
-  if(c.thru===18){
-    fin.className='final show';
-    fin.innerHTML = tie
-      ? `<div class="ft">Full 18 · All Square</div><div class="fw">A tie!</div><div class="fd">Net ${c.netA} apiece · skins A ${eur(c.valA)} · B ${eur(c.valB)}</div>`
-      : `<div class="ft">Match Result</div><div class="fw">${leadA?ROSTER.A.name:ROSTER.B.name}</div><div class="fd">Win by ${Math.abs(c.netA-c.netB)} net · skins A ${eur(c.valA)} · B ${eur(c.valB)}${c.pot>0?` · ${eur(c.pot)} left in pot`:''}<br>Dinner's partly on the other two.</div>`;
-  } else fin.className='final';
+function calc(){
+  const t=teamHcp(); let g=0,n=0,par=0,thru=0;
+  const res={};
+  ORDER.forEach(h=>{
+    const s=ST.scores[h], k=strokes(h,t);
+    const done=s!=null&&s!=='';
+    if(done){ g+=s; n+=s-k; par+=PAR[h-1]; thru++; }
+    res[h]={g:done?s:null,k,net:done?s-k:null};
+  });
+  const used={}; TEAM.forEach(p=>used[p.k]=0);
+  let assigned=0; ORDER.forEach(h=>{ const d=ST.drives[h]; if(d&&used[d]!=null){used[d]++;assigned++;} });
+  let mine=0,mineHoles=0,mineGross=0; ORDER.forEach(h=>{ const m=ST.mine[h]; if(m!=null){ mine+=m; mineHoles++; if(res[h].g!=null) mineGross+=res[h].g; } });
+  return {t,g,n,par,thru,res,used,left:18-assigned,toPar:n-par,mine,mineHoles,mineGross};
 }
 
 function render(){
-  const c=compute();
-  renderStatus(c);
-  if(view==='play') renderPlay(c); else renderBoard(c);
+  const c=calc();
+  // hero
+  document.getElementById('hNum').textContent=c.thru?sgn(c.toPar):'–';
+  document.getElementById('hUnit').innerHTML=c.thru?`net to par<br>thru ${c.thru}`:'net to par';
+  document.getElementById('hSub').innerHTML=`<span class="dot${ok?'':' off'}" id="sync"></span>`+
+    (c.thru?`Gross ${c.g} · net ${c.n} · team handicap ${c.t}`:`Team handicap ${c.t} · tee off 9am on hole 2`)
+    +(isOver()?' · <b>from the pro shop card</b>':'');
+  if(view==='hole') renderHole(c); else renderCard(c);
 }
 
-// ── interactions ──
-function setScore(key,v){
-  buzz(8);
-  const h=curHole;
-  STATE.scores[h]=STATE.scores[h]||{};
-  const field=key==='A'?'a':'b';
-  // tapping the same value again clears it (easy undo)
-  if(STATE.scores[h][field]===v){ STATE.scores[h][field]=null; }
-  else { STATE.scores[h][field]=v; }
-  render();
-  pushScore(h,field,STATE.scores[h][field]);
+function renderHole(c){
+  const i=ORDER.indexOf(cur), r=c.res[cur], p=PAR[cur-1];
+  document.getElementById('hT').textContent=`Hole ${cur}`;
+  document.getElementById('hM').innerHTML=`Par <b>${p}</b> · S.I. <b>${SI[cur-1]}</b> · ${i+1} of 18`;
+  document.getElementById('prev').disabled=i===0;
+  document.getElementById('nxt').disabled=i===17;
+  document.getElementById('strip').innerHTML=ORDER.map(h=>`<div class="seg${c.res[h].g!=null?' done':''}${h===cur?' cur':''}" onclick="go(${h})"></div>`).join('');
+  const shown=r.g!=null?r.g:p, cls=mark(r.g,p);
+  const min=Number(ST.settings.minDrives)||0, d=ST.drives[cur]||null;
+  const need=TEAM.reduce((a,x)=>a+Math.max(0,min-c.used[x.k]),0);
+  let hint='';
+  if(r.g!=null&&!d) hint=`<div class="hint">Whose drive did you use? Tap a name.</div>`;
+  else if(need>c.left) hint=`<div class="hint warn">Not enough holes left to use everyone’s ${min} drives.</div>`;
+  else if(need&&need===c.left) hint=`<div class="hint warn">Every hole left must use a drive from someone still short.</div>`;
+  else if(r.g==null) hint=`<div class="hint">Tap the grey number for par.</div>`;
+  document.getElementById('hCard').innerHTML=`
+    <div class="lbl"><span>Team score</span><span class="stk">${r.k?`${r.k} stroke${r.k>1?'s':''} here`:'no stroke here'}</span></div>
+    <div class="stepper">
+      <button class="sb" onclick="inc(-1)" aria-label="One less">−</button>
+      <div class="sv"><button class="${cls}" onclick="tapScore()" aria-label="Score">${shown}</button>
+        <small>${r.g!=null?`net ${r.net}`:''}</small></div>
+      <button class="sb" onclick="inc(1)" aria-label="One more">+</button>
+    </div>
+    <div class="drv">
+      <div class="lbl"><span>Drive used</span><span>${c.left} hole${c.left===1?'':'s'} unassigned</span></div>
+      <div class="dgrid">${TEAM.map(x=>{const u=c.used[x.k];return `<button class="dp${d===x.k?' sel':''}${u<min?' short':''}" onclick="setDrive('${x.k}')">${x.n}<span class="c">${u}/${min}</span></button>`;}).join('')}</div>
+    </div>
+    <div class="mine"><div class="l">Miguel’s shots used<small>${c.mine} so far · drive counts</small></div>
+      <div class="ms"><button onclick="mineInc(-1)" aria-label="One fewer of Miguel’s shots">−</button><b class="${ST.mine[cur]?'':'z'}" id="mineV">${ST.mine[cur]??0}</b><button onclick="mineInc(1)" aria-label="One more of Miguel’s shots">+</button></div></div>${hint}`;
+  const nb=document.getElementById('nextBtn');
+  const gap=ORDER.find(h=>c.res[h].g==null);
+  if(i===17&&!gap){ nb.textContent='See the card'; nb.className='next fin'; }
+  else if(i===17&&gap){ nb.textContent=`Hole ${gap} still needs a score`; nb.className='next'; }
+  else { nb.textContent='Next hole'; nb.className='next'; }
 }
-function setDrive(key,dk){
-  buzz(8);
-  const h=curHole; STATE.scores[h]=STATE.scores[h]||{};
-  const field=key==='A'?'da':'db';
-  if(STATE.scores[h][field]===dk) STATE.scores[h][field]=null; else STATE.scores[h][field]=dk;
-  render();
-  pushScore(h,field,STATE.scores[h][field]);
+
+function renderCard(c){
+  const fin=document.getElementById('final');
+  if(c.thru===18){
+    fin.className='final show';
+    fin.innerHTML=`<div class="k">Final · 18 holes</div><div class="n">${c.n} net</div><div class="d">${sgn(c.toPar)} to par · ${c.g} gross less ${c.t}<br>Compare with the board on Intelligent Golf.</div>`;
+  }else fin.className='final';
+  document.getElementById('tot').innerHTML=`<div><span>Gross</span><b>${c.thru?c.g:'–'}</b></div><div><span>Net</span><b>${c.thru?c.n:'–'}</b></div><div><span>To par</span><b>${c.thru?sgn(c.toPar):'–'}</b></div>`;
+  const nine=(a,label)=>{
+    const hs=[...Array(9)].map((_,j)=>a+j);
+    let pt=0,gt=0,nt=0,any=false;
+    hs.forEach(h=>{ pt+=PAR[h-1]; const r=c.res[h]; if(r.g!=null){gt+=r.g;nt+=r.net;any=true;} });
+    return `<div class="sc"><div class="sg">
+      <div class="band rl" style="color:#fff">Hole</div>${hs.map(h=>`<div class="band">${h}</div>`).join('')}<div class="band">${label}</div>
+      <div class="rl">Par</div>${hs.map(h=>`<div class="par">${PAR[h-1]}${c.res[h].k?'<i></i>':''}</div>`).join('')}<div class="par tc">${pt}</div>
+      <div class="rl">Score</div>${hs.map(h=>{const r=c.res[h];return `<div class="s ${mark(r.g,PAR[h-1])}"><span>${r.g??''}</span></div>`;}).join('')}<div class="tc">${any?gt:''}</div>
+      <div class="rl nt">Net</div>${hs.map(h=>`<div class="nt">${c.res[h].net??''}</div>`).join('')}<div class="nt">${any?nt:''}</div>
+    </div></div>`;
+  };
+  document.getElementById('sc').innerHTML=nine(1,'Out')+nine(10,'In');
+  const pct=c.g?Math.round(c.mine/c.g*100):0;
+  document.getElementById('mineCard').innerHTML=`<div class="row"><span>Shots of yours the team used<small>${c.mineHoles?`on ${c.mineHoles} of ${c.thru} holes played`:'Count them on the Hole screen'}</small></span><span class="v">${c.mine}</span></div>`
+    +(c.thru?`<div class="row"><span>Share of the team’s shots<small>${c.mine} of ${c.g} shots</small></span><span class="v">${pct}%</span></div>`:'')
+    +`<div class="row"><span>Your drives used</span><span class="v">${c.used[ME]}</span></div>`;
+  const min=Number(ST.settings.minDrives)||0;
+  document.getElementById('minL').textContent=min;
+  document.getElementById('drives').innerHTML=TEAM.map(x=>{const u=c.used[x.k];return `<div class="row"><span>${x.full}</span><span class="v ${u>=min?'ok':'short'}">${u} of ${min}</span></div>`;}).join('')
+    +`<div class="row total"><span>Holes with no drive picked</span><span class="v">${c.left}</span></div>`;
+  const H=hcpCalc(ST.settings.tee), over=ST.settings.hcp!=null&&ST.settings.hcp!=='';
+  document.getElementById('hcp').innerHTML=H.rows.map(r=>`<div class="row"><span>${r.full}<small>Index ${r.hi} · course handicap ${r.ch} · ${Math.round(r.pct*100)}%</small></span><span class="v">${(Math.round(r.part*100)/100).toString()}</span></div>`).join('')
+    +`<div class="row total"><span>Team handicap · the rule<small>${H.sum.toFixed(2)}, rounded · ${ST.settings.tee} tees</small></span><span class="v">${H.team}</span></div>`
+    +(over?`<div class="row total" style="background:#FBE9E7"><span>Pro shop card · in use<small>Typed in from the card; the scores use this</small></span><span class="v">${teamHcp()}</span></div>`:'')
+    +`<button class="row" style="width:100%;color:var(--g);font-weight:600" onclick="openSet()">${over?'Change or go back to the rule':'Pro shop card says different? Enter it'}</button>`;
 }
-function goHole(d){ const n=curHole+d; if(n>=1&&n<=18){curHole=n; buzz(5); render();} }
-function jumpHole(h){ curHole=h; buzz(5); render(); }
+
+// ── taps ──
+function setScore(v){
+  buzz(8);
+  ST.scores[cur]=v; render(); push(`scores/${cur}`,v);
+}
+function inc(d){ const p=PAR[cur-1], s=ST.scores[cur]; const v=Math.min(15,Math.max(1,(s==null?p:s)+d)); setScore(v); }
+function tapScore(){ const s=ST.scores[cur]; if(s==null) setScore(PAR[cur-1]); else { buzz(8); ST.scores[cur]=null; render(); push(`scores/${cur}`,null); } }
+function setDrive(k){
+  buzz(8); const was=ST.drives[cur]; ST.drives[cur]=was===k?null:k;
+  // your drive is one of your shots: picking it starts your count at 1, unpicking takes it back off
+  if(k===ME&&ST.drives[cur]===ME&&!ST.mine[cur]){ ST.mine[cur]=1; push(`mine/${cur}`,1); }
+  else if(k===ME&&was===ME&&ST.mine[cur]===1){ ST.mine[cur]=null; push(`mine/${cur}`,null); }
+  render(); push(`drives/${cur}`,ST.drives[cur]);
+}
+function mineInc(d){
+  buzz(8); const cap=ST.scores[cur]!=null?ST.scores[cur]:15;
+  const v=Math.max(0,Math.min(cap,(ST.mine[cur]||0)+d));
+  ST.mine[cur]=v||null; render(); push(`mine/${cur}`,v||null);
+}
+function go(h){ cur=h; buzz(5); render(); }
+function step(d){ const i=ORDER.indexOf(cur)+d; if(i>=0&&i<18){ cur=ORDER[i]; buzz(5); render(); } }
+function nextBtn(){
+  const c=calc(), i=ORDER.indexOf(cur), gap=ORDER.find(h=>c.res[h].g==null);
+  if(i<17) return step(1);
+  if(gap) return go(gap);
+  setView('card');
+}
 function setView(v){
   view=v;
-  document.getElementById('playView').classList.toggle('on',v==='play');
-  document.getElementById('boardView').classList.toggle('on',v==='board');
-  document.getElementById('tabPlay').classList.toggle('on',v==='play');
-  document.getElementById('tabBoard').classList.toggle('on',v==='board');
-  buzz(5); render();
-}
-
-// ── sync ──
-let lastSyncOk=true;
-function setSync(ok){ lastSyncOk=ok; const d=document.getElementById('syncdot'); if(d) d.className='syncdot'+(ok?'':' off'); }
-async function pushScore(h,field,val){
-  try{ await fetch(`${DB}/scores/${h}.json`,{method:'PATCH',body:JSON.stringify({[field]:val})}); setSync(true);}catch(e){ setSync(false);}
-}
-async function pull(){
-  try{
-    const d=await fetch(`${DB}.json?t=${Date.now()}`).then(r=>r.json());
-    if(d){
-      if(d.settings) STATE.settings={...DEFAULTS,...d.settings};
-      const inc=d.scores||{}, merged={};
-      for(const ho of HOLES){ const k=ho.h, i=inc[k]||{}; merged[k]={a:(i.a===0||i.a)?i.a:null, b:(i.b===0||i.b)?i.b:null, da:i.da||null, db:i.db||null}; }
-      STATE.scores=merged;
-    }
-    setSync(true);
-    if(!document.getElementById('modal').classList.contains('open')) render();
-  }catch(e){ setSync(false); }
-}
-async function initIfEmpty(){
-  const d=await fetch(`${DB}.json`).then(r=>r.json()).catch(()=>null);
-  if(!d||!d.settings){ await fetch(`${DB}/settings.json`,{method:'PATCH',body:JSON.stringify(DEFAULTS)}); }
+  document.getElementById('vHole').classList.toggle('on',v==='hole');
+  document.getElementById('vCard').classList.toggle('on',v==='card');
+  document.getElementById('tHole').classList.toggle('on',v==='hole');
+  document.getElementById('tCard').classList.toggle('on',v==='card');
+  window.scrollTo(0,0); render();
 }
 
 // ── settings ──
-function openSettings(){
-  document.getElementById('setSkin').value=STATE.settings.skinValue;
-  document.getElementById('setMin').value=STATE.settings.minDrives;
-  document.getElementById('setHcpA').value=STATE.settings.hcpA;
-  document.getElementById('setHcpB').value=STATE.settings.hcpB;
-  document.getElementById('hintA').textContent=`${ROSTER.A.name} · official scramble = 13`;
-  document.getElementById('hintB').textContent=`${ROSTER.B.name} · official scramble = 15`;
-  document.getElementById('modal').classList.add('open');
+let pickTee=null;
+function teeSeg(){ document.getElementById('teeSeg').innerHTML=Object.keys(TEES).map(t=>`<button class="${t===pickTee?'on':''}" onclick="pickTee='${t}';teeSeg();hHint()">${t}</button>`).join(''); }
+function hHint(){
+  const H=hcpCalc(pickTee), v=document.getElementById('setH').value, over=v!==''&&Number(v)!==H.team;
+  document.getElementById('setHh').innerHTML=`The rule (25/20/15/10%, ${pickTee} tees) gives <b>${H.team}</b>. If the pro shop card says something else, type the card’s number here and that is what counts.`
+    +(over?` <b style="color:var(--red)">Using the card: ${v}.</b>`:'');
+  document.getElementById('useRule').style.display=over?'block':'none';
 }
-function closeSettings(){ document.getElementById('modal').classList.remove('open'); }
-async function saveSettings(){
-  const s={skinValue:Number(document.getElementById('setSkin').value)||0, hcpA:Number(document.getElementById('setHcpA').value), hcpB:Number(document.getElementById('setHcpB').value), minDrives:Number(document.getElementById('setMin').value)||0};
-  STATE.settings={...STATE.settings,...s}; closeSettings(); render();
-  try{ await fetch(`${DB}/settings.json`,{method:'PATCH',body:JSON.stringify(s)}); setSync(true);}catch(e){setSync(false);}
+function useRule(){ document.getElementById('setH').value=hcpCalc(pickTee).team; hHint(); }
+function openSet(){
+  pickTee=ST.settings.tee; teeSeg();
+  document.getElementById('setH').value=teamHcp();
+  document.getElementById('setH').oninput=hHint; hHint();
+  document.getElementById('setD').value=ST.settings.minDrives;
+  document.getElementById('ov').classList.add('open');
 }
-async function resetMatch(){
-  if(!confirm('Clear all scores for this match? Affects everyone.'))return;
-  STATE.scores={}; closeSettings(); curHole=1; render();
-  try{ await fetch(`${DB}/scores.json`,{method:'DELETE'}); setSync(true);}catch(e){setSync(false);}
+function closeSet(){ document.getElementById('ov').classList.remove('open'); }
+function saveSet(){
+  const hv=document.getElementById('setH').value, calcd=hcpCalc(pickTee).team;
+  const s={tee:pickTee, hcp:(hv===''||Number(hv)===calcd)?null:Number(hv), minDrives:Number(document.getElementById('setD').value)||0};
+  ST.settings={...ST.settings,...s}; closeSet(); render(); push('settings',s,'PATCH');
+}
+function resetAll(){
+  if(!confirm('Clear every score and drive? This clears it on everyone’s phone.')) return;
+  ST.scores={}; ST.drives={}; ST.mine={}; cur=2; closeSet(); render();
+  ['scores','drives','mine'].forEach(k=>fetch(`${DB}/${k}.json`,{method:'DELETE'}).catch(()=>{}));
 }
 
-// ── swipe between holes in Play view ──
+// ── live sync: everyone's phone, its own spot in the database ──
+let pending=0;
+function setOk(v){ ok=v; const d=document.getElementById('sync'); if(d) d.className='dot'+(v?'':' off'); }
+async function push(path,val,method){
+  pending++;
+  try{ await fetch(`${DB}/${path}.json`,{method:method||'PUT',body:JSON.stringify(val)}); setOk(true); }
+  catch(e){ setOk(false); }
+  finally{ pending--; }
+}
+async function pull(){
+  if(pending) return;                       // never let an older copy overwrite a tap in flight
+  try{
+    const d=await fetch(`${DB}.json?t=${Date.now()}`).then(r=>r.json());
+    if(pending) return;
+    const sc={}, dr={}, mi={};
+    const S=d&&d.scores||{}, D=d&&d.drives||{}, M=d&&d.mine||{};
+    for(let h=1;h<=18;h++){ const v=Array.isArray(S)?S[h]:S[h]; if(typeof v==='number') sc[h]=v; const w=Array.isArray(D)?D[h]:D[h]; if(w) dr[h]=w; const m=Array.isArray(M)?M[h]:M[h]; if(typeof m==='number'&&m>0) mi[h]=m; }
+    ST.scores=sc; ST.drives=dr; ST.mine=mi;
+    if(d&&d.settings) ST.settings={...DEFAULTS,...d.settings};
+    setOk(true);
+    if(!document.getElementById('ov').classList.contains('open')) render();
+  }catch(e){ setOk(false); }
+}
+
+// swipe between holes
 let tx=0,ty=0;
-document.getElementById('playView').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
-document.getElementById('playView').addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
-  if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.6){ goHole(dx<0?1:-1); }
-},{passive:true});
+document.getElementById('vHole').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('vHole').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6) step(dx<0?1:-1);},{passive:true});
 
-// ── boot ──
 (async()=>{
-  await initIfEmpty();
+  render();
   await pull();
-  // jump to first hole missing a score
-  const c=compute(); const firstOpen=c.res.find(r=>!r.bothIn); curHole=firstOpen?firstOpen.ho.h:18;
+  const c=calc(); const gap=ORDER.find(h=>c.res[h].g==null); cur=gap||1;
   render();
   setInterval(pull,2500);
 })();
