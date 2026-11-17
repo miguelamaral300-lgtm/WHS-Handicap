@@ -2574,6 +2574,12 @@ html,body{overflow-x:clip}
   padding:12px 15px;margin-top:8px;color:var(--ink)}
 .gm-more .gm-rt{font-weight:500}
 .gm-moret{margin-top:8px}
+
+/* C-20261108-a · Money on one page: section labels carry their own one-line detail */
+.ui-mlbl{display:flex;align-items:baseline;justify-content:space-between;gap:10px;scroll-margin-top:70px}
+.ui-mlbl span{font-size:12px;color:var(--ink2);font-weight:400;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the + at the agreed cap (C-20261116-a): still visible, clearly spent */
+.st-btn.sr-cap{opacity:.32;cursor:default}
 </style>
 </head>
 <body>
@@ -4957,11 +4963,12 @@ function renderPlay(){
         <div class="lp-stepper sr-ctl">
           <button class="st-btn sr-b" onclick="LP_INC('${p.id}',-1)" aria-label="One fewer for ${gmFirst(LR,p.id)}">−</button>
           <button class="st-val sr-v ${k}" onclick="LP_INC('${p.id}',0)" aria-label="${empty?`Give ${gmFirst(LR,p.id)} par`:`${gmFirst(LR,p.id)}: ${g}`}"><span>${empty?par:g}</span></button>
-          <button class="st-btn sr-b" onclick="LP_INC('${p.id}',1)" aria-label="One more for ${gmFirst(LR,p.id)}">+</button>
+          ${(()=>{ const cap=gmEntryCap(LR,LRHOLE,p.id), at=cap!=null&&g!=null&&g>=cap;
+            return `<button class="st-btn sr-b${at?' sr-cap':''}" onclick="LP_INC('${p.id}',1)" aria-label="${at?`${gmFirst(LR,p.id)} is at the agreed maximum, ${cap}`:`One more for ${gmFirst(LR,p.id)}`}"${at?' aria-disabled="true"':''}>+</button>`; })()}
         </div></div>`;
     }).join('');
     pHole+=`</div>`;
-    if(!isScr) pHole+=`<div class="sr-hint">Tap a grey number to give par.${_GPH?' '+gmStrokeNote(LR):''}</div>`;
+    if(!isScr) pHole+=`<div class="sr-hint">Tap a grey number to give par.${_GPH?' '+gmStrokeNote(LR):''}${gmCapHint(LR)}</div>`;
 
     // the two small extras: the hole's contest, and GPS
     const ck=gmContestKind(LR,LRHOLE), cw=(LR.ctp||{})[LRHOLE]||null;
@@ -5179,13 +5186,15 @@ function renderRanking(R){
 
 // ── PLAYER DETAIL ─────────────────────────────────────────────────────────────
 function renderPlayerDetail(p){
-  // Another member's page — built exactly like Me: Overview and Stats, with their
-  // rounds and head-to-heads as signposts into Play and the League.
+  // Another member's page (or your own, from the table) — one page, no tabs (C-20261115-a):
+  // index, target, last five, their rounds and you v them, then their bests and most played.
   const st=uiStats(p);
   const home=st.courses.length?uiShort(st.courses[0].name):'';
   if(UI_PTAB==='rounds'){ UI_PTAB='overview'; setTimeout(()=>UI_PASTGO(p.id),0); }
   if(UI_PTAB==='h2h'){ UI_PTAB='overview'; setTimeout(()=>UI_H2HGO(p.id),0); }
-  const tab=UI_PTAB==='stats'?'stats':'overview';
+  // the old Stats tab is now the foot of the page: an old address lands on it
+  if(UI_PTAB==='stats'){ UI_PTAB='overview';
+    setTimeout(()=>{ try{ const e=document.getElementById('ui-p-game'); if(e) e.scrollIntoView({block:'start'}); }catch(err){} },40); }
   let h=`<div class="ui-top">
       <button class="ui-ico" onclick="CP()" aria-label="Back">${uiSvg('back')}</button>
       <span></span>
@@ -5193,33 +5202,31 @@ function renderPlayerDetail(p){
     </div>
     <div class="ui-phead"><span class="ui-av g lg">${uiInit(p.name)}</span>
       <div class="ui-pheadt"><div class="ui-h1">${p.name}${p.id===UI_ME?' <span class="ui-pill">you</span>':''}</div>
-      <div class="ui-s">${home?home+' · ':''}${st.valid} round${st.valid===1?'':'s'}</div></div></div>
-    <div class="ui-seg ui-seg-full ui-evtabs">
-      ${[['overview','Overview'],['stats','Stats']]
-        .map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="UI_PTAB_O('${k}')">${l}</button>`).join('')}
-    </div>`;
-  if(tab==='stats') return h+renderStatsTab(p,st);
-  return h+uiPlayerOverview(p);
+      <div class="ui-s">${home?home+' · ':''}${st.valid} round${st.valid===1?'':'s'}</div></div></div>`;
+  return h+uiPlayerOverview(p)+renderPlayerGame(p,st);
 }
 
-// ── Stats tab: most played, personal bests ──
-function renderStatsTab(p,st){
+// ── The foot of a player's page (was the Stats tab): personal bests, then most played ──
+// Bests first: they are the numbers a golfer asks about ("what's his best round?").
+function renderPlayerGame(p,st){
   let h='';
-  if(st.courses.length){
-    h+=`<div class="ui-lbl" style="margin-top:0">Most played</div><div class="ui-list">${st.courses.slice(0,6).map(c=>`
-      <div class="ui-row" style="cursor:default"><span class="ui-row-t">${c.name}<small>${c.n} round${c.n===1?'':'s'}</small></span>
-      <span class="ui-row-v ui-mono">${c.avg!=null?'avg '+c.avg:''}${c.avg9!=null?`${c.avg!=null?' · ':''}${c.avg9} nine`:''}</span></div>`).join('')}</div>`;
-  }
   if(st.bestGross||st.bestDiff||st.lowHI!=null){
     h+=`<div class="ui-lbl">Personal bests</div><div class="ui-list">
-      ${st.bestGross?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best full round<small>${st.bestGross.course}${st.bestGross.date?' · '+fmtDate(st.bestGross.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestGross.score}</span></div>`:''}
-      ${st.bestDiff?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best differential<small>${st.bestDiff.course}${st.bestDiff.date?' · '+fmtDate(st.bestDiff.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestDiff.d.toFixed(1)}</span></div>`:''}
-      ${st.lowHI!=null?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Lowest index ever<small>${st.lowHIDate?fmtDate(st.lowHIDate):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.lowHI.toFixed(1)}</span></div>`:''}
+      ${st.bestGross?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best full round<small>${uiShort(st.bestGross.course)}${st.bestGross.date?' · '+uiDay(st.bestGross.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestGross.score}</span></div>`:''}
+      ${st.bestDiff?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Best differential<small>${uiShort(st.bestDiff.course)}${st.bestDiff.date?' · '+uiDay(st.bestDiff.date):''}</small></span><span class="ui-row-v ui-mono ui-strong">${st.bestDiff.d.toFixed(1)}</span></div>`:''}
+      ${st.lowHI!=null?`<div class="ui-row" style="cursor:default"><span class="ui-row-t">Lowest index${st.lowHIDate?`<small>${uiDay(st.lowHIDate)}</small>`:''}</span><span class="ui-row-v ui-mono ui-strong">${st.lowHI.toFixed(1)}</span></div>`:''}
     </div>`;
   }
-  // Club 3: badges removed — they repeated what the numbers above already say.
-  return h||`<div class="ui-crempty">Nothing to show yet — post a few rounds and this fills up.</div>`;
+  if(st.courses.length){
+    h+=`<div class="ui-lbl">Most played</div><div class="ui-list">${st.courses.slice(0,3).map(c=>`
+      <div class="ui-row" style="cursor:default"><span class="ui-row-t">${uiShort(c.name)}<small>${c.n} round${c.n===1?'':'s'}</small></span>
+      <span class="ui-row-v ui-mono">${c.avg!=null?'avg '+c.avg:''}${c.avg9!=null?`${c.avg!=null?' · ':''}${c.avg9} nine`:''}</span></div>`).join('')}</div>`;
+  }
+  // Club 3: badges removed — they repeated what the numbers already say.
+  return h?`<div id="ui-p-game">${h}</div>`:'';
 }
+// Kept for anything that still calls the old tab by name.
+function renderStatsTab(p,st){ return renderPlayerGame(p,st); }
 
 // ── TOURNAMENTS ───────────────────────────────────────────────────────────────
 function renderTournaments(){
@@ -5310,20 +5317,21 @@ function renderUpcoming(){
 }
 
 // ── PURSE LEADERBOARD ─────────────────────────────────────────────────────────
-// The tournament purse lives in Money ▸ Ledger ▸ Tournaments; match money has its
-// own shelf beside it, so the two are never added together.
-function renderPurse(){ UI_ROOMTAB.money='ledger'; UI_LEDG='tournaments'; return renderMoney(); }
-function renderPurseBody(){
+// The tournament purse is the Tournaments section of Money (one page); match money
+// has its own section above it, so the two are never added together.
+function renderPurse(){ UI_LEDG='tournaments'; UI_MJUMP='tournaments'; return renderMoney(); }
+// compact: on the Money page the section label carries the total, so no big panel.
+function renderPurseBody(compact){
   const purseData=calcPurse();
   const totalEarned=purseData.reduce((s,p)=>s+p.totalEarned,0);
   let h='';
-  h+=`<div class="ui-pursetotal ui-panel">
+  if(!compact) h+=`<div class="ui-pursetotal ui-panel">
     <div class="ui-pt-l">Tournament purse · ${new Date().getFullYear()} season</div>
     <div class="ui-xl" style="font-size:62px;color:#fff">${fmtCurrency(totalEarned)}</div>
     <div class="ui-pt-s">${totalEarned===0?'Nothing recorded yet — tap Record to add winnings':`changed hands across ${purseData.reduce((s,p)=>s+p.events,0)} entr${purseData.reduce((s,p)=>s+p.events,0)===1?'y':'ies'}`}</div>
   </div>`;
   const maxAbsPnl=Math.max(...purseData.map(p=>Math.abs(p.pnl)),1);
-  h+=`<div class="ui-list" style="margin-top:14px">`;
+  h+=`<div class="ui-list"${compact?'':' style="margin-top:14px"'}>`;
   purseData.forEach((p,i)=>{
     const isProfit=p.pnl>=0;
     const pct=maxAbsPnl>0?Math.round(Math.abs(p.pnl)/maxAbsPnl*100):0;
@@ -7147,7 +7155,7 @@ function lpMigrateMorocco(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261101-a · Club 3 · More games on New round';
+const UI_BUILD='C-20261116-a · Club 3 · the agreed cap stops the + button';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7273,7 +7281,8 @@ function renderSettings(){
 window.UI_GO=(v,tab)=>{
   UI_MENU=false; if(MOD==='playpick') MOD=null;   // going anywhere answers the Play question
   const r=UI_ROUTE[v];
-  if(r){ v=r[0]; tab=tab||r[1]; if(r[2]) UI_HON=r[2]; if(r[0]==='money'&&r[1]==='ledger') UI_LEDG='tournaments'; }
+  if(r){ v=r[0]; tab=tab||r[1]; if(r[2]) UI_HON=r[2]; if(r[0]==='money'&&r[1]==='ledger'){ UI_LEDG='tournaments'; UI_MJUMP='tournaments'; } }
+  else if(v==='money'&&tab==='ledger') UI_MJUMP='games';   // the old Ledger tab: history, on the one page
   // Club 3: Past and Upcoming are one list now (Rounds); "Me" is Home, and its
   // settings are a page behind your initials.
   if(v==='play'&&(tab==='past'||tab==='upcoming')){ v='rounds'; tab=null; }
@@ -8851,7 +8860,11 @@ function gmStripInner(r){
     const R=r.rules; if(!R||R.cap==='none') return '';
     const lbl=R.cap==='mult'?`${R.mult}× net double bogey`:GM_RULES[R.cap].name;
     return `<span class="gm-line-l"><span class="sl">Agreed scoring</span><span class="sv">${lbl}</span></span>
-      <span class="gm-line-a"><b>${r.players.reduce((t,p)=>t+gmMatchScore(r,p.id,R).capped,0)}</b><span>holes capped</span></span>`;
+      ${(()=>{ // the + now stops at the cap, so "holes capped" would always read 0:
+        // say instead the most YOU can take on this hole (C-20261116-a)
+        const me=(typeof UI_ME!=='undefined'&&UI_ME&&r.players.some(p=>p.id===UI_ME))?UI_ME:null;
+        const cap=(me&&r===LR&&LRHOLE)?gmEntryCap(r,LRHOLE,me):null;
+        return cap!=null?`<span class="gm-line-a"><b>${cap}</b><span>your most here</span></span>`:''; })()}`;
   }
   const PH=gmPlaying(r,g.fmt), ids=gmIds(r);
   const me=(typeof UI_ME!=='undefined'&&UI_ME&&ids.includes(UI_ME))?UI_ME:null;
@@ -8980,6 +8993,42 @@ function gmList(a){ return a.length<2?(a[0]||''):a.slice(0,-1).join(', ')+' and 
   };
 })();
 
+
+// ── The agreed cap stops the + button (C-20261116-a) ────────────────────────
+// Miguel, 16 Nov: "if we set 1.5x, I shouldn't be able to book in 13 — 12 is the
+// maximum. My friend shanks it four times and picks up: I just go as far as the app
+// lets me." With a cap agreed on the tee (net double bogey, a multiple of it, or a
+// flat maximum), the hole's + stops at that player's cap, so the number on the card
+// is already the one that counts. No cap agreed = the old limit of 15, unchanged.
+// The handicap still caps at net double bogey on its own (WHS), so it is unaffected.
+function gmEntryCap(r,h,pid){
+  const R=r&&r.rules; if(!R||!R.cap||R.cap==='none') return null;
+  try{ const v=gmCapFor(r,h,pid,R); return (v!=null&&v>=1)?v:null; }catch(e){ return null; }
+}
+window.LP_INC=(pid,d)=>{
+  const par=LR.parArr[LRHOLE-1];
+  const cur=lpHasScore(LR.scores,LRHOLE,pid)?LR.scores[LRHOLE][pid]:null;
+  const cap=gmEntryCap(LR,LRHOLE,pid), top=cap!=null?cap:15;
+  if(d>0&&cur!=null&&cur>=top) return;          // at the cap: + does nothing
+  const v=cur==null?Math.min(par,top):Math.min(top,Math.max(1,cur+d));
+  if(v===cur) return;
+  lpWrite(pid,v);
+};
+// Correcting a hole on a finished card follows the same cap.
+window.HOLE_STEP=d=>{
+  if(!EDIT_HOLE) return;
+  const cur=EDIT_HOLE.val==null?holeCurrent():EDIT_HOLE.val;
+  const rec=holeRecord(), cap=rec?gmEntryCap(rec,EDIT_HOLE.hole,EDIT_HOLE.pid):null, top=cap!=null?cap:20;
+  if(d>0&&cur!=null&&cur>=top) return;
+  const v=Math.max(1,Math.min(top,(cur||0)+d));
+  EDIT_HOLE={...EDIT_HOLE,val:v}; render();
+};
+// One line under the hole when a cap is on, so nobody has to do the maths.
+function gmCapHint(r){
+  const R=r&&r.rules; if(!R||!R.cap||R.cap==='none') return '';
+  const lbl=R.cap==='mult'?`${R.mult}× net double bogey`:R.cap==='max'?`${R.max||9} a hole`:'net double bogey';
+  return ` The + stops at ${lbl}: picked up, tap it until it stops.`;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LIVE LEADERBOARD · a bar at the bottom that rises into a sheet
@@ -9496,7 +9545,7 @@ function uiRoute(){
   const r=UI_ROUTE[V]; if(!r) return false;
   V=r[0]; if(r[1]) UI_ROOMTAB[r[0]]=r[1];
   if(r[2]) UI_HON=r[2];
-  if(r[0]==='money') UI_LEDG='tournaments';
+  if(r[0]==='money'){ UI_LEDG='tournaments'; UI_MJUMP='tournaments'; }
   return true;
 }
 
@@ -9730,11 +9779,18 @@ function uiMoneyKey(M){
   if(M.pays.length) return `${uiPl(M.pays.length,'payment')} to settle`;
   return 'All square';
 }
+// Club 3 (8 Nov 2026): Money is one page, no tabs. What's owed now on top; under it the
+// history, one section per kind of money (games, the Crown, tournaments), each in its
+// own currency and never added together. Old addresses (ledger, purse, the chips)
+// land on this page, scrolled to their section.
+var UI_MJUMP=null;
 function renderMoney(){
-  const t=UI_ROOMTAB.money, M=uiMoneyOpen();
-  const act=t==='ledger'&&UI_LEDG==='tournaments'?`<button class="ui-btn ui-btn-g ui-btn-sm" onclick="SET_PURSE(null)">${uiSvg('plus')}Record</button>`:'';
-  let h=uiBack("UI_GO('league')",'League')+uiRoomHead('Money',uiMoneyKey(M),act)+uiRoomTabs([['settle','Settle up'],['ledger','Ledger']],t);
-  return h+(t==='ledger'?renderLedger():renderSettle(M));
+  const M=uiMoneyOpen();
+  let h=uiBack("UI_GO('league')",'League')+uiRoomHead('Money',uiMoneyKey(M),uiAdd('SET_PURSE(null)','Record'));
+  h+=renderSettle(M)+renderMoneyHistory();
+  if(UI_MJUMP){ const j=UI_MJUMP; UI_MJUMP=null;
+    setTimeout(()=>{ try{ const e=document.getElementById('ui-m-'+j); if(e) e.scrollIntoView({block:'start'}); }catch(err){} },40); }
+  return h;
 }
 function renderSettle(M){
   let h='';
@@ -9764,36 +9820,22 @@ function uiMatchRow(m){
     ${mine!=null?`<span class="ui-pnl ${mine>0?'up':mine<0?'dn':''}">${mine>0?'+':mine<0?'−':''}${uiMoneyStr(mine)}</span>`:''}
     ${m.rid?`<button class="ui-ico sm" onclick="UI_CARD('${m.rid}')" aria-label="See the card">${uiSvg('chev')}</button>`:''}</div>`;
 }
-function renderLedger(){
-  const k=['all','matches','crown','tournaments'].includes(UI_LEDG)?UI_LEDG:'all';
-  let h=uiChips([['all','All'],['matches','Matches'],['crown','The Crown'],['tournaments','Tournaments']],k,'UI_LEDG_O');
-  if(k==='tournaments') return h+renderPurseBody();
-  if(k==='crown') return h+uiCrownMoney();
-  if(k==='matches'){
-    const L=[...gmLedger()].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    if(!L.length) return h+`<div class="ui-crempty">No games with money on them yet.</div>`;
+function renderMoneyHistory(){
+  let h='';
+  // Games: settled ones only (the open ones are just above, waiting to be settled)
+  const paid=gmLedger().filter(m=>m.settledAt).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(gmLedger().length){
     const P=gmPurse(), rows=Object.keys(P).map(x=>P[x]).filter(x=>x.games).sort((a,b)=>b.pnl-a.pnl);
-    h+=`<div class="ui-lbl" style="margin-top:0">All time</div><div class="ui-list">${rows.map(x=>`
+    h+=`<div class="ui-lbl ui-mlbl" id="ui-m-games">Games<span>skins and match play · all time</span></div><div class="ui-list">${rows.map(x=>`
       <div class="ui-row" style="cursor:default"><span class="ui-av${x.id===UI_ME?' g':''}">${uiInit(x.name)}</span>
         <span class="ui-row-t">${x.name}<small>${uiPl(x.games,'game')}${x.wins?` · ${x.wins} won`:''}</small></span>
         <span class="ui-pnl ${x.pnl>0?'up':x.pnl<0?'dn':''}">${x.pnl>0?'+':x.pnl<0?'−':''}${uiMoneyStr(x.pnl)}</span></div>`).join('')}</div>`;
-    return h+`<div class="ui-lbl">Every game</div><div class="ui-list">${L.map(uiMatchRow).join('')}</div>`;
+    if(paid.length) h+=`<div class="ui-lbl ui-mlbl">Paid<span>${uiPl(paid.length,'game')}</span></div><div class="ui-list">${paid.map(uiMatchRow).join('')}</div>`;
   }
-  // all: where it came from, one line a shelf
-  const me=UI_MEP()?S.players.find(p=>p.id===UI_ME):null;
-  const P=gmPurse(), mm=me&&P[me.id]?P[me.id]:null;
-  const tp=(()=>{ try{ return calcPurse().find(x=>me&&x.name===me.name)||null; }catch(e){ return null; } })();
-  const cr=uiCrownMine();
-  const sgn=(v,f)=>v>0?'+'+f(v):v<0?'−'+f(Math.abs(v)):f(0);
-  h+=`<div class="ui-list">
-    <button class="ui-row" onclick="UI_LEDG_O('matches')"><span class="ui-row-t">Matches<small>Skins and match play · ${uiPl(gmLedger().length,'game')}</small></span>
-      ${mm?`<span class="ui-pnl ${mm.pnl>0?'up':mm.pnl<0?'dn':''}">${sgn(mm.pnl,uiMoneyStr)}</span>`:''}${uiSvg('chev','ui-chev')}</button>
-    <button class="ui-row" onclick="UI_LEDG_O('crown')"><span class="ui-row-t">The Crown<small>Monthly stakes · ${uiPl(cr.months,'month')} settled</small></span>
-      ${me?`<span class="ui-pnl ${cr.pnl>0?'up':cr.pnl<0?'dn':''}">${sgn(cr.pnl,v=>cr.cur+v)}</span>`:''}${uiSvg('chev','ui-chev')}</button>
-    <button class="ui-row" onclick="UI_LEDG_O('tournaments')"><span class="ui-row-t">Tournaments<small>Buy-ins and prize money</small></span>
-      ${tp?`<span class="ui-pnl ${tp.pnl>0?'up':tp.pnl<0?'dn':''}">${tp.pnl>0?'+':tp.pnl<0?'−':''}${fmtCurrency(Math.abs(tp.pnl))}</span>`:''}${uiSvg('chev','ui-chev')}</button>
-  </div>
-  <div class="ui-note ui-roomnote">${me?'Your running total on each shelf. ':''}Each keeps its own currency, as it was played for.</div>`;
+  if(uiCrownResults().length) h+=`<div class="ui-lbl ui-mlbl" id="ui-m-crown">The Crown<span>monthly stakes</span></div>`+uiCrownMoney();
+  const pd=calcPurse(), tot=pd.reduce((s,p)=>s+p.totalEarned,0), ev=pd.reduce((s,p)=>s+p.events,0);
+  h+=`<div class="ui-lbl ui-mlbl" id="ui-m-tournaments">Tournaments<span>${tot?`${fmtCurrency(tot)} won across ${ev===1?'1 entry':ev+' entries'}`:'buy-ins and prize money'}</span></div>`;
+  h+=tot||ev?renderPurseBody(true):`<div class="ui-crempty">Nothing recorded yet. Tap Record to add a buy-in or winnings.</div>`;
   return h;
 }
 function uiCrownResults(){
@@ -9814,8 +9856,7 @@ function uiCrownMoney(){
   return `<div class="ui-list">${R.map(x=>`
     <div class="ui-row" style="cursor:default"><span class="ui-crmon">${potmMonthName(x.ym)}</span>
       <span class="ui-row-t">${x.void?'Void — pot rolled forward':(x.winner||'—')}<small>${x.void?'too few qualified':(x.owed||[]).length?(x.owed||[]).map(o=>`${o.from.split(' ')[0]} → ${o.to.split(' ')[0]} ${x.currency||''}${o.amount}`).join(' · '):'nothing at stake'}</small></span>
-      ${x.void?'':`<span class="ui-crwin">${uiSvg('crown')}</span>`}</div>`).join('')}</div>
-    <div class="ui-note ui-roomnote">The standings for every month are in League ▸ Crown.</div>`;
+      ${x.void?'':`<span class="ui-crwin">${uiSvg('crown')}</span>`}</div>`).join('')}</div>`;
 }
 
 // ═══════════════════════════════ ME ═══════════════════════════════════════
@@ -9841,12 +9882,8 @@ function uiPlayerOverview(p){
     <div class="ui-xl" style="font-size:72px;margin-top:8px">${hi!=null?hi.toFixed(1):'—'}${rp.carried?'<i class="ui-star w">*</i>':''}</div>
     ${uiSpark(st)}
     <div class="ui-hic-sub">${hi==null?(st.holes?`Needs ${Math.max(0,54-st.holes)} more holes for a first index`:'No rounds yet'):rp.carried?`Carried from previous club · ${rp.count||0}/3 rounds here`:`Best ${s.n} of the last ${s.count} count${st.move!=null&&Math.abs(st.move)>=0.05?` · ${st.move<0?'↓':'↑'}${Math.abs(st.move).toFixed(1)} last round`:''}`}</div>
-  </div>
-  <div class="ui-stat3">
-    <div><span>Low</span><b>${st.lowHI!=null?st.lowHI.toFixed(1):'—'}</b></div>
-    <div><span>Best</span><b>${st.bestGross?st.bestGross.score:'—'}</b></div>
-    <div><span>Rounds</span><b>${(p.scores||[]).length}</b></div>
   </div>`;
+  // Low and Best live once, with their course and date, under Personal bests at the foot.
   const tg=uiTarget(p); if(tg) h+=uiTargetCard(tg,false);
   // the last five, counting rounds in green — the full list is a tap away in Play
   const ord=[...orderScores(p.scores||[])].reverse().slice(0,5);
@@ -9879,7 +9916,9 @@ window.UI_RT=t=>{
 // Straight to a room and tab — every signpost goes through here.
 window.UI_TO=(room,tab)=>UI_GO(room,tab);
 window.UI_HON_O=k=>{ UI_HON=k; render(); };
-window.UI_LEDG_O=k=>{ UI_LEDG=k; render(); try{ window.scrollTo(0,0); }catch(e){} };
+// The old Ledger chips: one page now, so they land on the section.
+window.UI_LEDG_O=k=>{ UI_LEDG=k; UI_MJUMP={matches:'games',crown:'crown',tournaments:'tournaments'}[k]||null;
+  if(V!=='money') UI_GO('money'); else render(); };
 window.UI_H2HW=id=>{ UI_H2HWHO=id; render(); };
 window.UI_H2HGO=id=>{ UI_H2HWHO=id; UI_TO('league','h2h'); };
 window.UI_PASTW=id=>{ UI_PAST=id||null; UI_PASTN=30; OPEN_SCORE=null; render(); };
@@ -9904,7 +9943,7 @@ window.UI_CARD=rid=>{
 window.UI_SETTLED=()=>{
   const M=uiMoneyOpen(); if(!M.open.length) return;
   const lines=M.pays.map(x=>`${uiFirst(x.from)} pays ${uiFirst(x.to)} ${uiMoneyStr(x.amt)}`).join('\n');
-  if(!confirm(`Mark everything as paid?\n\n${lines}\n\nOnly do this once the money has changed hands. The games stay in the Ledger.`)) return;
+  if(!confirm(`Mark everything as paid?\n\n${lines}\n\nOnly do this once the money has changed hands. The games stay on this page, under Paid.`)) return;
   const at=Date.now(), ids=new Set(M.open.map(m=>m.id));
   upd({...S,matches:gmLedger().map(m=>ids.has(m.id)?{...m,settledAt:at}:m)});
 };
