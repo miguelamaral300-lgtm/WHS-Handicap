@@ -2819,6 +2819,53 @@ html svg.ic{stroke-linecap:round;stroke-linejoin:round;fill:none}
 .mo .ui-sheet-h + .ui-s{margin-top:0;margin-bottom:16px}
 .ui-lbl-act .ui-link{padding:9px 0;margin:-3px 0}
 .ui-btn-sm.ui-btn-w{background:var(--fill);color:var(--ink)}
+
+/* ════════════════════════════════════════════════════════════════════════
+   EVENTS (C-20261120-a) · the event page, its leaderboard, the links to it.
+   Built from the design system's tokens and the live board's own rows.
+   ════════════════════════════════════════════════════════════════════════ */
+.ev-hero{display:block;width:100%;text-align:left;border:none;font:inherit;cursor:pointer;color:#fff;transition:transform var(--t1) var(--ease)}
+.ev-hero:active{transform:scale(.985)}
+.ev-hero .ui-evhero-d,.ev-hero .ui-evhero-c{display:block}
+.ev-hero-go{display:inline-flex;margin-top:12px;height:28px;align-items:center;padding:0 12px;border-radius:var(--r-pill);background:rgba(255,255,255,.18);font-size:13px;font-weight:600;color:#fff}
+.ui-evrow .ui-row-t[role="button"]{cursor:pointer}
+
+/* the days */
+.ev-days .ev-day{cursor:default;min-height:60px}
+.ev-dn{flex:0 0 auto;min-width:52px;height:26px;padding:0 10px;border-radius:var(--r-pill);background:var(--fill);color:var(--ink2);font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center}
+.ev-day.on .ev-dn{background:var(--g-fill);color:#fff}
+.ev-live{display:inline-flex;align-items:center;gap:5px;color:var(--g-ink);font-weight:600}
+.ev-go{margin:16px 0 4px}
+.ev-go svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2}
+
+/* the board: the live board's rows, with Thru / Today / Total columns */
+.ev-seg{margin:0 0 10px}
+.ev-board{padding:4px 0}
+.ev-hd{display:flex;align-items:center;gap:10px;padding:8px 14px 2px;font-size:11px;font-weight:600;color:var(--ink2)}
+.ev-hd>span:first-child{flex:1}
+.ev-row{display:flex;align-items:center;gap:10px;padding:10px 14px;min-height:58px}
+.ev-row[disabled]{cursor:default;opacity:.62}
+.ev-row.me{background:var(--gl)}
+.ev-c{flex:0 0 34px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink2)}
+.ev-hd .ev-c{font-size:11px}
+.ev-td{flex-basis:42px;font-size:15px;font-weight:600;color:var(--ink)}
+.ev-t{flex:0 0 46px;text-align:right}
+.ev-row .ev-t{font-size:20px}
+.ev-hd .ev-td{font-weight:600;color:var(--ink2);font-size:11px}
+.ev-th{font-weight:600}
+.ev-dh{font-size:12px;font-weight:600;color:var(--ink2);margin:6px 14px 4px}
+.ev-board .lbc{margin:0 10px 10px}
+
+/* the links in */
+.ev-link{display:flex;gap:10px;align-items:flex-start;margin:0 0 14px}
+.ev-link svg{width:18px;height:18px;flex:0 0 18px;margin-top:1px;stroke:currentColor;fill:none;stroke-width:2.1}
+.ev-lblink{margin:0 0 12px}
+
+/* the event sheet */
+.ev-fl{color:var(--ink2);font-weight:400}
+.ev-who{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.ev-whol{display:flex;align-items:center;gap:8px;font-size:15px;min-height:36px;cursor:pointer}
+@media (max-width:360px){.ev-who{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -4496,6 +4543,7 @@ onValue(dbRef,snap=>{
     try{lpMigrateStEstevao();}catch(e){}
     try{lpMigrateMonteRei();}catch(e){}
     try{lpMigrateMorocco();}catch(e){}
+    try{lpMigrateLisbonCards();}catch(e){}
     SYNC='ok';
     if(needsSave)push(S);
   }else if(!INIT)push(S);
@@ -5102,6 +5150,10 @@ function renderPlay(){
       h+=step(1,'Course',false,`<div class="ui-ccgrid">${grid}</div>`);
     }
 
+    // an event round: say so before anyone tees off
+    if(LRSEL.course){ let E=null; try{ E=evFor(LRSEL.course,evTodayISO()); }catch(e){}
+      if(E) h+=`<div class="ui-info ev-link">${uiSvg('rank')}<span>Counts for <b>${E.ev.name}</b>${evDays(E.ev)>1?` · day ${E.day}`:''}. Your group’s card goes on the event leaderboard as you play.</span></div>`; }
+
     // 2 · Tee
     if(LRSEL.course){
       const tees=lpTees(LRSEL.course);
@@ -5318,6 +5370,8 @@ function render(){
   if(MOD==='playpick') h+=renderPlayPick();
   if(UI_DONE&&!MOD) h+=renderPosted();
   if(MOD!=='course') UI_NC=null;
+  if(MOD!=='upcoming') EV_EDIT=null;
+  if(!(V==='rounds'&&String(UI_ROOMTAB.rounds||'').startsWith('ev:'))) EV_ON=null;   // the event page polls only while it's open
   if(MOD!=='score'&&MOD!=='course') UI_KEEP=null;
   if(!(V==='league'&&UI_ROOMTAB.league==='crown')) UI_CRD=null;     // the Crown's own pages belong to the Crown
 
@@ -5525,27 +5579,29 @@ function renderTournamentDetail(t){
 function renderUpcoming(){
   const now=new Date();
   const upcoming=[...S.upcoming]
-    .filter(t=>new Date(t.date)>=now||(daysUntil(t.date)||0)>=-1)
+    .filter(t=>new Date(t.date)>=now||(daysUntil(t.date)||0)>=-evDays(t))
     .sort((a,b)=>a.date.localeCompare(b.date));
   let h='';
   if(!upcoming.length)return h+`<div class="ui-crempty">Nothing in the diary. Add the next outing and everyone can say whether they’re in.</div>`;
   const me=UI_MEP()?S.players.find(p=>p.id===UI_ME):null;
   const first=upcoming[0];
   upcoming.forEach((t,idx)=>{
-    const days=daysUntil(t.date);
-    const when=days===0?'Today':days===1?'Tomorrow':days>0?`in ${days} days`:'';
+    const days=daysUntil(t.date), dk=evDayOf(t,evTodayISO()), nd=evDays(t);
+    const when=dk?(nd>1?`Today · day ${dk} of ${nd}`:'Today'):days===1?'Tomorrow':days>0?`in ${days} days`:'';
     const inIt=!!(me&&(t.players||[]).includes(me.name));
     const preds=t.predictions&&Object.keys(t.predictions).length?t.predictions:null;
     if(idx===0){
-      h+=`<div class="ui-evhero ui-panel">
-        <div class="ui-evhero-d">${uiWeekday(t.date)}${when?' · '+when:''}</div>
-        <div class="ui-h1" style="color:#fff;margin-top:4px">${t.name}</div>
-        ${t.course?`<div class="ui-evhero-c">${t.course}</div>`:''}
-      </div>`;
+      // the event's own page: its days, and the leaderboard once a ball is struck
+      h+=`<button class="ui-evhero ui-panel ev-hero" onclick="UI_EVGO('${t.id}')" aria-label="${t.name}: leaderboard and days">
+        <span class="ui-evhero-d">${nd>1&&!dk?evWhen(t):uiWeekday(t.date)}${when?' · '+when:''}</span>
+        <span class="ui-h1" style="color:#fff;margin-top:4px;display:block">${t.name}</span>
+        ${t.course?`<span class="ui-evhero-c">${evCourses(t).join(' · ')}</span>`:''}
+        <span class="ev-hero-go">${dk?'Leaderboard':'The event'} ›</span>
+      </button>`;
     }
     h+=`<div class="ui-evcard${idx===0?' first':''}">
       <div class="ui-evrow">
-        <div class="ui-row-t">${idx===0?'Who’s in':t.name}<small>${idx===0?`${(t.players||[]).length} in`:`${uiDay(t.date)}${t.course?' · '+uiShort(t.course):''} · ${(t.players||[]).length} in`}</small></div>
+        <div class="ui-row-t"${idx?` role="button" tabindex="0" onclick="UI_EVGO('${t.id}')"`:''}>${idx===0?'Who’s in':t.name}<small>${idx===0?`${(t.players||[]).length} in`:`${uiDay(t.date)}${t.course?' · '+uiShort(t.course):''} · ${(t.players||[]).length} in`}</small></div>
         ${me?`<button class="ui-btn ui-btn-sm ${inIt?'ui-btn-w':'ui-btn-g'}" onclick="UI_EVENT_IN('${t.id}')">${inIt?'You’re in':'I’m in'}</button>`:''}
         <button class="ui-ico sm" onclick="SET_PRED('${t.id}')" aria-label="Predictions">${uiSvg('dice')}</button>
         <button class="ui-ico sm" onclick="DU('${t.id}')" aria-label="Remove" style="color:var(--red)">${uiSvg('bin')}</button>
@@ -5901,30 +5957,29 @@ function renderTournamentModal(){
 }
 
 function renderUpcomingModal(){
-  const playerNames=S.players.map(p=>p.name);
+  // New event, or editing one (the pencil on the event page). An event can run over
+  // several days: one course a line, a line for each day, in order (C-20261120-a).
+  const ed=EV_EDIT&&evById(EV_EDIT);
+  const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const lines=ed?evCourses(ed).join('\n'):'';
   return`<div class="ov" onclick="if(event.target===this)CM()">
   <div class="mo">
-    <div class="ui-sheet-h"><div class="mo-title">New event</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
-    <div class="fr"><label class="fl">Event Name</label><input type="text" id="un" placeholder="e.g. The British Invitational 2026"></div>
-    <div class="fr"><label class="fl">Date</label><input type="date" id="ud"></div>
+    <div class="ui-sheet-h"><div class="mo-title">${ed?'Edit event':'New event'}</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
+    <div class="fr"><label class="fl" for="un">Name</label><input type="text" id="un" placeholder="e.g. The Lisbon Open" value="${esc(ed&&ed.name)}"></div>
+    <div class="fr"><label class="fl" for="ud">First day</label><input type="date" id="ud" value="${esc(ed&&ed.date)}"></div>
     <div class="fr">
-      <label class="fl">Courses to be played <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">— one per line</span></label>
-      <textarea id="uc" placeholder="e.g.&#10;Benamor GC&#10;Vale Pisao GC" style="min-height:80px;font-size:13px"></textarea>
+      <label class="fl" for="uc">Courses <span class="ev-fl">— one a line, a line for each day</span></label>
+      <textarea id="uc" placeholder="e.g.&#10;Quinta da Marinha&#10;Penha Longa Atlântico" style="min-height:84px">${esc(lines)}</textarea>
     </div>
-    <div class="fr"><label class="fl">Notes</label><textarea id="unotes" placeholder="Tee times, accommodation, travel info…"></textarea></div>
+    <div class="fr"><label class="fl" for="unotes">Notes</label><textarea id="unotes" placeholder="Tee times, groups, where we’re staying…">${esc(ed&&ed.notes)}</textarea></div>
     <div class="fr">
-      <label class="fl">Who's attending</label>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${playerNames.map(n=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
-          <input type="checkbox" id="up-${n.replace(/\s/g,'_')}" style="width:auto;accent-color:var(--gold)"> ${n}
-        </label>`).join('')}
+      <div class="fl">Who’s in</div>
+      <div class="ev-who">
+        ${S.players.map(p=>p.name).map(n=>`<label class="ev-whol"><input type="checkbox" id="up-${n.replace(/\s/g,'_')}"${ed&&(ed.players||[]).includes(n)?' checked':''}> ${n}</label>`).join('')}
       </div>
     </div>
-    <div id="uer" style="color:var(--danger);font-size:13px;margin-bottom:12px;display:none"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn-s" onclick="CM()">Cancel</button>
-      <button class="btn-p" onclick="SU()">Save Event</button>
-    </div>
+    <div id="uer" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none"></div>
+    <button class="ui-btn" onclick="SU()">${ed?'Save changes':'Add the event'}</button>
   </div></div>`;
 }
 
@@ -7394,12 +7449,44 @@ function lpMigrateMorocco(){
   if(add.length) upd({...S,courses:[...S.courses,...add]});
 }
 
+// COURSE CARDS · for the Lisbon tournament, 20–21 December 2026 (C-20261120-a)
+// Both courses' tees and ratings were already in the app from the FPG import; these add the
+// hole-by-hole cards so they can be scored live. Nothing is estimated.
+//
+// Quinta da Marinha (Onyria, Cascais — the Robert Trent Jones course, not Oitavos Dunes)
+//   Three independent published cards agree hole for hole (GolfPass, TheGrint, Offcourse),
+//   and the nines match the FPG ratings already in the app (front par 35, back par 36).
+//   out 35 · in 36 · par 71 · par 5s at 1, 3, 6, 10, 11 · par 3s at 2, 5, 7, 9, 14, 16
+//
+// Penha Longa, Atlântico (the Championship course, holes 1–18)
+//   The club's own printed card (Atlantic Championship) and GolfPass agree hole for hole;
+//   par 36 · 36 matches the FPG rows.
+//   out 36 · in 36 · par 72 · par 5s at 6, 8, 12, 18 · par 3s at 5, 7, 15, 17
+function lpMigrateLisbonCards(){
+  if(!S.courseHoles)return;
+  let dirty=false;
+  const add=(name,card)=>{ if(!S.courseHoles[name]){ S.courseHoles[name]=card; dirty=true; } };
+  add('Quinta da Marinha',{
+    holes:18,
+    par:[5,3,5,4,3,5,3,4,3, 5,5,4,4,3,4,3,4,4],
+    si: [5,16,7,9,12,4,18,1,15, 3,6,2,8,11,13,17,10,14],
+    source:'GolfPass, TheGrint and Offcourse cards (identical), nines match FPG, 2026-11'
+  });
+  add('Penha Longa Atlantic Championship',{
+    holes:18,
+    par:[4,4,4,4,3,5,3,5,4, 4,4,5,4,4,3,4,3,5],
+    si: [10,8,16,2,14,18,4,6,12, 9,3,17,13,5,11,1,7,15],
+    source:'Penha Longa Atlantic Championship club card, cross-checked with GolfPass, 2026-11'
+  });
+  if(dirty) upd(S);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // REVAMP · STAGE 1 — navigation shell (new look only; no engine code below)
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261119-a · Club 3 · one design system, light and dark';
+const UI_BUILD='C-20261120-a · Club 3 · the Lisbon tournament: event leaderboard, two days, every group';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7539,6 +7626,7 @@ window.UI_GO=(v,tab)=>{
   if(!UI_MAIN.includes(v)) v='home';
   if(tab) UI_ROOMTAB[v]=tab; else if(v==='play') UI_ROOMTAB.play='live';
   else if(v==='league') UI_ROOMTAB.league='rankings';   // the bar always opens the table
+  else if(v==='rounds') UI_ROOMTAB.rounds='';            // …and Rounds its list
   UI_FROM=V; PID=null; TID=null; UI_PTAB='overview'; UI_SPOST=false; OPEN_SCORE=null;
   if(typeof LB_OPEN!=='undefined'){ LB_OPEN=null; LB_PASTID=null; }
   if(v==='rounds'){ try{ UI_LIVE_AT=0; }catch(e){} }
@@ -7802,8 +7890,26 @@ function renderLiveCards(){
   const src=Object.assign({},UI_LIVE||{},(typeof ROUNDS!=='undefined'&&ROUNDS)||{});
   if(typeof LR!=='undefined'&&LR&&LRID) src[LRID]=LR;
   if(!Object.keys(src).length) return '';
-  const live=Object.entries(src).filter(([id,r])=>r&&r.active&&Array.isArray(r.players)&&r.players.length&&Array.isArray(r.parArr));
-  return live.map(([id,r])=>{
+  const all=Object.entries(src).filter(([id,r])=>r&&r.active&&Array.isArray(r.players)&&r.players.length&&Array.isArray(r.parArr));
+  // groups playing an event are one card: the event, with its leader (C-20261120-a)
+  const evIds=[...new Set(all.filter(([id,r])=>r.ev&&evById(r.ev.id)).map(([id,r])=>r.ev.id))];
+  const evCards=evIds.map(eid=>{
+    const ev=evById(eid); let lead='', groups=all.filter(([id,r])=>r.ev&&r.ev.id===eid).length;
+    try{
+      const B=evBoard(ev,'stb'), rows=B.rows.filter(x=>x.tot.thru);
+      if(rows.length){
+        const top=rows[0], tied=String(top.pos)[0]==='T';
+        lead=tied?`Level at the top on ${top.tot.stb} pts`:`${top.name.split(' ')[0]} leads on ${top.tot.stb} pts`;
+        const m=rows.find(x=>x.id===UI_ME);
+        if(m&&m===top&&!tied) lead=`You lead on ${top.tot.stb} pts`;
+        else if(m) lead+=` · you’re ${String(m.pos)[0]==='T'?'joint ':''}${uiOrd(parseInt(String(m.pos).replace('T',''),10))}`;
+      }
+      return uiSign(`UI_EVGO('${eid}')`,`<span class="ui-sk"><i class="ui-dot ok"></i>Live now${evDays(ev)>1?` · day ${B.cur}`:''} · ${uiPl(groups,'group')}</span>${ev.name}`,
+        lead||'Nobody has a score in yet','Leaderboard','live');
+    }catch(e){ return ''; }
+  }).join('');
+  const live=all.filter(([id,r])=>!(r.ev&&evById(r.ev.id)));
+  return evCards+live.map(([id,r])=>{
     let thru=0, lead='', mine='';
     try{
       thru=lpThru(r);
@@ -7861,11 +7967,12 @@ function renderHome(R){
   if(me) h+=`<button class="ui-btn ui-btn-g ui-home-post" onclick="UI_POST()">${uiSvg('plus')}Post a round</button>`;
   let signs=renderLiveCards();
   const now=uiToday();
-  const next=[...(S.upcoming||[])].filter(t=>t&&t.date&&t.date>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  if(next){
-    const n=(next.players||[]).length, inIt=me&&(next.players||[]).includes(me.name);
-    signs+=uiSign("UI_GO('rounds')",`<span class="ui-sk">Next up · ${uiWeekday(next.date)}</span>${next.name||'Next round'}`,
-      `${next.course?uiShort(next.course)+' · ':''}${n} in${me?(inIt?' · you’re in':' · you’re not in yet'):''}`,'Rounds');
+  // a two-day event is "next" until its last day; while it's live, the live card says it instead
+  const next=[...(S.upcoming||[])].filter(t=>t&&t.date&&evLast(t)>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  if(next&&!signs.includes(`UI_EVGO('${next.id}')`)){
+    const n=(next.players||[]).length, inIt=me&&(next.players||[]).includes(me.name), dk=evDayOf(next,now);
+    signs+=uiSign(`UI_EVGO('${next.id}')`,`<span class="ui-sk">${dk?`Today · day ${dk}`:`Next up · ${evDays(next)>1?evWhen(next):uiWeekday(next.date)}`}</span>${next.name||'Next round'}`,
+      `${next.course?evCourses(next).join(' · ')+' · ':''}${n} in${me?(inIt?' · you’re in':' · you’re not in yet'):''}`,'Rounds');
   }
   try{
     const M=uiMoneyOpen(), mine=me?(M.pnl[me.id]||0):0;
@@ -8903,7 +9010,11 @@ window.LP_GO=async()=>{
   }
   const R={...gmRules()};
   if(R.cap!=='none') LR.rules=R;
-  if(g.fmt!=='none'||R.cap!=='none'){ lpEnsureWritten(); render(); }
+  // A round on an event's course, on its day, is that event's — the group's card goes on
+  // the event leaderboard (events.js). Only the link is stored; the round is as ever.
+  let E=null; try{ E=evFor(LR.course,LR.date); }catch(e){}
+  if(E) LR.ev={id:E.ev.id,day:E.day,name:E.ev.name};
+  if(g.fmt!=='none'||R.cap!=='none'||E){ LRWROTE=false; lpEnsureWritten(); render(); }
 };
 
 // ── SCORING · the rule agreed on the first tee ─────────────────────────────
@@ -9503,7 +9614,10 @@ function lbBoardBody(r,ctx){
   const isScr=r.game&&r.game.fmt==='scramble';
   if(isScr) return lbTeamRows(r);
   const fmt=lbFmt(), rk=lbRank0(r,fmt), rows=rk.rows, RS=ctx?LB_PROWS:LB_ROWS;
-  let h=`<div class="lb-seg" role="tablist">${['stb','net','gross'].map(f=>
+  // an event round: the whole field, every group, is one tap away (events.js)
+  const ev=r.ev&&typeof evById==='function'&&evById(r.ev.id);
+  let h=ev?`<button class="ui-sign sm ev-lblink" onclick="UI_EVGO('${r.ev.id}')"><span class="ui-row-t">${ev.name}${evDays(ev)>1?` · day ${r.ev.day}`:''}<small>Everyone, every group</small></span><span class="ui-room">Leaderboard ›</span></button>`:'';
+  h+=`<div class="lb-seg" role="tablist">${['stb','net','gross'].map(f=>
     `<button role="tab" aria-selected="${f===fmt}" class="${f===fmt?'on':''}" onclick="LB_F('${f}')">${LB_FMTN[f]}</button>`).join('')}</div>`;
   h+=rows.map(x=>{
     const open=!!RS[x.id];
@@ -9917,6 +10031,8 @@ function renderPlayRoom(){
 // Every round, one list: anything live on top, then what's coming up, then everything
 // played, newest first. Filter by a player for their handicap record.
 function renderRounds(){
+  const evt=String(UI_ROOMTAB.rounds||'');
+  if(evt.startsWith('ev:')){ const ev=evById(evt.slice(3)); if(ev) return renderEventPage(ev); UI_ROOMTAB.rounds=''; }
   const n=S.players.reduce((a,p)=>a+(p.scores||[]).length,0);
   let h=uiRoomHead('Rounds',`${uiPl(n,'round')} on the record`,uiAdd('UI_POST()','Post a round'));
   uiLivePeek();
@@ -9929,7 +10045,8 @@ function renderRounds(){
 }
 function uiUpcomingList(){
   const now=new Date();
-  return [...(S.upcoming||[])].filter(t=>t&&t.date&&(new Date(t.date)>=now||(daysUntil(t.date)||0)>=-1));
+  // a two-day event stays on the list until the day after its last day
+  return [...(S.upcoming||[])].filter(t=>t&&t.date&&(new Date(t.date)>=now||(daysUntil(t.date)||0)>=-evDays(t)));
 }
 function uiHistLoad(){
   if(HIST!==null||UI_HLOAD) return;
@@ -10365,6 +10482,259 @@ function renderAwards(){
   return h;
 }
 window.UI_AWY=y=>{ UI_AWYEAR=+y; render(); };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EVENTS · a tournament over one or more days, played in groups (C-20261120-a)
+//
+// An event is the one in Rounds ▸ Coming up: a name, a first day, and one course a
+// line — a line per day. On an event day each group tees off as it always does
+// (New round, its own players, one phone or more); a round on that day's course is
+// linked to the event by itself, so nobody has to remember a setting. Every group's
+// card then feeds one leaderboard: everybody, thru what, today and the total over
+// both days — Stableford, Net or Gross, like the live board. Tap a name for their
+// card, hole by hole. Each phone only ever scores its own group.
+//
+// Nothing new is stored but the link on the round ({id, day, name}); the board is
+// worked out from the rounds themselves (live ones from liverounds, finished ones
+// from roundhistory), so it can never disagree with a card.
+// ═══════════════════════════════════════════════════════════════════════════
+var EV_LIVE=null, EV_HIST=null, EV_AT=0, EV_HAT=0, EV_SIG='', EV_LIVEIDS='', EV_ROWS={}, EV_EDIT=null, EV_ON=null;
+
+// ── the event's days and courses ───────────────────────────────────────────
+function evCourses(ev){ return String((ev&&ev.course)||'').split(/\s*[,\n]\s*/).map(s=>s.trim()).filter(Boolean); }
+function evDays(ev){ return Math.max(1,evCourses(ev).length); }
+function evDate(ev,k){ const d=new Date(ev.date+'T12:00:00'); d.setDate(d.getDate()+k-1); return d.toISOString().slice(0,10); }
+function evLast(ev){ return evDate(ev,evDays(ev)); }
+function evTodayISO(){ return new Date().toISOString().slice(0,10); }
+function evDayOf(ev,iso){ if(!ev||!ev.date) return 0; for(let k=1;k<=evDays(ev);k++) if(evDate(ev,k)===iso) return k; return 0; }
+function evWhen(ev){
+  const n=evDays(ev), a=uiWeekday(ev.date);
+  if(n===1) return a;
+  const b=uiWeekday(evLast(ev)), sameMonth=ev.date.slice(0,7)===evLast(ev).slice(0,7);
+  return `${sameMonth?a.replace(/ \S+$/,''):a} – ${b} · ${n} rounds`;
+}
+// The course a line names, as the app knows it ("Penha Longa Atlântico" is
+// "Penha Longa Atlantic Championship"). A course with a hole-by-hole card wins a tie.
+function evTok(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').split(' ')
+  .filter(t=>t&&!['golf','club','gc','the','de','da','do','dos','das','course','resort','and'].includes(t)); }
+var EV_RES={};
+function evResolve(text){
+  if(!text) return null;
+  if(EV_RES[text]!==undefined) return EV_RES[text];
+  const names=[...new Set((S.courses||[]).map(c=>c.name))];
+  const exact=names.find(n=>n.toLowerCase()===text.toLowerCase());
+  if(exact) return EV_RES[text]=exact;
+  const want=evTok(text); if(!want.length) return EV_RES[text]=null;
+  const same=(a,b)=>a===b||(a.length>=5&&b.length>=5&&(a.startsWith(b)||b.startsWith(a)));
+  let best=null, bs=0;
+  names.forEach(n=>{
+    const have=evTok(n);
+    const hit=want.filter(w=>have.some(h=>same(w,h))).length/want.length;
+    if(hit<0.99) return;
+    const sc=hit+(S.courseHoles&&S.courseHoles[n]?0.5:0)-0.01*(have.length-want.length);
+    if(sc>bs){ bs=sc; best=n; }
+  });
+  return EV_RES[text]=best;
+}
+function evCourseOf(ev,k){ return evResolve(evCourses(ev)[k-1]); }
+// The event a round on this course, on this day, belongs to.
+function evFor(course,iso){
+  for(const ev of (S.upcoming||[])){
+    const k=evDayOf(ev,iso);
+    if(k&&course&&evCourseOf(ev,k)===course) return {ev,day:k};
+  }
+  return null;
+}
+function evById(id){ return (S.upcoming||[]).find(e=>e.id===id)||null; }
+
+// ── the rounds: this phone's own, the live lobby, and the finished cards ──
+function evRounds(ev){
+  const out={};
+  const take=(src,done)=>Object.entries(src||{}).forEach(([id,r])=>{
+    if(!r||!r.ev||r.ev.id!==ev.id||!Array.isArray(r.players)||!Array.isArray(r.parArr)) return;
+    if(out[id]&&out[id].done) return;
+    if(!done&&!r.active) return;
+    out[id]={...r,id,done:!!done};
+  });
+  take(typeof UI_LIVE!=='undefined'?UI_LIVE:null,false);
+  take(typeof ROUNDS!=='undefined'?ROUNDS:null,false);
+  take(EV_LIVE,false);
+  if(typeof LR!=='undefined'&&LR&&LRID&&LR.ev&&LR.ev.id===ev.id) out[LRID]={...LR,id:LRID,done:false};
+  take(typeof HIST!=='undefined'?HIST:null,true);
+  take(EV_HIST,true);
+  return Object.values(out);
+}
+
+// ── the board ──────────────────────────────────────────────────────────────
+// One line a golfer: each day's numbers from lpBoard (the round's own engine), added up.
+function evBoard(ev,fmt){
+  const rounds=evRounds(ev), today=evDayOf(ev,evTodayISO());
+  const days=evDays(ev), cur=today||Math.max(0,...rounds.map(r=>r.ev.day||0));
+  const by={};
+  rounds.forEach(r=>{
+    let B=[]; try{ B=lpBoard(r); }catch(e){ return; }
+    B.forEach(x=>{
+      const key=x.guest?'g:'+x.name:x.id;
+      const e=by[key]||(by[key]={key,id:x.guest?null:x.id,name:x.name,guest:!!x.guest,days:{}});
+      e.days[r.ev.day]={r,x,done:r.done||x.thru===r.holes};
+    });
+  });
+  // everyone who said they're in shows up, even before their first shot
+  (ev.players||[]).forEach(nm=>{
+    const p=S.players.find(q=>q.name===nm); const key=p?p.id:'g:'+nm;
+    if(!by[key]) by[key]={key,id:p?p.id:null,name:nm,guest:!p,days:{}};
+  });
+  const rows=Object.values(by).map(e=>{
+    const t={stb:0,net:0,gross:0,thru:0};
+    Object.values(e.days).forEach(d=>{ t.stb+=d.x.stb; t.net+=d.x.netToPar; t.gross+=d.x.toPar; t.thru+=d.x.thru; });
+    const td=e.days[cur]||null;
+    return {...e,tot:t,td,cur};
+  });
+  const key=x=>fmt==='stb'?-x.tot.stb:fmt==='net'?x.tot.net:x.tot.gross;
+  rows.sort((a,b)=>(!a.tot.thru)-(!b.tot.thru)||(key(a)-key(b))||(b.tot.thru-a.tot.thru)||a.name.localeCompare(b.name));
+  let pos=0;
+  rows.forEach((x,i)=>{
+    if(!x.tot.thru){ x.pos='–'; return; }
+    if(i===0||key(x)!==key(rows[i-1])) pos=i+1;
+    const tie=rows.some((y,j)=>j!==i&&y.tot.thru&&key(y)===key(x));
+    x.pos=(tie?'T':'')+pos;
+  });
+  return {rows,cur,days,rounds};
+}
+function evVal(fmt,o){
+  if(fmt==='stb') return String(o.stb);
+  return lbSigned(fmt==='net'?o.net:o.gross);
+}
+function evDayVal(fmt,d){ return fmt==='stb'?String(d.x.stb):lbSigned(fmt==='net'?d.x.netToPar:d.x.toPar); }
+function evThru(x){
+  const d=x.td; if(!d||!d.x.thru) return '–';
+  return d.done?'F':String(d.x.thru);
+}
+
+// ── keeping it live: the lobby every few seconds, the finished cards when one lands ──
+function evPoll(force){
+  const now=Date.now();
+  if(force||now-EV_AT>6000){
+    EV_AT=now;
+    fetch(`${LRS_URL}.json?t=${now}`).then(r=>r.json()).then(d=>{
+      EV_LIVE=d||{};
+      const ids=Object.keys(EV_LIVE).filter(k=>EV_LIVE[k]&&EV_LIVE[k].ev).sort().join(',');
+      // a group just finished: its card has moved to the history
+      if(ids!==EV_LIVEIDS){ EV_LIVEIDS=ids; EV_HAT=0; evPollHist(); }
+      evMaybeRender();
+    }).catch(()=>{});
+  }
+  if(now-EV_HAT>30000) evPollHist();
+}
+function evPollHist(){
+  EV_HAT=Date.now();
+  fetch(`${RH_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{ EV_HIST=d||{}; evMaybeRender(); }).catch(()=>{});
+}
+function evMaybeRender(){
+  const ev=EV_ON&&evById(EV_ON); if(!ev) return;
+  let sig=''; try{ sig=evRounds(ev).map(r=>r.id+':'+r.done+':'+JSON.stringify(r.scores||{}).length+':'+(r.amended&&r.amended.at||'')).sort().join('|'); }catch(e){}
+  if(sig===EV_SIG) return; EV_SIG=sig;
+  const ae=document.activeElement;
+  if(V==='rounds'&&!MOD&&!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) render();
+}
+setInterval(()=>{ if(EV_ON&&V==='rounds'&&document.visibilityState!=='hidden') evPoll(); },6000);
+
+// ── the event page (Rounds ▸ the event) ────────────────────────────────────
+function renderEventPage(ev){
+  if(EV_ON!==ev.id){ EV_ON=ev.id; EV_SIG=''; EV_ROWS={}; evPoll(true); } else evPoll();
+  const fmt=lbFmt(), today=evDayOf(ev,evTodayISO()), B=evBoard(ev,fmt), n=B.days;
+  let h=uiBack("UI_GO('rounds')",'Rounds');
+  h+=uiRoomHead(ev.name,evWhen(ev),`<button class="ui-ico" onclick="EV_EDIT_O('${ev.id}')" aria-label="Edit the event">${uiSvg('pen')}</button>`);
+
+  // the days, one line each: where, when, and how it's going
+  h+=`<div class="ui-list ev-days">`;
+  for(let k=1;k<=n;k++){
+    const line=evCourses(ev)[k-1]||'Course to be set', cn=evResolve(line);
+    const rs=B.rounds.filter(r=>r.ev.day===k), live=rs.filter(r=>!r.done).length;
+    const card=cn&&S.courseHoles&&S.courseHoles[cn];
+    const st=live?`<span class="ev-live"><i class="ui-dot ok"></i>live · ${uiPl(live,'group')} out${rs.length>live?`, ${rs.length-live} in`:''}</span>`
+      :rs.length?`${uiPl(rs.length,'group')} · finished`
+      :!line||!cn?'not in the course list yet — edit the event'
+      :card?'ready to score':'no hole-by-hole card yet';
+    h+=`<div class="ui-row ev-day${k===today?' on':''}"><span class="ev-dn">Day ${k}</span><span class="ui-row-t">${cn||line}<small>${uiWeekday(evDate(ev,k))} · ${st}</small></span></div>`;
+  }
+  h+=`</div>`;
+
+  // the one action: score your group today (or get back to it)
+  const mine=typeof LR!=='undefined'&&LR&&LRID&&LR.ev&&LR.ev.id===ev.id;
+  const tc=today&&evCourseOf(ev,today);
+  if(mine) h+=`<button class="ui-btn ev-go" onclick="UI_GO('play','live')">Back to scoring · hole ${uiPlayHole()||1}</button>`;
+  else if(today&&tc&&S.courseHoles&&S.courseHoles[tc]&&UI_MEP()) h+=`<button class="ui-btn ev-go" onclick="EV_SCORE('${ev.id}')">${uiSvg('flag')}Score my group · Day ${today}</button>`;
+
+  // the leaderboard
+  const started=B.rows.some(x=>x.tot.thru);
+  h+=`<div class="ui-lbl">${started?(B.rounds.some(r=>!r.done)?'Leaderboard · live':'Leaderboard'):'The field'}</div>`;
+  if(started) h+=`<div class="lb-seg ev-seg" role="tablist">${['stb','net','gross'].map(f=>
+    `<button role="tab" aria-selected="${f===fmt}" class="${f===fmt?'on':''}" onclick="EV_F('${f}')">${LB_FMTN[f]}</button>`).join('')}</div>`;
+  const two=n>1;
+  h+=`<div class="ui-list ev-board">`;
+  if(started) h+=`<div class="ev-hd"><span>${two?'':''}</span><span class="ev-c">Thru</span>${two?`<span class="ev-c">Today</span>`:''}<span class="ev-c ev-t">${two?'Total':fmt==='stb'?'Pts':'Score'}</span></div>`;
+  h+=B.rows.map(x=>{
+    const open=!!EV_ROWS[x.key], me=x.id&&x.id===UI_ME;
+    // under the name: the other days' scores, and who they're out with today
+    const dl=[]; for(let k=1;k<=n;k++){ const d=x.days[k]; if(d&&d.x.thru&&k!==B.cur) dl.push(`Day ${k} ${evDayVal(fmt,d)}${fmt==='stb'?' pts':''}`); }
+    const pals=x.td?x.td.r.players.filter(q=>q.id!==x.td.x.id).map(q=>q.name.split(' ')[0]):[];
+    if(pals.length) dl.push('with '+gmList(pals));
+    const sub=x.tot.thru?(dl.join(' · ')||(x.td?'':'')):(x.guest?'guest · not started':'not started');
+    return `<button class="lb-row ev-row${open?' open':''}${me?' me':''}${x.pos==='1'||x.pos==='T1'?' lead':''}" onclick="EV_R('${x.key.replace(/'/g,"\\'")}')" aria-expanded="${open}"${x.tot.thru?'':' disabled'}>
+      <span class="lb-p">${x.pos}</span>
+      <span class="lb-n">${x.name}${x.guest?' <i class="lb-g">guest</i>':''}<small>${sub}</small></span>
+      ${started?`<span class="ev-c ev-th">${evThru(x)}</span>${two?`<span class="ev-c ev-td">${x.td&&x.td.x.thru?evDayVal(fmt,x.td):'–'}</span>`:''}<span class="ev-c ev-t lb-v">${x.tot.thru?evVal(fmt,x.tot):'–'}</span>`:''}
+    </button>${open?evCards(x,n):''}`;
+  }).join('')||`<div class="ui-crempty">Nobody has said they’re in yet.</div>`;
+  h+=`</div>`;
+  h+=`<p class="lb-note">${started?(fmt==='stb'?'Stableford points':fmt==='net'?'Net against par':'Shots against par')+(fmt==='gross'?'':' off each day’s course handicap')+(two?', both days added together':'')+'. Tap a name for their card. ':''}`
+    +`Each group scores itself on its own phone — a round on ${n>1?'the day’s course, on its day,':'this course, on the day,'} joins the board by itself.</p>`;
+  if(started&&Object.keys(EV_ROWS).some(k=>EV_ROWS[k])) h+=`<p class="lbc-key"><span><i class="k bi"></i>birdie</span><span><i class="k ea"></i>eagle</span><span><i class="k bo"></i>bogey</span><span><i class="k db"></i>double or worse</span>${fmt==='gross'?'':`<span class="lbc-key-n">${fmt==='stb'?'points':'net'} in grey underneath</span>`}</p>`;
+  return h;
+}
+// A golfer's cards, a day each, the same GameBook card as everywhere else.
+function evCards(x,n){
+  let h='';
+  for(let k=1;k<=n;k++){
+    const d=x.days[k]; if(!d) continue;
+    const r=d.r;
+    h+=`<div class="ev-dh">${n>1?`Day ${k} · `:''}${r.course} · ${r.tee}${d.done?'':` · thru ${d.x.thru}`}</div>`+lbCard(r,d.x,'ev');
+  }
+  return h;
+}
+
+// ── handlers ───────────────────────────────────────────────────────────────
+window.UI_EVGO=id=>{ if(typeof LB_X==='function'&&LB_OPEN){ LB_OPEN=null; } UI_GO('rounds','ev:'+id); };
+window.EV_F=f=>{ LRFMT=f; render(); };
+window.EV_R=k=>{ EV_ROWS[k]=!EV_ROWS[k]; render(); };
+// Score my group: New round with today's course already picked and you ticked in.
+window.EV_SCORE=id=>{
+  const ev=evById(id), k=ev&&evDayOf(ev,evTodayISO()), c=k&&evCourseOf(ev,k);
+  if(!c) return;
+  UI_GO('play','live'); LP_NEW();
+  LRSEL.course=c;
+  if(UI_MEP()) LRSEL.players[UI_ME]=true;
+  render(); try{ window.scrollTo(0,0); }catch(e){}
+};
+
+// ── the event sheet: new or edit ───────────────────────────────────────────
+window.EV_EDIT_O=id=>{ EV_EDIT=id; OM('upcoming'); };
+window.SU=()=>{
+  const name=document.getElementById('un')?.value.trim();
+  const date=document.getElementById('ud')?.value;
+  const course=(document.getElementById('uc')?.value||'').split('\n').map(x=>x.trim()).filter(Boolean).join(', ');
+  const notes=document.getElementById('unotes')?.value.trim();
+  const er=document.getElementById('uer'); if(!er) return;
+  if(!name){ er.textContent='Give the event a name.'; er.style.display='block'; return; }
+  if(!date){ er.textContent='Pick the first day.'; er.style.display='block'; return; }
+  const players=S.players.map(p=>p.name).filter(n=>document.getElementById('up-'+n.replace(/\s/g,'_'))?.checked);
+  const ed=EV_EDIT&&evById(EV_EDIT);
+  EV_RES={};
+  if(ed) upd({...S,upcoming:S.upcoming.map(u=>u.id===ed.id?{...u,name,date,course,notes,players}:u)});
+  else upd({...S,upcoming:[...S.upcoming,{id:uid(),name,date,course,notes,players}]});
+  EV_EDIT=null; MOD=null; render();
+};
 </script>
 </body>
 </html>
