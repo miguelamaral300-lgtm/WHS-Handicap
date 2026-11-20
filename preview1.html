@@ -2866,6 +2866,33 @@ html svg.ic{stroke-linecap:round;stroke-linejoin:round;fill:none}
 .ev-who{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
 .ev-whol{display:flex;align-items:center;gap:8px;font-size:15px;min-height:36px;cursor:pointer}
 @media (max-width:360px){.ev-who{grid-template-columns:1fr}}
+
+/* the draw and the contests (C-20261120-b) */
+button.ev-day{width:100%;background:none;border:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.ev-days .ev-day.on{background:var(--gl)}
+.ev-days .ev-day.on .ev-dn{background:var(--g-fill);color:#fff}
+.ev-days .ev-day:not(.on) .ev-dn{background:var(--fill);color:var(--ink2)}
+.ev-gonote{margin:8px 4px 0}
+.ev-empty{margin:0}
+.ev-grp .ev-time,.ev-ctr .ev-hole{flex:0 0 52px;font-variant-numeric:tabular-nums;font-weight:600;font-size:17px;color:var(--ink)}
+.ev-ctr .ev-hole{flex-basis:34px;height:34px;border-radius:50%;background:var(--fill);display:grid;place-items:center;font-size:15px}
+.ev-ctr{cursor:default}
+.ev-holder{flex:0 0 auto;max-width:46%;text-align:right;font-size:13px;color:var(--ink3)}
+.ev-holder.on{color:var(--ink);font-weight:600;font-size:15px}
+.ev-holder small{display:block;font-weight:400;font-size:12px;color:var(--ink2)}
+.ev-del{display:block;margin:14px auto 0;color:var(--red);padding:10px}
+.ev-hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px;margin-top:8px}
+.ev-hc{height:52px;border:none;border-radius:var(--r-m);background:var(--card);box-shadow:var(--e1);font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;transition:background-color var(--t2) var(--ease)}
+.ev-hc b{font-size:17px;font-weight:600}
+.ev-hc small{font-size:11px;color:var(--ink2)}
+.ev-hc.on{background:var(--g-fill);color:#fff;box-shadow:none}
+.ev-hc.on small{color:rgba(255,255,255,.8)}
+.ev-beat{font-size:13px;line-height:1.45;color:var(--ink2);margin:10px 2px 4px}
+.ev-beat b{color:var(--ink)}
+.sr-more.one .sr-pill{flex:1}
+.ev-dup{background:var(--redl);color:var(--ink);flex-wrap:wrap;align-items:center}
+.ev-dup b{color:var(--red)}
+.ev-dup .ui-btn-sm{width:auto;margin-left:auto;background:var(--card);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -5152,7 +5179,12 @@ function renderPlay(){
 
     // an event round: say so before anyone tees off
     if(LRSEL.course){ let E=null; try{ E=evFor(LRSEL.course,evTodayISO()); }catch(e){}
-      if(E) h+=`<div class="ui-info ev-link">${uiSvg('rank')}<span>Counts for <b>${E.ev.name}</b>${evDays(E.ev)>1?` · day ${E.day}`:''}. Your group’s card goes on the event leaderboard as you play.</span></div>`; }
+      if(E){ const G=evGroupFor(E.ev,E.day,Object.keys(LRSEL.players).filter(k=>LRSEL.players[k]));
+        h+=`<div class="ui-info ev-link">${uiSvg('rank')}<span>Counts for <b>${E.ev.name}</b>${evDays(E.ev)>1?` · day ${E.day}`:''}${G&&G.g.time?` · the ${G.g.time} group`:''}. Your group’s card goes on the event leaderboard as you play.</span></div>`;
+        // never two cards for one golfer on an event day
+        let dup=null; try{ dup=evRounds(E.ev).find(r=>!r.done&&r.ev.day===E.day&&r.players.some(p=>LRSEL.players[p.id])); }catch(e){}
+        if(dup){ const who=dup.players.filter(p=>LRSEL.players[p.id]).map(p=>p.name.split(' ')[0]);
+          h+=`<div class="ui-info ev-link ev-dup"><span><b>${gmList(who)} ${who.length>1?'are':'is'} already on a card today</b>${dup.ev.time?` (the ${dup.ev.time} group)`:''}. Open that card instead, so nobody is scored twice.</span><button class="ui-btn ui-btn-sm" onclick="EV_JOIN('${dup.id}')">Open it</button></div>`; } } }
 
     // 2 · Tee
     if(LRSEL.course){
@@ -5263,12 +5295,14 @@ function renderPlay(){
 
     // the two small extras: the hole's contest, and GPS
     const ck=gmContestKind(LR,LRHOLE), cw=(LR.ctp||{})[LRHOLE]||null;
+    let EC=null; try{ EC=evHoleContest(LR,LRHOLE); }catch(e){}
     let gps='GPS distances';
     if(GPON){ try{ const gh=gpHole(); gps=(GPPOS&&gh&&gh.c)?`GPS · ${gpUnit(gpDist(GPPOS,gh.c))} ${GPUNIT==='y'?'yd':'m'}`:'GPS · finding you…'; }catch(e){ gps='GPS · on'; } }
-    pHole+=`<div class="sr-more">
-      <button class="sr-pill${LP_XOPEN==='ctp'?' on':''}" onclick="LP_XO('ctp')">${gmContestName(ck)} · <b>${cw?gmFirst(LR,cw):'tap who'}</b></button>
+    const evOff=EC&&EC.kind==='none';
+    pHole+=`<div class="sr-more${evOff?' one':''}">
+      ${evOff?'':`<button class="sr-pill${LP_XOPEN==='ctp'?' on':''}" onclick="LP_XO('ctp')">${EC?(ck==='ctp'?'Pin':'Drive'):gmContestName(ck)} · <b>${EC?(EC.holder?(EC.mine?EC.holder.name.split(' ')[0]+' has it':'beat '+EC.holder.name.split(' ')[0]):'tap who'):(cw?gmFirst(LR,cw):'tap who')}</b></button>`}
       <button class="sr-pill${LP_XOPEN==='gps'?' on':''}" onclick="${GPON?"LP_XO('gps')":"LP_GPS()"}"><b>${gps}</b></button></div>`;
-    if(LP_XOPEN==='ctp') pHole+=gmContestRow(LR,LRHOLE);
+    if(LP_XOPEN==='ctp'&&!evOff) pHole+=(EC?`<div class="ev-beat">${EC.holder&&!EC.mine?`To beat: <b>${EC.holder.name}</b>, ${EC.glabel}. Tap a name only if someone here is past it.`:EC.holder?`<b>${EC.holder.name}</b> holds it for now — a later group can still beat it.`:'Nobody has it yet: your group sets the mark.'}</div>`:'')+gmContestRow(LR,LRHOLE);
     if(LP_XOPEN==='gps'&&GPON) pHole+=renderGPS();
 
     const _board=lpBoard(LR);
@@ -5368,9 +5402,13 @@ function render(){
   if(MOD==='purse-edit') h+=renderPurseEditModal();
   if(MOD==='predict') h+=renderPredictModal();
   if(MOD==='playpick') h+=renderPlayPick();
+  if(MOD==='evgroup') h+=renderEvGroup();
+  if(MOD==='evctp') h+=renderEvCtp();
   if(UI_DONE&&!MOD) h+=renderPosted();
   if(MOD!=='course') UI_NC=null;
   if(MOD!=='upcoming') EV_EDIT=null;
+  if(MOD!=='evgroup') EV_G=null;
+  if(MOD!=='evctp') EV_C=null;
   if(!(V==='rounds'&&String(UI_ROOMTAB.rounds||'').startsWith('ev:'))) EV_ON=null;   // the event page polls only while it's open
   if(MOD!=='score'&&MOD!=='course') UI_KEEP=null;
   if(!(V==='league'&&UI_ROOMTAB.league==='crown')) UI_CRD=null;     // the Crown's own pages belong to the Crown
@@ -7486,7 +7524,7 @@ function lpMigrateLisbonCards(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261120-a · Club 3 · the Lisbon tournament: event leaderboard, two days, every group';
+const UI_BUILD='C-20261120-b · Club 3 · events set up ahead: the draw, tee times, contest holes';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7971,8 +8009,10 @@ function renderHome(R){
   const next=[...(S.upcoming||[])].filter(t=>t&&t.date&&evLast(t)>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
   if(next&&!signs.includes(`UI_EVGO('${next.id}')`)){
     const n=(next.players||[]).length, inIt=me&&(next.players||[]).includes(me.name), dk=evDayOf(next,now);
+    const mg=me?evMyGroup(next,dk||1,me.id):null;
     signs+=uiSign(`UI_EVGO('${next.id}')`,`<span class="ui-sk">${dk?`Today · day ${dk}`:`Next up · ${evDays(next)>1?evWhen(next):uiWeekday(next.date)}`}</span>${next.name||'Next round'}`,
-      `${next.course?evCourses(next).join(' · ')+' · ':''}${n} in${me?(inIt?' · you’re in':' · you’re not in yet'):''}`,'Rounds');
+      mg&&mg.g.time?`${evDays(next)>1?`Day ${dk||1} · `:''}you tee off ${mg.g.time}${mg.g.players.length>1?' with '+gmList(mg.g.players.filter(x=>x!==me.id).map(evFirst)):''}`
+        :`${next.course?evCourses(next).join(' · ')+' · ':''}${n} in${me?(inIt?' · you’re in':' · you’re not in yet'):''}`,'Rounds');
   }
   try{
     const M=uiMoneyOpen(), mine=me?(M.pnl[me.id]||0):0;
@@ -9013,7 +9053,9 @@ window.LP_GO=async()=>{
   // A round on an event's course, on its day, is that event's — the group's card goes on
   // the event leaderboard (events.js). Only the link is stored; the round is as ever.
   let E=null; try{ E=evFor(LR.course,LR.date); }catch(e){}
-  if(E) LR.ev={id:E.ev.id,day:E.day,name:E.ev.name};
+  if(E){ LR.ev={id:E.ev.id,day:E.day,name:E.ev.name};
+    const G=evGroupFor(E.ev,E.day,LR.players.map(p=>p.id));
+    if(G){ LR.ev.group=G.i; if(G.g.time) LR.ev.time=G.g.time; } }
   if(g.fmt!=='none'||R.cap!=='none'||E){ LRWROTE=false; lpEnsureWritten(); render(); }
 };
 
@@ -9191,8 +9233,8 @@ function gmContestRow(r,hole){
 }
 window.LP_CTP=(h,pid)=>{
   if(!LR)return;
-  LR.ctp=LR.ctp||{};
-  if(!pid||LR.ctp[h]===pid) delete LR.ctp[h]; else LR.ctp[h]=pid;
+  LR.ctp=LR.ctp||{}; LR.ctpAt=LR.ctpAt||{};
+  if(!pid||LR.ctp[h]===pid){ delete LR.ctp[h]; delete LR.ctpAt[h]; } else { LR.ctp[h]=pid; LR.ctpAt[h]=Date.now(); }
   lpEnsureWritten(); render();
 };
 // All the contests won, for the card at the end.
@@ -10498,7 +10540,7 @@ window.UI_AWY=y=>{ UI_AWYEAR=+y; render(); };
 // worked out from the rounds themselves (live ones from liverounds, finished ones
 // from roundhistory), so it can never disagree with a card.
 // ═══════════════════════════════════════════════════════════════════════════
-var EV_LIVE=null, EV_HIST=null, EV_AT=0, EV_HAT=0, EV_SIG='', EV_LIVEIDS='', EV_ROWS={}, EV_EDIT=null, EV_ON=null;
+var EV_LIVE=null, EV_HIST=null, EV_AT=0, EV_HAT=0, EV_SIG='', EV_LIVEIDS='', EV_ROWS={}, EV_EDIT=null, EV_ON=null, EV_DAY=null, EV_G=null, EV_C=null;
 
 // ── the event's days and courses ───────────────────────────────────────────
 function evCourses(ev){ return String((ev&&ev.course)||'').split(/\s*[,\n]\s*/).map(s=>s.trim()).filter(Boolean); }
@@ -10637,12 +10679,14 @@ function evMaybeRender(){
   const ae=document.activeElement;
   if(V==='rounds'&&!MOD&&!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) render();
 }
-setInterval(()=>{ if(EV_ON&&V==='rounds'&&document.visibilityState!=='hidden') evPoll(); },6000);
+setInterval(()=>{ if(document.visibilityState==='hidden') return;
+  if((EV_ON&&V==='rounds')||(typeof LR!=='undefined'&&LR&&LR.ev&&V==='play')) evPoll(); },6000);
 
 // ── the event page (Rounds ▸ the event) ────────────────────────────────────
 function renderEventPage(ev){
   if(EV_ON!==ev.id){ EV_ON=ev.id; EV_SIG=''; EV_ROWS={}; evPoll(true); } else evPoll();
   const fmt=lbFmt(), today=evDayOf(ev,evTodayISO()), B=evBoard(ev,fmt), n=B.days;
+  if(!EV_DAY||EV_DAY>n) EV_DAY=today||1;
   let h=uiBack("UI_GO('rounds')",'Rounds');
   h+=uiRoomHead(ev.name,evWhen(ev),`<button class="ui-ico" onclick="EV_EDIT_O('${ev.id}')" aria-label="Edit the event">${uiSvg('pen')}</button>`);
 
@@ -10656,7 +10700,8 @@ function renderEventPage(ev){
       :rs.length?`${uiPl(rs.length,'group')} · finished`
       :!line||!cn?'not in the course list yet — edit the event'
       :card?'ready to score':'no hole-by-hole card yet';
-    h+=`<div class="ui-row ev-day${k===today?' on':''}"><span class="ev-dn">Day ${k}</span><span class="ui-row-t">${cn||line}<small>${uiWeekday(evDate(ev,k))} · ${st}</small></span></div>`;
+    h+=n>1?`<button class="ui-row ev-day${k===EV_DAY?' on':''}" onclick="EV_DAYP(${k})" aria-pressed="${k===EV_DAY}"><span class="ev-dn">Day ${k}</span><span class="ui-row-t">${cn||line}<small>${uiWeekday(evDate(ev,k))}${k===today?' · today':''} · ${st}</small></span></button>`
+      :`<div class="ui-row ev-day on"><span class="ev-dn">Day 1</span><span class="ui-row-t">${cn||line}<small>${uiWeekday(evDate(ev,k))}${k===today?' · today':''} · ${st}</small></span></div>`;
   }
   h+=`</div>`;
 
@@ -10664,7 +10709,25 @@ function renderEventPage(ev){
   const mine=typeof LR!=='undefined'&&LR&&LRID&&LR.ev&&LR.ev.id===ev.id;
   const tc=today&&evCourseOf(ev,today);
   if(mine) h+=`<button class="ui-btn ev-go" onclick="UI_GO('play','live')">Back to scoring · hole ${uiPlayHole()||1}</button>`;
-  else if(today&&tc&&S.courseHoles&&S.courseHoles[tc]&&UI_MEP()) h+=`<button class="ui-btn ev-go" onclick="EV_SCORE('${ev.id}')">${uiSvg('flag')}Score my group · Day ${today}</button>`;
+  else if(today&&UI_MEP()&&B.rounds.some(r=>r.ev.day===today&&r.players.some(p=>p.id===UI_ME))){
+    // your group is already out (or in): never a second card for the same group
+    const r=B.rounds.find(r=>r.ev.day===today&&r.players.some(p=>p.id===UI_ME));
+    let t=0; try{ t=lpThru(r); }catch(e){}
+    const mg=evMyGroup(ev,today), sc=mg&&mg.g.scorer&&mg.g.scorer!==UI_ME?evFirst(mg.g.scorer):null;
+    if(r.done) h+=`<p class="ui-note ev-gonote">Your group’s card is in.</p>`;
+    else{
+      h+=`<button class="ui-btn ev-go ev-join" onclick="EV_JOIN('${r.id}')">Open your group’s card · ${t?'thru '+t:'on the 1st'}</button>`;
+      h+=`<p class="ui-note ev-gonote">${sc?`${sc} is keeping it — open it to follow along, or to take over if their phone can’t.`:'Your group is out. Open the card to score.'}</p>`;
+    }
+  }
+  else if(today&&tc&&S.courseHoles&&S.courseHoles[tc]&&UI_MEP()){
+    const mg=evMyGroup(ev,today);
+    h+=`<button class="ui-btn ev-go" onclick="EV_SCORE('${ev.id}')">${uiSvg('flag')}${mg&&mg.g.time?`Tee off · the ${mg.g.time} group`:`Score my group · Day ${today}`}</button>`;
+    if(mg&&mg.g.scorer&&mg.g.scorer!==UI_ME) h+=`<p class="ui-note ev-gonote">${evFirst(mg.g.scorer)} keeps your group’s card. Tap this only if their phone can’t.</p>`;
+  }
+  // before a ball is struck the draw comes first; once it's on, the leaderboard does
+  const started0=B.rows.some(x=>x.tot.thru);
+  if(!started0) h+=evDrawSection(ev,EV_DAY,B);
 
   // the leaderboard
   const started=B.rows.some(x=>x.tot.thru);
@@ -10690,6 +10753,7 @@ function renderEventPage(ev){
   h+=`</div>`;
   h+=`<p class="lb-note">${started?(fmt==='stb'?'Stableford points':fmt==='net'?'Net against par':'Shots against par')+(fmt==='gross'?'':' off each day’s course handicap')+(two?', both days added together':'')+'. Tap a name for their card. ':''}`
     +`Each group scores itself on its own phone — a round on ${n>1?'the day’s course, on its day,':'this course, on the day,'} joins the board by itself.</p>`;
+  if(started) h+=evDrawSection(ev,EV_DAY,B);
   if(started&&Object.keys(EV_ROWS).some(k=>EV_ROWS[k])) h+=`<p class="lbc-key"><span><i class="k bi"></i>birdie</span><span><i class="k ea"></i>eagle</span><span><i class="k bo"></i>bogey</span><span><i class="k db"></i>double or worse</span>${fmt==='gross'?'':`<span class="lbc-key-n">${fmt==='stb'?'points':'net'} in grey underneath</span>`}</p>`;
   return h;
 }
@@ -10714,7 +10778,12 @@ window.EV_SCORE=id=>{
   if(!c) return;
   UI_GO('play','live'); LP_NEW();
   LRSEL.course=c;
-  if(UI_MEP()) LRSEL.players[UI_ME]=true;
+  const mg=evMyGroup(ev,k);
+  if(mg){
+    // the draw: the group, its tee, all 18 — one tap to tee off
+    if(mg.g.tee&&lpTees(c).some(t=>t.tee===mg.g.tee)){ LRSEL.tee=mg.g.tee; const cf=lpConfigs(c,mg.g.tee); LRSEL.cfg=cf.includes('18')?'18':(cf[0]||null); }
+    const R=ranked(); mg.g.players.forEach(x=>{ const p=R.find(q=>q.id===x); if(p&&p.hi!=null) LRSEL.players[x]=true; });
+  } else if(UI_MEP()) LRSEL.players[UI_ME]=true;
   render(); try{ window.scrollTo(0,0); }catch(e){}
 };
 
@@ -10735,6 +10804,182 @@ window.SU=()=>{
   else upd({...S,upcoming:[...S.upcoming,{id:uid(),name,date,course,notes,players}]});
   EV_EDIT=null; MOD=null; render();
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SET UP AHEAD (C-20261120-b) · the draw and the contests, day by day
+//
+// ev.draw[k-1] = { groups:[{time:'09:00', tee:'Yellow', players:[ids], scorer:id}],
+//                  ctp:[holes], ld:[holes] }
+// The draw: who plays with whom, at what time, off which tee, and who keeps the card.
+// On the day, "Score my group" opens New round with all of it filled in: one tap,
+// Tee off. Contests: the holes picked here are the only contest holes that day, and
+// they run across the groups the way a club does it with a marker on the green: a
+// later group sees whose ball is the one to beat and taps a name only if they beat
+// it. The last name tapped holds it.
+// ═══════════════════════════════════════════════════════════════════════════
+function evDraw(ev,k){
+  const d=(Array.isArray(ev&&ev.draw)?ev.draw[k-1]:null)||{};
+  const groups=(Array.isArray(d.groups)?d.groups:Object.values(d.groups||{})).filter(Boolean)
+    .map(g=>({time:g.time||'',tee:g.tee||'',players:(Array.isArray(g.players)?g.players:Object.values(g.players||{})).filter(Boolean),scorer:g.scorer||''}));
+  const arr=v=>(Array.isArray(v)?v:Object.values(v||{})).map(Number).filter(Boolean).sort((a,b)=>a-b);
+  return {groups,ctp:arr(d.ctp),ld:arr(d.ld)};
+}
+function evSaveDraw(ev,k,d,extraNames){
+  const draw=Array.from({length:Math.max(evDays(ev),k)},(_,i)=>i===k-1?d:((Array.isArray(ev.draw)&&ev.draw[i])||{}));
+  const players=[...new Set([...(ev.players||[]),...(extraNames||[])])];
+  upd({...S,upcoming:S.upcoming.map(u=>u.id===ev.id?{...u,draw,players}:u)});
+}
+function evGroupSort(gs){ return gs.map((g,i)=>({...g,i})).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99')||a.i-b.i); }
+function evMyGroup(ev,k,pid){ pid=pid||UI_ME; const gs=evDraw(ev,k).groups; const i=gs.findIndex(g=>g.players.includes(pid)); return i<0?null:{i,g:gs[i]}; }
+function evGroupFor(ev,k,ids){
+  let best=null,bn=0; evDraw(ev,k).groups.forEach((g,i)=>{ const n=g.players.filter(x=>ids.includes(x)).length; if(n>bn){ bn=n; best={i,g}; } });
+  return best;
+}
+function evFirst(pid){ const p=S.players.find(x=>x.id===pid); return p?p.name.split(' ')[0]:'?'; }
+function evGLabel(g){ return g.time?`the ${g.time} group`:'their group'; }
+
+// ── contests across the groups ─────────────────────────────────────────────
+// Who holds a contest hole now: the last claim made on it, in any group's card that day.
+function evContest(ev,k,hole){
+  let best=null;
+  evRounds(ev).filter(r=>r.ev.day===k).forEach(r=>{
+    const c=r.ctp||{}, at=r.ctpAt||{};
+    Object.keys(c).forEach(i=>{
+      const real=(r.holeNums&&r.holeNums[i-1])||+i;
+      if(real!==hole||!c[i]) return;
+      const t=at[i]||r.startedAt||0;
+      if(!best||t>=best.t) best={pid:c[i],t,rid:r.id,name:((r.players.find(p=>p.id===c[i])||{}).name)||'?',r};
+    });
+  });
+  return best;
+}
+// The hole screen asks this: is this hole a contest today, and whose ball is the one to beat?
+function evHoleContest(r,idx){
+  if(!r||!r.ev) return null;
+  const ev=evById(r.ev.id); if(!ev) return null;
+  const d=evDraw(ev,r.ev.day); if(!d.ctp.length&&!d.ld.length) return null;   // no holes picked: every hole, as always
+  const real=(r.holeNums&&r.holeNums[idx-1])||idx;
+  const kind=d.ctp.includes(real)?'ctp':d.ld.includes(real)?'ld':'none';
+  if(kind==='none') return {kind};
+  const h=evContest(ev,r.ev.day,real);
+  const g=h&&h.r.ev&&h.r.ev.group!=null?evDraw(ev,r.ev.day).groups[h.r.ev.group]:null;
+  return {kind,holder:h,mine:!!(h&&h.rid===(typeof LRID!=='undefined'?LRID:null)),glabel:g?evGLabel(g):'another group'};
+}
+function evContestLine(c){
+  if(!c||!c.holder) return 'nobody yet — the first group sets it';
+  return c.mine?`${c.holder.name} has it`:`to beat: ${c.holder.name.split(' ')[0]}, ${c.glabel}`;
+}
+
+// ── the event page's draw and contests, for the day picked ─────────────────
+function evDrawSection(ev,k,B){
+  const d=evDraw(ev,k), cn=evCourseOf(ev,k), card=cn&&S.courseHoles&&S.courseHoles[cn];
+  const nd=evDays(ev), dl=nd>1?`Day ${k} · `:'';
+  let h=`<div class="ui-lbl ui-lbl-act"><span>${dl}The draw</span><button class="ui-link" onclick="EV_GADD(${k})">Add a group</button></div>`;
+  const gs=evGroupSort(d.groups);
+  if(!gs.length) h+=`<div class="ui-crempty ev-empty">No groups yet. Add them with their tee times and who keeps the card — on the day, each group is one tap to tee off.</div>`;
+  else h+=`<div class="ui-list ev-draw">${gs.map((g,n)=>{
+    const rs=B.rounds.filter(r=>r.ev.day===k&&(r.ev.group===g.i||(r.ev.group==null&&g.players.some(x=>r.players.some(p=>p.id===x)))));
+    const r=rs[0];
+    let st=''; if(r){ try{ const t=lpThru(r); st=r.done?' · finished':` · <span class="ev-live"><i class="ui-dot ok"></i>${t?'thru '+t:'teed off'}</span>`; }catch(e){} }
+    const names=g.players.map(x=>{ const p=S.players.find(q=>q.id===x); return p?p.name:'?'; });
+    return `<button class="ui-row ev-grp" onclick="EV_GEDIT(${k},${g.i})">
+      <span class="ev-time">${g.time||'–'}</span>
+      <span class="ui-row-t">${names.join(', ')||'No one yet'}<small>${g.tee||'Tee to pick'}${g.scorer?` · ${evFirst(g.scorer)} keeps the card`:''}${st}</small></span>
+      ${uiSvg('chev','ui-chev')}</button>`;
+  }).join('')}</div>`;
+  // contests
+  h+=`<div class="ui-lbl ui-lbl-act"><span>${dl}Nearest the pin · longest drive</span>${card?`<button class="ui-link" onclick="EV_CEDIT(${k})">${d.ctp.length||d.ld.length?'Change holes':'Pick holes'}</button>`:''}</div>`;
+  const holes=[...d.ctp.map(x=>[x,'ctp']),...d.ld.map(x=>[x,'ld'])].sort((a,b)=>a[0]-b[0]);
+  if(!holes.length) h+=`<div class="ui-crempty ev-empty">${card?'Pick the holes and they run across every group: a later group sees whose ball is the one to beat. Until then each group keeps its own, on every hole.':'Holes can be picked once the course has its card.'}</div>`;
+  else h+=`<div class="ui-list ev-ct">${holes.map(([x,kind])=>{
+    const c=evContest(ev,k,x);
+    const g=c&&c.r.ev&&c.r.ev.group!=null?evDraw(ev,k).groups[c.r.ev.group]:null;
+    return `<div class="ui-row ev-ctr"><span class="ev-hole">${x}</span><span class="ui-row-t">${gmContestName(kind)}<small>${card?`par ${card.par[x-1]}`:''}</small></span><span class="ev-holder${c?' on':''}">${c?`${c.name}<small>${g&&g.time?g.time+' group':''}</small>`:'nobody yet'}</span></div>`;
+  }).join('')}</div>`;
+  return h;
+}
+
+// ── the group sheet ────────────────────────────────────────────────────────
+function renderEvGroup(){
+  const G=EV_G; if(!G) return '';
+  const ev=evById(G.ev); if(!ev) return '';
+  const c=evCourseOf(ev,G.k), tees=c?lpTees(c):[], d=evDraw(ev,G.k);
+  const taken={}; d.groups.forEach((g,i)=>{ if(i!==G.i) g.players.forEach(x=>{ taken[x]=g.time||('group '+(i+1)); }); });
+  const R=ranked().filter(p=>p.hi!=null);
+  return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
+    <div class="ui-sheet-h"><div class="mo-title">${G.i<0?'New group':'Group'}${evDays(ev)>1?` · Day ${G.k}`:''}</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
+    <div class="fr"><label class="fl" for="evgt">Tee time</label><input type="time" id="evgt" value="${G.time||''}" oninput="EV_GTIME(this.value)"></div>
+    ${tees.length?`<div class="fr"><div class="fl">Tee</div><div class="pk">${tees.map(t=>`<button class="pk-chip${G.tee===t.tee?' on':''}" onclick="EV_GTEE('${t.tee}')"><span class="pk-sw" style="background:${(typeof TEECOL!=='undefined'&&TEECOL[t.tee])||'#BBB'}"></span>${t.tee}</button>`).join('')}</div></div>`:''}
+    <div class="fr"><div class="fl">Who’s in the group</div><div class="ui-pllist">${R.map(p=>{
+      const on=G.players.includes(p.id), tk=!on&&taken[p.id];
+      return tk?`<div class="ui-plrow dis"><span class="ui-av">${uiInit(p.name)}</span><span class="ui-row-t">${p.name}<small>in the ${tk} group</small></span></div>`
+        :`<button class="ui-plrow${on?' on':''}" onclick="EV_GP('${p.id}')"><span class="ui-plchk">${on?uiSvg('tick'):''}</span><span class="ui-av${on?' g':''}">${uiInit(p.name)}</span><span class="ui-row-t">${p.name}<small>HI ${p.hi}</small></span></button>`;
+    }).join('')}</div></div>
+    ${G.players.length?`<div class="fr"><div class="fl">Keeps the card</div><div class="pk">${G.players.map(x=>`<button class="pk-chip${G.scorer===x?' on':''}" onclick="EV_GSC('${x}')">${evFirst(x)}</button>`).join('')}</div>
+      <div class="ui-note" style="margin:8px 2px 0">Their phone scores the group. Anyone else in it can take over if that phone dies.</div></div>`:''}
+    <div id="evger" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none"></div>
+    <button class="ui-btn" onclick="EV_GSAVE()">${G.i<0?'Add the group':'Save'}</button>
+    ${G.i>=0?`<button class="ui-link ev-del" onclick="EV_GDEL()">Remove this group</button>`:''}
+  </div></div>`;
+}
+window.EV_GADD=k=>{ const ev=evById(EV_ON); if(!ev) return;
+  const d=evDraw(ev,k), last=evGroupSort(d.groups).slice(-1)[0];
+  // the next tee time ten minutes after the last one, same tee
+  let t=''; if(last&&/^\d\d:\d\d$/.test(last.time)){ const [hh,mm]=last.time.split(':').map(Number); const m=hh*60+mm+10; t=String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+  EV_G={ev:ev.id,k,i:-1,time:t,tee:last?last.tee:'',players:[],scorer:''}; MOD='evgroup'; render(); };
+window.EV_GEDIT=(k,i)=>{ const ev=evById(EV_ON); if(!ev) return; const g=evDraw(ev,k).groups[i]; if(!g) return;
+  EV_G={ev:ev.id,k,i,time:g.time,tee:g.tee,players:[...g.players],scorer:g.scorer}; MOD='evgroup'; render(); };
+window.EV_GTIME=v=>{ if(EV_G) EV_G.time=v; };
+window.EV_GTEE=t=>{ if(EV_G){ EV_G.tee=EV_G.tee===t?'':t; render(); } };
+window.EV_GP=id=>{ if(!EV_G) return; const a=EV_G.players;
+  if(a.includes(id)){ EV_G.players=a.filter(x=>x!==id); if(EV_G.scorer===id) EV_G.scorer=EV_G.players[0]||''; }
+  else { EV_G.players=[...a,id]; if(!EV_G.scorer) EV_G.scorer=id; }
+  render(); };
+window.EV_GSC=id=>{ if(EV_G){ EV_G.scorer=id; render(); } };
+window.EV_GSAVE=()=>{
+  const G=EV_G, ev=G&&evById(G.ev); if(!ev) return;
+  const t=document.getElementById('evgt'); if(t) G.time=t.value;
+  const er=document.getElementById('evger');
+  if(!G.players.length){ if(er){ er.textContent='Tick who’s in the group.'; er.style.display='block'; } return; }
+  const d=evDraw(ev,G.k), g={time:G.time||'',tee:G.tee||'',players:G.players,scorer:G.players.includes(G.scorer)?G.scorer:G.players[0]};
+  if(G.i<0) d.groups.push(g); else d.groups[G.i]=g;
+  evSaveDraw(ev,G.k,d,G.players.map(x=>(S.players.find(p=>p.id===x)||{}).name).filter(Boolean));
+  EV_G=null; MOD=null; EV_DAY=G.k; render();
+};
+window.EV_GDEL=()=>{
+  const G=EV_G, ev=G&&evById(G.ev); if(!ev||G.i<0) return;
+  if(!confirm('Remove this group from the draw?\n\nNobody is taken out of the event, and no scores are touched.')) return;
+  const d=evDraw(ev,G.k); d.groups.splice(G.i,1); evSaveDraw(ev,G.k,d);
+  EV_G=null; MOD=null; render();
+};
+
+// ── the contests sheet ─────────────────────────────────────────────────────
+function renderEvCtp(){
+  const C=EV_C; if(!C) return '';
+  const ev=evById(C.ev), cn=ev&&evCourseOf(ev,C.k), card=cn&&S.courseHoles&&S.courseHoles[cn]; if(!card) return '';
+  const par=card.par, chips=(kind,list)=>`<div class="ev-hgrid">${par.map((p,i)=>i+1).filter(x=>kind==='ctp'?par[x-1]===3:par[x-1]!==3).map(x=>
+    `<button class="ev-hc${list.includes(x)?' on':''}" onclick="EV_CT('${kind}',${x})" aria-pressed="${list.includes(x)}"><b>${x}</b><small>par ${par[x-1]}</small></button>`).join('')}</div>`;
+  return `<div class="ov" onclick="if(event.target===this)CM()"><div class="mo">
+    <div class="ui-sheet-h"><div class="mo-title">Contest holes${evDays(ev)>1?` · Day ${C.k}`:''}</div><button class="ui-ico" onclick="CM()" aria-label="Close">${uiSvg('x')}</button></div>
+    <div class="ui-s" style="margin:-6px 2px 16px">${cn}</div>
+    <div class="fl">Nearest the pin</div>${chips('ctp',C.ctp)}
+    <div class="fl" style="margin-top:18px">Longest drive</div>${chips('ld',C.ld)}
+    <div class="ui-note" style="margin:14px 2px 18px">Only these holes have a contest that day. A later group sees whose ball is the one to beat, and taps a name only if they beat it.</div>
+    <button class="ui-btn" onclick="EV_CSAVE()">Save</button>
+  </div></div>`;
+}
+window.EV_CEDIT=k=>{ const ev=evById(EV_ON); if(!ev) return; const d=evDraw(ev,k); EV_C={ev:ev.id,k,ctp:[...d.ctp],ld:[...d.ld]}; MOD='evctp'; render(); };
+window.EV_CT=(kind,x)=>{ if(!EV_C) return; const a=EV_C[kind]; EV_C[kind]=a.includes(x)?a.filter(y=>y!==x):[...a,x].sort((p,q)=>p-q); render(); };
+window.EV_CSAVE=()=>{ const C=EV_C, ev=C&&evById(C.ev); if(!ev) return;
+  const d=evDraw(ev,C.k); d.ctp=C.ctp; d.ld=C.ld; evSaveDraw(ev,C.k,d); EV_C=null; MOD=null; EV_DAY=C.k; render(); };
+window.EV_DAYP=k=>{ EV_DAY=k; render(); };
+// Open a group's card that's already out: the same round, joined, never a second one.
+window.EV_JOIN=rid=>{
+  // the lobby on this phone may not have it yet: hand it the copy the event page already has
+  const r=(EV_LIVE&&EV_LIVE[rid])||(UI_LIVE&&UI_LIVE[rid]);
+  UI_GO('play','live');
+  if(r){ try{ if(!ROUNDS) ROUNDS={}; ROUNDS[rid]=r; }catch(e){} }
+  LP_JOIN(rid); try{ window.scrollTo(0,0); }catch(e){} };
 </script>
 </body>
 </html>
