@@ -2894,9 +2894,10 @@ button.ev-day{width:100%;background:none;border:none;font:inherit;color:inherit;
 .ev-dup b{color:var(--red)}
 .ev-dup .ui-btn-sm{width:auto;margin-left:auto;background:var(--card);color:var(--ink)}
 /* the champion rule on the event sheet (C-20261123-a) */
-.ev-win{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media (max-width:360px){.ev-win{grid-template-columns:1fr}}
+.ev-win{display:grid;grid-template-columns:1fr;gap:8px}
 .ev-res-none{margin-bottom:14px}
+.ev-rules{margin:10px 4px 14px;color:var(--ink2)}
+.ev-rules b{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -5184,7 +5185,8 @@ function renderPlay(){
     // an event round: say so before anyone tees off
     if(LRSEL.course){ let E=null; try{ E=evFor(LRSEL.course,evTodayISO()); }catch(e){}
       if(E){ const G=evGroupFor(E.ev,E.day,Object.keys(LRSEL.players).filter(k=>LRSEL.players[k]));
-        h+=`<div class="ui-info ev-link">${uiSvg('rank')}<span>Counts for <b>${E.ev.name}</b>${evDays(E.ev)>1?` · day ${E.day}`:''}${G&&G.g.time?` · the ${G.g.time} group`:''}. Your group’s card goes on the event leaderboard as you play.</span></div>`;
+        if(E.ev.rules&&E.ev.rules.cap) LRSEL.rules={...GM_RDEF,...E.ev.rules};   // the event's cap, for every group
+        h+=`<div class="ui-info ev-link">${uiSvg('rank')}<span>Counts for <b>${E.ev.name}</b>${evDays(E.ev)>1?` · day ${E.day}`:''}${G&&G.g.time?` · the ${G.g.time} group`:''}. Your group’s card goes on the event leaderboard as you play. <b>${evRulesLine(E.ev)}.</b></span></div>`;
         // never two cards for one golfer on an event day
         let dup=null; try{ dup=evRounds(E.ev).find(r=>!r.done&&r.ev.day===E.day&&r.players.some(p=>LRSEL.players[p.id])); }catch(e){}
         if(dup){ const who=dup.players.filter(p=>LRSEL.players[p.id]).map(p=>p.name.split(' ')[0]);
@@ -6068,10 +6070,11 @@ function renderUpcomingModal(){
       <label class="fl" for="uc">Courses <span class="ev-fl">— one a line, a line for each day</span></label>
       <textarea id="uc" placeholder="e.g.&#10;Quinta da Marinha&#10;Penha Longa Atlântico" style="min-height:84px">${esc(lines)}</textarea>
     </div>
-    <div class="fr"><label class="fl" for="uwf">The champion <span class="ev-fl">— the group decides</span></label>
+    <div class="fr"><label class="fl" for="uwf">Scoring rules <span class="ev-fl">— set before anyone tees off; every group plays them</span></label>
       <div class="ev-win">
-        <select id="uwf" aria-label="Won on">${[['stb','Most Stableford points'],['net','Lowest net score'],['gross','Fewest shots']].map(([v,l])=>`<option value="${v}"${W.fmt===v?' selected':''}>${l}</option>`).join('')}</select>
+        <select id="uwf" aria-label="Won on">${[['stb','Most Stableford points'],['net','Lowest net score'],['gross','Medal · fewest shots']].map(([v,l])=>`<option value="${v}"${W.fmt===v?' selected':''}>${l}</option>`).join('')}</select>
         <select id="uwd" aria-label="Over which days">${[[0,nd>1?'Every day added':'The round'],...Array.from({length:nd>1?nd:0},(_,i)=>[i+1,`Day ${i+1} only`])].map(([v,l])=>`<option value="${v}"${W.day===v?' selected':''}>${l}</option>`).join('')}</select>
+        <select id="ucap" class="ev-cap" aria-label="Scoring cap">${EV_CAPS.map(([v,l])=>`<option value="${v}"${evCapKey(ed)===v?' selected':''}>${l}</option>`).join('')}</select>
       </div>
     </div>
     <div class="fr"><label class="fl" for="unotes">Notes</label><textarea id="unotes" placeholder="Tee times, groups, where we’re staying…">${esc(ed&&ed.notes)}</textarea></div>
@@ -7588,7 +7591,7 @@ function lpMigrateLisbonCards(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261123-a · Club 3 · a finished event is its own result: champion, contests, birdies, money';
+const UI_BUILD='C-20261123-b · Club 3 · events: scoring rules set beforehand (format, days, cap), finished event is its own result';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -7999,7 +8002,11 @@ function renderLiveCards(){
     const ev=evById(eid); let lead='', groups=all.filter(([id,r])=>r.ev&&r.ev.id===eid).length;
     try{
       const B=evBoard(ev,'stb'), rows=B.rows.filter(x=>x.tot.thru);
-      if(rows.length){
+      // after day 1 the leader is on every day added: the earlier days' cards are in the history,
+      // which Home doesn't otherwise load (C-20261123-a: it read today's points alone)
+      const needHist=B.cur>1&&(typeof HIST==='undefined'||HIST===null);
+      if(needHist){ uiHistLoad(); lead='Adding up the days…'; }
+      else if(rows.length){
         const top=rows[0], tied=String(top.pos)[0]==='T';
         lead=tied?`Level at the top on ${top.tot.stb} pts`:`${top.name.split(' ')[0]} leads on ${top.tot.stb} pts`;
         const m=rows.find(x=>x.id===UI_ME);
@@ -9118,6 +9125,8 @@ window.LP_GO=async()=>{
   // the event leaderboard (events.js). Only the link is stored; the round is as ever.
   let E=null; try{ E=evFor(LR.course,LR.date); }catch(e){}
   if(E){ LR.ev={id:E.ev.id,day:E.day,name:E.ev.name};
+    // the event's scoring rules win over whatever was picked on this phone: every group plays the same
+    if(E.ev.rules&&E.ev.rules.cap){ if(E.ev.rules.cap==='none') delete LR.rules; else LR.rules={...GM_RDEF,...E.ev.rules}; }
     const G=evGroupFor(E.ev,E.day,LR.players.map(p=>p.id));
     if(G){ LR.ev.group=G.i; if(G.g.time) LR.ev.time=G.g.time; } }
   if(g.fmt!=='none'||R.cap!=='none'||E){ LRWROTE=false; lpEnsureWritten(); render(); }
@@ -10773,6 +10782,8 @@ function renderEventPage(ev){
       :`<div class="ui-row ev-day${F?'':' on'}"><span class="ev-dn">Day ${k}</span><span class="ui-row-t">${cn||line}<small>${uiWeekday(evDate(ev,k))}${k===today?' · today':''} · ${st}</small></span></div>`;
   }
   h+=`</div>`;
+  // the rules everyone plays, said before anyone tees off (C-20261123-a)
+  h+=`<p class="ui-note ev-rules"><b>Scoring</b> · ${evRulesLine(ev)}</p>`;
 
   // the one action: score your group today (or get back to it)
   const mine=typeof LR!=='undefined'&&LR&&LRID&&LR.ev&&LR.ev.id===ev.id;
@@ -10872,6 +10883,9 @@ window.SU=()=>{
   // who wins (C-20261123-a): stored only once it isn't the default (Stableford, every day)
   const wf=document.getElementById('uwf')?.value||'stb', wd=+(document.getElementById('uwd')?.value||0);
   const win=(wf!=='stb'||wd||(ed&&ed.win))?{win:{fmt:wf,day:wd}}:{};
+  // the cap every group plays (C-20261123-a): stored once someone picks one
+  const ck=document.getElementById('ucap')?.value||'none';
+  if(ck!=='none'||(ed&&ed.rules)) win.rules=evCapRules(ck);
   EV_RES={}; EV_FMTSET=null;
   if(ed) upd({...S,upcoming:S.upcoming.map(u=>u.id===ed.id?{...u,name,date,course,notes,players,...win}:u)});
   else upd({...S,upcoming:[...S.upcoming,{id:uid(),name,date,course,notes,players,...win}]});
@@ -11174,7 +11188,7 @@ function evResultTop(ev,F){
     <span class="ui-av g lg" style="margin:0 auto;background:var(--card);color:var(--g)">${c.length>1?uiSvg('trophy'):uiInit(one.name)}</span>
     <div class="ui-h1" style="color:#fff;margin-top:12px">${c.length>1?gmList(names.map(s=>s.split(' ')[0])):one.name}</div>
     <div class="ui-done-s">${c.length>1?'Joint champions':'Champion'} · ${evScoreTxt(F.w.fmt,one.fin)}${F.how?` · ${F.how}`:''}</div>
-    <div class="ui-done-s" style="margin-top:2px">${evWinLabel(ev)}</div>
+    <div class="ui-done-s" style="margin-top:2px">${evRulesLine(ev)}</div>
   </div>`;
 }
 function evResultFoot(ev,F){
@@ -11242,6 +11256,15 @@ window.EV_MONEY=id=>{
   else { rec={id:uid(),ev:ev.id,name:ev.name,date:ev.date,entries,winnerId,prize:0}; upd({...S,tournaments:[...S.tournaments,rec]}); }
   PURSE_TID=rec.id; MOD='purse-edit'; render();
 };
+
+// ── the scoring cap, set on the event (C-20261123-a) ───────────────────────
+// The same caps as New round (games.js gmCapFor): the + stops at each golfer's cap and the
+// board counts the capped score. The handicap still caps at net double bogey on its own.
+const EV_CAPS=[['none','Every shot counts'],['ndb','Capped at net double bogey'],['m1.5','Capped at 1.5× net double bogey'],['m2','Capped at 2× net double bogey'],['m3','Capped at 3× net double bogey']];
+function evCapKey(ev){ const R=ev&&ev.rules; if(!R||!R.cap||R.cap==='none') return 'none'; if(R.cap==='ndb') return 'ndb'; if(R.cap==='mult') return 'm'+(R.mult||1.5); return 'none'; }
+function evCapRules(k){ if(k==='ndb') return {cap:'ndb'}; if(k&&k[0]==='m') return {cap:'mult',mult:+k.slice(1)}; return {cap:'none'}; }
+function evCapLabel(ev){ const k=evCapKey(ev); return k==='none'?'every shot counts':((EV_CAPS.find(x=>x[0]===k)||['',''])[1]).replace(/^Capped/,'capped'); }
+function evRulesLine(ev){ return `${evWinLabel(ev)} · ${evCapLabel(ev)}`; }
 </script>
 </body>
 </html>
