@@ -7591,7 +7591,7 @@ function lpMigrateLisbonCards(){
 // Club 2.1: five rooms — Home · League · Money · Me on the bar, and the green Play.
 // No menu: everything has a labelled home in one of the five (see rooms.js).
 // ═══════════════════════════════════════════════════════════════════════════
-const UI_BUILD='C-20261123-b · Club 3 · events: scoring rules set beforehand (format, days, cap), finished event is its own result';
+const UI_BUILD='C-20261123-c · Club 3 · events: day-of safety nets (link, cap, contests, postings), scoring rules, the finished result';
 var UI_MENU=false, UI_FROM='home', UI_ME=null, UI_PID_LAST=null;
 try{ UI_ME=CLUB_GET('club_me_v1')||null; }catch(e){ UI_ME=null; }
 V='home';   // the app now opens on Home
@@ -8004,7 +8004,9 @@ function renderLiveCards(){
       const B=evBoard(ev,'stb'), rows=B.rows.filter(x=>x.tot.thru);
       // after day 1 the leader is on every day added: the earlier days' cards are in the history,
       // which Home doesn't otherwise load (C-20261123-a: it read today's points alone)
-      const needHist=B.cur>1&&(typeof HIST==='undefined'||HIST===null);
+      // and kept fresh: a group finishing today moves its card to the history (C-20261123-c)
+      if(B.cur>1&&Date.now()-EV_HAT>60000) evPollHist();
+      const needHist=B.cur>1&&(typeof HIST==='undefined'||HIST===null)&&EV_HIST===null;
       if(needHist){ uiHistLoad(); lead='Adding up the days…'; }
       else if(rows.length){
         const top=rows[0], tied=String(top.pos)[0]==='T';
@@ -10667,19 +10669,44 @@ function evById(id){ return (S.upcoming||[]).find(e=>e.id===id)||null; }
 // ── the rounds: this phone's own, the live lobby, and the finished cards ──
 function evRounds(ev){
   const out={};
+  // Day-of hardening (C-20261123-c):
+  // · a card that lost its event link (a failed save at the 1st tee) still counts: a round on the
+  //   day's course on an event day IS that event's, the same rule that links it at tee-off;
+  // · once the live lobby has been fetched it is the only word on what's live (old copies on this
+  //   phone can't keep a discarded card "live");
+  // · of two finished copies of a card, the one corrected last wins;
+  // · the event's cap is applied to what the board counts, whatever the card itself was set to.
+  const link=r=>{
+    if(r.ev) return r.ev.id===ev.id?r.ev:null;
+    const d=evDayOf(ev,r.date); return d&&r.course&&evCourseOf(ev,d)===r.course?{id:ev.id,day:d,name:ev.name}:null;
+  };
+  const stamp=r=>Math.max(+(r.amended&&r.amended.at)||0,+r.finishedAt||0);
   const take=(src,done)=>Object.entries(src||{}).forEach(([id,r])=>{
-    if(!r||!r.ev||r.ev.id!==ev.id||!Array.isArray(r.players)||!Array.isArray(r.parArr)) return;
-    if(out[id]&&out[id].done) return;
+    if(!r||!Array.isArray(r.players)||!Array.isArray(r.parArr)) return;
+    const L=link(r); if(!L) return;
+    if(out[id]&&out[id].done&&!(done&&stamp(r)>stamp(out[id]))) return;
     if(!done&&!r.active) return;
-    out[id]={...r,id,done:!!done};
+    out[id]={...r,ev:L,id,done:!!done};
   });
-  take(typeof UI_LIVE!=='undefined'?UI_LIVE:null,false);
-  take(typeof ROUNDS!=='undefined'?ROUNDS:null,false);
+  if(EV_LIVE===null){
+    take(typeof UI_LIVE!=='undefined'?UI_LIVE:null,false);
+    take(typeof ROUNDS!=='undefined'?ROUNDS:null,false);
+  }
   take(EV_LIVE,false);
-  if(typeof LR!=='undefined'&&LR&&LRID&&LR.ev&&LR.ev.id===ev.id) out[LRID]={...LR,id:LRID,done:false};
-  take(typeof HIST!=='undefined'?HIST:null,true);
+  if(typeof LR!=='undefined'&&LR&&LRID&&link(LR)&&!(out[LRID]&&out[LRID].done)) out[LRID]={...LR,ev:link(LR),id:LRID,done:false};
   take(EV_HIST,true);
-  return Object.values(out);
+  take(typeof HIST!=='undefined'?HIST:null,true);
+  const R=ev.rules;
+  return Object.values(out).map(r=>{
+    if(!R||!R.cap||R.cap==='none'||typeof gmCapFor!=='function') return r;
+    const sc={}; let changed=false;
+    for(let h=1;h<=r.holes;h++){
+      const row=r.scores&&r.scores[h]; if(!row) continue; sc[h]={...row};
+      r.players.forEach(p=>{ if(!lpHasScore(r.scores,h,p.id)) return; let c=null; try{ c=gmCapFor(r,h,p.id,R); }catch(e){}
+        if(c!=null&&sc[h][p.id]>c){ sc[h][p.id]=c; changed=true; } });
+    }
+    return changed?{...r,scores:sc}:r;
+  });
 }
 
 // ── the board ──────────────────────────────────────────────────────────────
@@ -10693,7 +10720,8 @@ function evBoard(ev,fmt){
     B.forEach(x=>{
       const key=x.guest?'g:'+x.name:x.id;
       const e=by[key]||(by[key]={key,id:x.guest?null:x.id,name:x.name,guest:!!x.guest,days:{}});
-      e.days[r.ev.day]={r,x,done:r.done||x.thru===r.holes};
+      const nd={r,x,done:r.done||x.thru===r.holes}, od=e.days[r.ev.day];
+      if(!od||(nd.done&&!od.done)||(nd.done===od.done&&x.thru>od.x.thru)) e.days[r.ev.day]=nd;
     });
   });
   // everyone who said they're in shows up, even before their first shot
@@ -10745,11 +10773,11 @@ function evPoll(force){
 }
 function evPollHist(){
   EV_HAT=Date.now();
-  fetch(`${RH_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{ EV_HIST=d||{}; evMaybeRender(); }).catch(()=>{});
+  fetch(`${RH_URL}.json?t=${Date.now()}`).then(r=>r.json()).then(d=>{ EV_HIST=d||{}; evMaybeRender(); if(V==='home'&&!MOD) render(); }).catch(()=>{});
 }
 function evMaybeRender(){
   const ev=EV_ON&&evById(EV_ON); if(!ev) return;
-  let sig=''; try{ sig=evRounds(ev).map(r=>r.id+':'+r.done+':'+JSON.stringify(r.scores||{}).length+':'+(r.amended&&r.amended.at||'')).sort().join('|'); }catch(e){}
+  let sig=''; try{ sig=evRounds(ev).map(r=>r.id+':'+r.done+':'+JSON.stringify(r.scores||{})+':'+(r.amended&&r.amended.at||'')).sort().join('|'); }catch(e){}
   if(sig===EV_SIG) return; EV_SIG=sig;
   const ae=document.activeElement;
   if(V==='rounds'&&!MOD&&!(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) render();
@@ -10905,14 +10933,17 @@ window.SU=()=>{
 // it. The last name tapped holds it.
 // ═══════════════════════════════════════════════════════════════════════════
 function evDraw(ev,k){
-  const d=(Array.isArray(ev&&ev.draw)?ev.draw[k-1]:null)||{};
+  const D=ev&&ev.draw, d=(D&&typeof D==='object'?(D[k-1]||D[String(k-1)]):null)||{};
   const groups=(Array.isArray(d.groups)?d.groups:Object.values(d.groups||{})).filter(Boolean)
     .map(g=>({time:g.time||'',tee:g.tee||'',players:(Array.isArray(g.players)?g.players:Object.values(g.players||{})).filter(Boolean),scorer:g.scorer||''}));
   const arr=v=>(Array.isArray(v)?v:Object.values(v||{})).map(Number).filter(Boolean).sort((a,b)=>a-b);
   return {groups,ctp:arr(d.ctp),ld:arr(d.ld)};
 }
 function evSaveDraw(ev,k,d,extraNames){
-  const draw=Array.from({length:Math.max(evDays(ev),k)},(_,i)=>i===k-1?d:((Array.isArray(ev.draw)&&ev.draw[i])||{}));
+  const D=ev.draw&&typeof ev.draw==='object'?ev.draw:{};
+  // an empty day is stored as {day:n}, never {}: Firebase drops an empty one and a list with a gap
+  // comes back as an object (C-20261123-c)
+  const draw=Array.from({length:Math.max(evDays(ev),k)},(_,i)=>{ const x=i===k-1?d:(D[i]||D[String(i)]||null); return x&&Object.keys(x).length?x:{day:i+1}; });
   const players=[...new Set([...(ev.players||[]),...(extraNames||[])])];
   upd({...S,upcoming:S.upcoming.map(u=>u.id===ev.id?{...u,draw,players}:u)});
 }
@@ -11103,15 +11134,24 @@ function evWinLabel(ev){
 // one golfer's number for the counting days (lower is better, so points are negated)
 function evKey(fmt,t){ return fmt==='stb'?-t.stb:fmt==='net'?t.net:t.gross; }
 
-// Is it over? Past its last day, or on it with every card in; and no card still out.
+// Is it over? (C-20261123-c) Once the last day has passed, yes: a card someone left running
+// can't hold the result hostage. On the last day, when no card is still being played and
+// everyone who played this event (or is in the day's draw) has a finished card for it.
+// "Who's in" names that never teed off don't count. A card counts as being played only if it
+// has a score and started in the last 8 hours (an abandoned test card doesn't).
 function evIsDone(ev,B){
   B=B||evBoard(ev,'stb');
-  if(!B.rounds.length||B.rounds.some(r=>!r.done)) return false;
-  const today=evTodayISO(), last=evLast(ev);
+  const today=evTodayISO(), last=evLast(ev), nd=evDays(ev);
+  if(!B.rounds.some(r=>r.done)) return false;
   if(today>last) return true;
   if(today<last) return false;
-  const field=B.rows.filter(x=>x.id||x.guest);
-  return field.length>0&&field.every(x=>x.days[evDays(ev)]&&x.days[evDays(ev)].done);
+  const playing=B.rounds.some(r=>!r.done&&r.ev.day===nd&&Date.now()-(+r.startedAt||0)<8*3600e3
+    &&r.players.some(p=>Object.keys(r.scores||{}).some(h=>lpHasScore(r.scores,+h,p.id))));
+  if(playing) return false;
+  const drawn=new Set(); evDraw(ev,nd).groups.forEach(g=>g.players.forEach(x=>drawn.add(x)));
+  const need=B.rows.filter(x=>x.id&&(Object.keys(x.days).length||drawn.has(x.id)));
+  if(!need.length) return false;
+  return need.every(x=>x.days[nd]&&x.days[nd].done);
 }
 
 // The final order by the event's rule. Only golfers with a finished card for every
@@ -11247,9 +11287,12 @@ window.EV_OPEN=id=>{ UI_GO('rounds','ev:'+id); EV_FROM='records'; render(); try{
 window.EV_MONEY=id=>{
   const ev=evById(id); if(!ev) return;
   const F=evFinal(ev);
-  const entries=F.B.rows.filter(x=>x.id&&Object.keys(x.days).length).map(x=>{ const f=F.rows.find(y=>y.key===x.key);
-    return {playerId:x.id,playerName:x.name,score:f?evKey(F.w.fmt,f.fin)*(F.w.fmt==='stb'?-1:1):0}; });
-  const winnerId=F.done&&F.champs.length===1?F.champs[0].id:null;
+  // score = finishing position (1 = champion): the original loader fills a missing winner with the
+  // lowest score, so points must never be stored here (C-20261123-c)
+  const order=[...F.champs,...F.rows.filter(x=>!F.champs.includes(x))];
+  const entries=F.B.rows.filter(x=>x.id&&Object.keys(x.days).length).map(x=>{ const i=order.findIndex(y=>y.key===x.key);
+    return {playerId:x.id,playerName:x.name,score:i<0?order.length+1:(F.champs.includes(order[i])?1:i+1)}; });
+  const winnerId=F.done&&F.champs.length?F.champs[0].id:null;
   const m=evMoneyRec(ev);
   let rec;
   if(m){ rec={...m,name:ev.name,date:ev.date,entries,winnerId}; upd({...S,tournaments:S.tournaments.map(t=>t.id===m.id?rec:t)}); }
@@ -11265,6 +11308,77 @@ function evCapKey(ev){ const R=ev&&ev.rules; if(!R||!R.cap||R.cap==='none') retu
 function evCapRules(k){ if(k==='ndb') return {cap:'ndb'}; if(k&&k[0]==='m') return {cap:'mult',mult:+k.slice(1)}; return {cap:'none'}; }
 function evCapLabel(ev){ const k=evCapKey(ev); return k==='none'?'every shot counts':((EV_CAPS.find(x=>x[0]===k)||['',''])[1]).replace(/^Capped/,'capped'); }
 function evRulesLine(ev){ return `${evWinLabel(ev)} · ${evCapLabel(ev)}`; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DAY-OF SAFETY NETS (C-20261123-c) · nothing lost to a bad signal or two phones at once
+// ═══════════════════════════════════════════════════════════════════════════
+// 1 · The event link and the event's cap are stamped on this phone's card, and on the server,
+// every few seconds until they stick. (Tee-off saves the round twice; if the second save failed
+// on the 1st tee, the server copy had no link and the next pull wiped it on the phone too.)
+var EV_STAMPING=false;
+function evStamp(){
+  if(EV_STAMPING||typeof LR==='undefined'||!LR||!LRID||LPV!=='round'||LR.active===false) return;
+  let E=null; try{ E=evFor(LR.course,LR.date); }catch(e){}
+  if(!E) return;
+  const want={id:E.ev.id,day:E.day,name:E.ev.name};
+  const R=E.ev.rules&&E.ev.rules.cap&&E.ev.rules.cap!=='none'?{...GM_RDEF,...E.ev.rules}:null;
+  const patch={};
+  if(!LR.ev||LR.ev.id!==want.id||LR.ev.day!==want.day){ LR.ev={...(LR.ev||{}),...want}; patch.ev=LR.ev; }
+  if(R&&(!LR.rules||LR.rules.cap!==R.cap||(R.cap==='mult'&&LR.rules.mult!==R.mult))){ LR.rules=R; patch.rules=R; }
+  if(!Object.keys(patch).length) return;
+  EV_STAMPING=true; const id=LRID;
+  fetch(`${LRS_URL}/${id}.json`,{method:'PATCH',body:JSON.stringify(patch)}).catch(()=>{}).finally(()=>{ EV_STAMPING=false; });
+  render();
+}
+setInterval(()=>{ try{ evStamp(); }catch(e){} },4000);
+
+// 2 · A nearest-the-pin / longest-drive tap writes only its own two fields, and keeps trying.
+// It used to send the whole card: offline it was lost, and it could undo another phone's scores.
+var EV_CTPQ={};
+function evCtpFlush(){
+  Object.keys(EV_CTPQ).forEach(k=>{
+    const q=EV_CTPQ[k]; if(q.busy) return; q.busy=true;
+    const w=(f,v)=>q.pid?fetch(`${LRS_URL}/${q.rid}/${f}/${q.h}.json`,{method:'PUT',body:JSON.stringify(v)}):fetch(`${LRS_URL}/${q.rid}/${f}/${q.h}.json`,{method:'DELETE'});
+    Promise.all([w('ctp',q.pid),w('ctpAt',q.at)])
+      .then(rs=>{ if(rs.every(r=>r.ok)&&EV_CTPQ[k]===q) delete EV_CTPQ[k]; }).catch(()=>{}).finally(()=>{ q.busy=false; });
+  });
+}
+setInterval(()=>{ if(Object.keys(EV_CTPQ).length) evCtpFlush(); },3000);
+window.LP_CTP=(h,pid)=>{
+  if(!LR||!LRID) return;
+  LR.ctp=LR.ctp||{}; LR.ctpAt=LR.ctpAt||{};
+  if(!pid||LR.ctp[h]===pid){ delete LR.ctp[h]; delete LR.ctpAt[h]; pid=''; } else { LR.ctp[h]=pid; LR.ctpAt[h]=Date.now(); }
+  EV_CTPQ[LRID+':'+h]={rid:LRID,h,pid,at:LR.ctpAt[h]||null};
+  evCtpFlush(); render();
+};
+// a pull from the server mustn't wipe a tap still on its way
+setInterval(()=>{ if(typeof LR==='undefined'||!LR||!LRID) return;
+  Object.values(EV_CTPQ).forEach(q=>{ if(q.rid!==LRID) return; LR.ctp=LR.ctp||{}; LR.ctpAt=LR.ctpAt||{};
+    if(q.pid){ LR.ctp[q.h]=q.pid; LR.ctpAt[q.h]=q.at; } else { delete LR.ctp[q.h]; delete LR.ctpAt[q.h]; } }); },1000);
+
+// 3 · Every finished event card is on every member's handicap record. Each save writes the whole
+// club record, so two groups finishing within a second could overwrite each other's postings.
+// Any finished event card (finished in the last 3 days) whose posting is missing is posted again,
+// exactly as Finish posts it (gross off the card, linked by rid, so it can never post twice).
+var EV_HEALAT=0;
+function evHealPostings(){
+  if(!INIT||SYNC==='err'||Date.now()-EV_HEALAT<15000) return;
+  const src=Object.assign({},(typeof HIST!=='undefined'&&HIST)||{},EV_HIST||{});
+  const add={};
+  Object.entries(src).forEach(([rid,r])=>{
+    if(!r||!r.ev||r.noPost||!Array.isArray(r.players)||!r.finishedAt||Date.now()-r.finishedAt>3*864e5) return;
+    let B=[]; try{ B=lpBoard(r); }catch(e){ return; }
+    B.forEach(b=>{ if(b.guest||!b.thru) return;
+      const p=S.players.find(x=>x.id===b.id); if(!p) return;
+      if((p.scores||[]).some(s=>s&&s.rid===rid)) return;
+      (add[p.id]=add[p.id]||[]).push({date:r.date,course:r.course,tee:r.tee,holes:r.cfg||'18',score:b.gross,rid});
+    });
+  });
+  if(!Object.keys(add).length) return;
+  EV_HEALAT=Date.now();
+  upd({...S,players:S.players.map(p=>add[p.id]?{...p,scores:[...(p.scores||[]),...add[p.id]]}:p)});
+}
+setInterval(()=>{ try{ evHealPostings(); }catch(e){} },20000);
 </script>
 </body>
 </html>
